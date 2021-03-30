@@ -1,7 +1,9 @@
 package pl.edu.agh.cqm.data.model;
 
+import javax.persistence.GenerationType;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import pl.edu.agh.cqm.data.dto.RTTSampleDTO;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,7 +17,7 @@ import java.time.Instant;
 public class RTTSample {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(nullable = false, updatable = false, unique = true)
@@ -29,4 +31,14 @@ public class RTTSample {
 
     @Column(nullable = false, updatable = false)
     private float max;
+
+    public RTTSampleDTO toDTO() {
+        return RTTSampleDTO.builder()
+            .id(id)
+            .timestamp(timestamp)
+            .average(average)
+            .min(min)
+            .max(max)
+            .build();
+    }
 }
