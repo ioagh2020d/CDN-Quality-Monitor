@@ -33,6 +33,12 @@ public class RTTSample {
     private float max;
 
     public RTTSampleDTO toDTO() {
+        String ip = "stackoverflow.com"; //Any IP Address on your network / Web
+        ActivePing pi = new ActivePing(ip);
+        pi.ping();
+        this.min = pi.getMin();
+        this.average = pi.getAvg();
+        this.max = pi.getMax();
         return RTTSampleDTO.builder()
             .id(id)
             .timestamp(timestamp)
