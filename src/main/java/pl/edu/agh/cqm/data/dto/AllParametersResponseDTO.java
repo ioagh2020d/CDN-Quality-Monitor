@@ -1,6 +1,8 @@
 package pl.edu.agh.cqm.data.dto;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -8,7 +10,11 @@ import lombok.Data;
 @AllArgsConstructor
 public class AllParametersResponseDTO {
 
-    private List<RTTSampleDTO> rttSamples;
+    private Instant startDate;
 
-    private List<ThroughputSampleDTO> throughputSamples;
+    private Instant endDate;
+
+    private Map<String, List<RTTSampleDTO>> rttSamples;
+
+    private Map<String, List<ThroughputSampleDTO>> throughputSamples;
 }

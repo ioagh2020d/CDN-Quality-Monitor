@@ -12,5 +12,5 @@ import java.util.List;
 public interface ThroughputSampleRepository extends JpaRepository<ThroughputSample, Long> {
 
     @OrderBy("timestamp ASC")
-    List<ThroughputSample> findAllByTimestampBetween(Instant startTime, Instant endTime);
+    List<ThroughputSample> findAllByTimestampBetweenAndAddress(Instant startTime, Instant endTime, String address);
 }

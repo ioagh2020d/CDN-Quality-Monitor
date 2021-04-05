@@ -9,6 +9,5 @@ import java.time.Instant;
 @SuperBuilder
 public abstract class SampleDTO {
 
-    private long id;
     private Instant timestamp;
 }
