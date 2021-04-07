@@ -4,6 +4,8 @@ import javax.persistence.GenerationType;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import pl.edu.agh.cqm.data.dto.RTTSampleDTO;
+import pl.edu.agh.cqm.service.PingService;
+import pl.edu.agh.cqm.service.PingServiceImpl;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,13 +34,10 @@ public class RTTSample {
     @Column(nullable = false, updatable = false)
     private float max;
 
+    @Column(nullable = false, updatable = false)
+    private float packageLoss;
+
     public RTTSampleDTO toDTO() {
-        String ip = "stackoverflow.com"; //Any IP Address on your network / Web
-        ActivePing pi = new ActivePing(ip);
-        pi.ping();
-        this.min = pi.getMin();
-        this.average = pi.getAvg();
-        this.max = pi.getMax();
         return RTTSampleDTO.builder()
             .id(id)
             .timestamp(timestamp)
