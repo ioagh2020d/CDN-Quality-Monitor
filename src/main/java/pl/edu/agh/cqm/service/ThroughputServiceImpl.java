@@ -26,7 +26,7 @@ public class ThroughputServiceImpl implements ThroughputService {
 
     private final PcapNetworkInterface.PromiscuousMode mode = PcapNetworkInterface.PromiscuousMode.NONPROMISCUOUS;
     private final ThroughputSampleRepository dataRepository;
-    private Logger logger = LogManager.getLogger(ThroughputServiceImpl.class);
+    private final Logger logger = LogManager.getLogger(ThroughputServiceImpl.class);
     private final int snapLen;
     private final int timeout;
     private final int measurementTime;
@@ -80,7 +80,7 @@ public class ThroughputServiceImpl implements ThroughputService {
                 } catch (NullPointerException e) {
                     logger.warn("empty throughput session");
                 } catch (IndexOutOfBoundsException e) {
-                    logger.warn("empty throughput session");
+                    logger.warn("empty throughput session (index)");
                 }
 
             });
@@ -122,7 +122,9 @@ public class ThroughputServiceImpl implements ThroughputService {
                     continue;
                 }
                 fillingCounter++;
-                cdn.ips = dnsRecords.stream().map(r -> ((DnsRDataA) r.getRData()).getAddress().getHostAddress()).collect(Collectors.toList());
+                cdn.ips = dnsRecords.stream()
+                        .map(r -> ((DnsRDataA) r.getRData()).getAddress().getHostAddress())
+                        .collect(Collectors.toList());
                 logger.debug("found dns response for cdn {} : {}", cdn.name, cdn.ips.get(0));
             }
             if (fillingCounter == cdns.size()) break;
@@ -220,7 +222,6 @@ public class ThroughputServiceImpl implements ThroughputService {
                         .map(Pair::getSecond)
                         .reduce(0, Integer::sum);
                 byteSum += bytes;
-                double throughput = (bytes / timeDelta);
 
             }
             c.throughput = byteSum / timeSum;
