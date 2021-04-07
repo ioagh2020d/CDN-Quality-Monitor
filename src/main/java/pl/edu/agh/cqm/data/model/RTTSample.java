@@ -1,27 +1,25 @@
 package pl.edu.agh.cqm.data.model;
 
-import javax.persistence.GenerationType;
-import javax.persistence.Index;
-import javax.persistence.Table;
+import javax.persistence.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Indexed;
 import pl.edu.agh.cqm.data.dto.RTTSampleDTO;
 import pl.edu.agh.cqm.service.PingService;
 import pl.edu.agh.cqm.service.PingServiceImpl;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import java.time.Instant;
 
 @Data
 @NoArgsConstructor
 @Entity
+@Builder
+@AllArgsConstructor
 @Table(indexes = {
-    @Index(columnList = "address"),
-    @Index(columnList = "timestamp")
+        @Index(columnList = "address"),
+        @Index(columnList = "timestamp")
 })
 public class RTTSample {
 
@@ -29,10 +27,7 @@ public class RTTSample {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(nullable = false, updatable = false, length = 64)
-    private String address;
-
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, unique = true)
     private Instant timestamp;
 
     @Column(nullable = false, updatable = false)
@@ -45,7 +40,13 @@ public class RTTSample {
     private float max;
 
     @Column(nullable = false, updatable = false)
-    private float packageLoss;
+    private float standardDeviation;
+
+    @Column(nullable = false, updatable = false)
+    private float packetLoss;
+
+    @Column(nullable = false, updatable = false, length = 64)
+    private String address;
 
     public RTTSampleDTO toDTO() {
         return RTTSampleDTO.builder()
@@ -53,6 +54,8 @@ public class RTTSample {
             .average(average)
             .min(min)
             .max(max)
+            .standardDeviation(standardDeviation)
+            .packetLoss(packetLoss)
             .build();
     }
 }
