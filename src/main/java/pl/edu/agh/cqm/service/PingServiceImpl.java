@@ -2,6 +2,8 @@ package pl.edu.agh.cqm.service;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
 import pl.edu.agh.cqm.data.model.RTTSample;
@@ -25,15 +27,20 @@ public class PingServiceImpl implements PingService {
 
     private final RTTSampleRepository rttSampleRepository;
     private final CqmConfiguration cqmConfiguration;
+    private final Logger logger = LogManager.getLogger(PingServiceImpl.class);
 
     @Override
     public void addRTTSample() {
         for (String domain : cqmConfiguration.getCdns()) {
-            rttSampleRepository.save(ping(domain));
+            try {
+                rttSampleRepository.save(ping(domain));
+            } catch (IOException e) {
+                logger.error(e.toString());
+            }
         }
     }
 
-    private RTTSample ping(String host) {
+    private RTTSample ping(String host) throws IOException {
         boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
         DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance();
         DecimalFormatSymbols symbols = format.getDecimalFormatSymbols();
@@ -42,16 +49,11 @@ public class PingServiceImpl implements PingService {
         String command = String.join(" ", "ping", isWindows ? "-n" : "-c", cqmConfiguration.getActiveTestsIntensity() + "", "-i 0",sep+"2", host);
         System.out.println(command);
         List<String> lines = new ArrayList<>();
-        try {
-            BufferedReader inputStream = runSystemCommand(command);
-            String s = "";
-            // reading output stream of the command
-            while ((s = inputStream.readLine()) != null) {
-                lines.add(s);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new InternalError("System command execution failed.");
+        BufferedReader inputStream = runSystemCommand(command);
+        String s = "";
+        // reading output stream of the command
+        while ((s = inputStream.readLine()) != null) {
+            lines.add(s);
         }
         return RTTSample.builder()
                 .id(0)
