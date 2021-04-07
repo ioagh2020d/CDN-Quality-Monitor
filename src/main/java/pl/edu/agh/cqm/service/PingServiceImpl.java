@@ -44,9 +44,9 @@ public class PingServiceImpl implements PingService {
         boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
         DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance();
         DecimalFormatSymbols symbols = format.getDecimalFormatSymbols();
-        char sep=symbols.getDecimalSeparator();
+        char sep = symbols.getDecimalSeparator();
 
-        String command = String.join(" ", "ping", isWindows ? "-n" : "-c", cqmConfiguration.getActiveTestsIntensity() + "", "-i 0",sep+"2", host);
+        String command = String.join(" ", "ping", isWindows ? "-n" : "-c", cqmConfiguration.getActiveTestsIntensity() + "", "-i 0" + sep + "2", host);
         System.out.println(command);
         List<String> lines = new ArrayList<>();
         BufferedReader inputStream = runSystemCommand(command);
@@ -63,6 +63,7 @@ public class PingServiceImpl implements PingService {
                 .max(getValFromString(lines.get(lines.size() - 1), "/((\\d+)(\\.)(\\d+))/((\\d+)(\\.)(\\d+)) ms"))
                 .standardDeviation(getValFromString(lines.get(lines.size() - 1), "/((\\d+)(\\.)(\\d+)) ms"))
                 .timestamp(Instant.now())
+                .address(host)
                 .build();
     }
 

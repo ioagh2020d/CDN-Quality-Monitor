@@ -15,13 +15,14 @@ public class SchedulerService {
     private final ThroughputService throughputService;
 
 
-    @Scheduled(fixedRate = 1)
+    @Scheduled(fixedDelay = 1)
     public void scheduledThroughput(){
         throughputService.doMeasurement();
     }
-    @Scheduled(fixedRate = 1)
-    public void scheduledPing(){
 
+
+    @Scheduled(fixedRateString = "#{cqmConfiguration.getActiveSamplingRate() * 60 * 1000}")
+    public void scheduledPing(){
         pingService.addRTTSample();
     }
 
