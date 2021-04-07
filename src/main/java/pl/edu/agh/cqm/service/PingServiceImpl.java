@@ -10,6 +10,8 @@ import pl.edu.agh.cqm.data.repository.RTTSampleRepository;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +35,11 @@ public class PingServiceImpl implements PingService {
 
     private RTTSample ping(String host) {
         boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
+        DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance();
+        DecimalFormatSymbols symbols = format.getDecimalFormatSymbols();
+        char sep=symbols.getDecimalSeparator();
 
-        String command = String.join(" ", "ping", isWindows ? "-n" : "-c", cqmConfiguration.getActiveTestsIntensity() + "", "-i 0,2", host);
+        String command = String.join(" ", "ping", isWindows ? "-n" : "-c", cqmConfiguration.getActiveTestsIntensity() + "", "-i 0",sep+"2", host);
         System.out.println(command);
         List<String> lines = new ArrayList<>();
         try {
