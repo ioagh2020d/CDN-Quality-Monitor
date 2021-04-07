@@ -33,10 +33,10 @@ public class ThroughputServiceImpl implements ThroughputService {
     private final int sessionBreakTime;
     private final List<String> hostsToLookFor;
     private final String myIP;
-    private List<CDNsData> cdns;
-    private PcapNetworkInterface nif;
+    private final List<CDNsData> cdns;
+    private  PcapNetworkInterface nif;
 
-    public ThroughputServiceImpl(@Autowired CqmConfiguration configuration, @Autowired ThroughputSampleRepository dataRepository) {
+    public ThroughputServiceImpl(@Autowired CqmConfiguration configuration, @Autowired ThroughputSampleRepository dataRepository) throws UnknownHostException, PcapNativeException {
         this.dataRepository = dataRepository;
         snapLen = configuration.getPcapMaxPacketLength();
         timeout = configuration.getPcapTimeout();
@@ -52,13 +52,8 @@ public class ThroughputServiceImpl implements ThroughputService {
             cdns.add(cdn);
         }
 
-        try {
-            getNIF();
-        } catch (UnknownHostException e) {
-            logger.error("PCAP unknown host");
-        } catch (PcapNativeException e) {
-            logger.error("PCAP native exception in constructor");
-        }
+        getNIF();
+
     }
 
 
