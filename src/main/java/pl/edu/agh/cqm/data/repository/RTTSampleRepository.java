@@ -12,6 +12,6 @@ import java.util.List;
 public interface RTTSampleRepository extends JpaRepository<RTTSample, Long> {
 
     @OrderBy("timestamp ASC")
-    List<RTTSample> findAllByTimestampBetween(Instant startTime, Instant endTime);
+    List<RTTSample> findAllByTimestampBetweenAndAddress(Instant startTime, Instant endTime, String address);
     void add(Float average, Float min, Float max, Float packageLoss);
 }

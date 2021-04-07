@@ -1,21 +1,19 @@
 package pl.edu.agh.cqm.controller;
 
+import java.time.Instant;
+import javax.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.edu.agh.cqm.data.dto.AllParametersResponseDTO;
 import pl.edu.agh.cqm.data.dto.RTTSampleDTO;
+import pl.edu.agh.cqm.data.dto.SampleSearchDTO;
 import pl.edu.agh.cqm.data.dto.SingleParameterResponseDTO;
 import pl.edu.agh.cqm.data.dto.ThroughputSampleDTO;
-import pl.edu.agh.cqm.data.model.RTTSample;
-import pl.edu.agh.cqm.data.model.ThroughputSample;
 import pl.edu.agh.cqm.service.MonitoringService;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.stream.Collectors;
-
 @RestController
+@RequestMapping("/api/samples")
 public class MonitoringController {
 
     private final MonitoringService monitoringService;
@@ -26,51 +24,38 @@ public class MonitoringController {
 
     @GetMapping("/rtt")
     public SingleParameterResponseDTO<RTTSampleDTO> getRTT(
-        @RequestParam Instant startDate,
-        @RequestParam Instant endDate
+        @Valid SampleSearchDTO searchDTO
     ) {
-
-        List<RTTSampleDTO> samples = monitoringService.getRTTSamples(startDate, endDate).stream()
-            .map(RTTSample::toDTO)
-            .collect(Collectors.toList());
-
-        return new SingleParameterResponseDTO<>(
-            startDate,
-            endDate,
-            samples.size(),
-            samples
+        return new SingleParameterResponseDTO<RTTSampleDTO>(
+            searchDTO.getStartDate(),
+            searchDTO.getEndDate(),
+            monitoringService.getRTTSamples(searchDTO.getStartDate(), searchDTO.getEndDate())
         );
     }
 
     @GetMapping("/throughput")
     public SingleParameterResponseDTO<ThroughputSampleDTO> getThroughput(
-        @RequestParam Instant startDate,
-        @RequestParam Instant endDate
+        @Valid SampleSearchDTO searchDTO
     ) {
-        List<ThroughputSampleDTO> samples = monitoringService.getThroughputSamples(startDate, endDate).stream()
-            .map(ThroughputSample::toDTO)
-            .collect(Collectors.toList());
-
         return new SingleParameterResponseDTO<>(
-            startDate,
-            endDate,
-            samples.size(),
-            samples
+            searchDTO.getStartDate(),
+            searchDTO.getEndDate(),
+            monitoringService.getThroughputSamples(searchDTO.getStartDate(), searchDTO.getEndDate())
         );
     }
 
     @GetMapping("/all")
     public AllParametersResponseDTO getAll(
-        @RequestParam Instant startDate,
-        @RequestParam Instant endDate
+        @Valid SampleSearchDTO searchDTO
     ) {
-        List<RTTSampleDTO> rttSamples = monitoringService.getRTTSamples(startDate, endDate).stream()
-            .map(RTTSample::toDTO)
-            .collect(Collectors.toList());
-        List<ThroughputSampleDTO> throughputSamples = monitoringService.getThroughputSamples(startDate, endDate).stream()
-            .map(ThroughputSample::toDTO)
-            .collect(Collectors.toList());
+        Instant startDate = searchDTO.getStartDate();
+        Instant endDate = searchDTO.getEndDate();
 
-        return new AllParametersResponseDTO(rttSamples, throughputSamples);
+        return new AllParametersResponseDTO(
+            startDate,
+            endDate,
+            monitoringService.getRTTSamples(startDate, endDate),
+            monitoringService.getThroughputSamples(startDate, endDate)
+        );
     }
 }

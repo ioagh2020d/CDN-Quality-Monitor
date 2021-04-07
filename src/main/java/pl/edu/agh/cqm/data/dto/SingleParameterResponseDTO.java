@@ -1,5 +1,6 @@
 package pl.edu.agh.cqm.data.dto;
 
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -12,6 +13,5 @@ public class SingleParameterResponseDTO<T extends SampleDTO> {
 
     private Instant startDate;
     private Instant endDate;
-    private int total;
-    private List<T> samples;
+    private Map<String, List<T>> samples;
 }
