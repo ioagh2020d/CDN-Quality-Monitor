@@ -35,7 +35,7 @@ public class PingServiceImpl implements PingService {
             try {
                 rttSampleRepository.save(ping(domain));
             } catch (IOException e) {
-                logger.error(e.toString());
+                logger.error(e.getMessage());
             }
         }
     }
