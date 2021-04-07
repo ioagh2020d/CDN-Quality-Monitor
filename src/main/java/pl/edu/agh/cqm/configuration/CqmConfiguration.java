@@ -24,16 +24,16 @@ public class CqmConfiguration {
     @Value("${cqm.passive.sampling_rate}")
     private int passiveSamplingRate;
 
-    @Value("65536")
+    @Value("${cqm.pcap_max_packet_length}")
     private int pcapMaxPacketLength;
 
-    @Value("10")
+    @Value("${cqm.pcap_timeout}")
     private int pcapTimeout;
 
-    @Value("1000")
+    @Value("${cqm.pcap_session_break}")
     private int pcapSessionBreak; // in ms
 
-    @Value("")
-    private  String cardIPAddress;
+    @Value("${cqm.card_ip_address}")
+    private String cardIPAddress;
 
 }

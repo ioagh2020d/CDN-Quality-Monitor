@@ -1,54 +1,108 @@
 package pl.edu.agh.cqm.service;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.pcap4j.core.*;
 import org.pcap4j.packet.*;
 import org.pcap4j.packet.namednumber.UdpPort;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
+import pl.edu.agh.cqm.data.model.ThroughputSample;
+import pl.edu.agh.cqm.data.repository.ThroughputSampleRepository;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.Timestamp;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
+
+
+class CDNsData {
+    public String name;
+    public List<List<Pair<Timestamp, Integer>>> sessions;
+    public List<String> ips;
+    public List<Pair<Timestamp, Integer>> currentSession;
+    public boolean lastACKFlag = false;
+    public long lastACKTime = 0;
+    public double throughput;
+    CDNsData(){
+        ips = new LinkedList<>();
+    }
+}
 
 @Service
 public class ThroughputServiceImpl implements ThroughputService {
     private final PcapNetworkInterface.PromiscuousMode mode = PcapNetworkInterface.PromiscuousMode.NONPROMISCUOUS;
-    Logger logger = LoggerFactory.getLogger(ThroughputServiceImpl.class);
+    private final ThroughputSampleRepository dataRepository;
+    private Logger logger = LogManager.getLogger(ThroughputServiceImpl.class);
     private final int snapLen;
     private final int timeout;
     private final int measurementTime;
     private final int sessionBreakTime;
-    private final List<String> hostToLookFor;
+    private final List<String> hostsToLookFor;
     private final String myIP;
+    private List<CDNsData> cdns;
     private PcapNetworkInterface nif;
 
-    public ThroughputServiceImpl(CqmConfiguration configuration) throws UnknownHostException, PcapNativeException {
+    public ThroughputServiceImpl(@Autowired CqmConfiguration configuration, @Autowired ThroughputSampleRepository dataRepository) {
+        this.dataRepository = dataRepository;
         snapLen = configuration.getPcapMaxPacketLength();
         timeout = configuration.getPcapTimeout();
-        measurementTime = 1000*60 * configuration.getPassiveSamplingRate();
+        measurementTime = 1000*30*configuration.getPassiveSamplingRate();
         sessionBreakTime = configuration.getPcapSessionBreak();
-        hostToLookFor = configuration.getCdns();
+        hostsToLookFor = configuration.getCdns();
         myIP = configuration.getCardIPAddress();
-        getNIF();
+        cdns = new ArrayList<>(hostsToLookFor.size());
+
+        for(int i = 0; i < hostsToLookFor.size(); i++){
+            CDNsData cdn = new CDNsData();
+            cdn.name = hostsToLookFor.get(i);
+            cdns.add(cdn);
+        }
+
+        try {
+            getNIF();
+        } catch (UnknownHostException e) {
+            logger.error("PCAP unknown host");
+        } catch (PcapNativeException e) {
+            logger.error("PCAP native exception in constructor");
+        }
     }
 
 
     private void getNIF() throws UnknownHostException, PcapNativeException {
+
         this.nif = Pcaps.getDevByAddress(InetAddress.getByName(myIP));
     }
 
     public void doMeasurement() {
         try {
-            List<String> cdnIPs = this.findDns(hostToLookFor.get(0), myIP);
-            List<List<Pair<Timestamp, Integer>>> data = this.measureThroughput(cdnIPs, myIP);
-            double value = this.calcOutput(data);
+            logger.info("looking for dns");
+            this.findDns(cdns, myIP);
+            logger.info("all dns found");
+            this.measureThroughput(cdns, myIP);
+            logger.info("measurement done");
+            this.calcOutput(cdns);
+            cdns.forEach(c -> {
+                try{
+                    ThroughputSample sample = new ThroughputSample();
+                    sample.setThroughput((long) c.throughput);
+                    sample.setTimestamp(c.sessions.get(0).get(0).getFirst().toInstant());
+                    sample.setAddress(c.name);
+                    dataRepository.save(sample);
+                }catch (NullPointerException e){
+                    logger.warn("empty throughput session");
+                }catch (IndexOutOfBoundsException e){
+                    logger.warn("empty throughput session");
+                }
+
+            });
+
         } catch (PcapNativeException e) {
             logger.error("PCAP native exception");
         } catch (NotOpenException e) {
@@ -58,72 +112,60 @@ public class ThroughputServiceImpl implements ThroughputService {
 
 
 
-    private List<String> findDns(String hostToLookFor, String myIP) throws PcapNativeException, NotOpenException {
+    private void findDns(List<CDNsData> cdns, String myIP) throws PcapNativeException, NotOpenException {
 
         PcapHandle handleDNS = nif.openLive(snapLen, mode, timeout);
-        handleDNS.setFilter("udp and port 53", BpfProgram.BpfCompileMode.OPTIMIZE);
-        UdpPort srcUdpPort;
-        DnsDomainName qName;
-        while (true) {
-            Packet packet = handleDNS.getNextPacket();
-            if (packet == null) {
-                continue;
-            }
-            DnsPacket dnsPacket = packet.get(DnsPacket.class);
-            DnsDomainName dnsQueryName = dnsPacket.getHeader().getQuestions().get(0).getQName();
 
-            logger.debug("got dns query for " + dnsQueryName);
-            if (dnsQueryName.toString().contains(hostToLookFor)) {
-                logger.debug("found");
-                qName = dnsQueryName;
-                UdpPacket udpPacket = packet.get(UdpPacket.class);
-                srcUdpPort = udpPacket.getHeader().getSrcPort();
-                break;
-            }
-        }
-
-        logger.debug("looking for a response to " + srcUdpPort.valueAsString());
-        handleDNS.setFilter("dst " + myIP + " and udp and port " + srcUdpPort.valueAsString(), BpfProgram.BpfCompileMode.OPTIMIZE);
-        List<String> foundIpAddrs;
+        handleDNS.setFilter("dst " + myIP + " and udp", BpfProgram.BpfCompileMode.OPTIMIZE);
+        int fillingCounter = 0;
         while (true) {
             Packet packet = handleDNS.getNextPacket();
             if (packet == null) continue;
             DnsPacket dnsPacket = packet.get(DnsPacket.class);
+            if(dnsPacket == null) continue;
             if (!dnsPacket.getHeader().isResponse()) {
                 continue;
             }
-            if (!dnsPacket.getHeader().getQuestions().get(0).getQName().toString().equals(qName.toString())) {
-                continue;
+            logger.debug("found dns response");
+            for(CDNsData cdn : cdns){
+                if (!dnsPacket.getHeader().getQuestions().get(0).getQName().toString().contains(cdn.name)) {
+                    continue;
+                }
+                List<DnsResourceRecord> dnsRecords = dnsPacket
+                        .getHeader()
+                        .getAnswers()
+                        .stream()
+                        .filter(r -> r.getDataType().valueAsString().equals("1"))
+                        .collect(Collectors.toList());
+                if (dnsRecords.size() == 0) {
+                    continue;
+                }
+                fillingCounter++;
+                cdn.ips = dnsRecords.stream().map(r -> ((DnsRDataA) r.getRData()).getAddress().getHostAddress()).collect(Collectors.toList());
+                logger.debug("found dns response for cdn {} : {}", cdn.name, cdn.ips.get(0));
             }
-            List<DnsResourceRecord> dnsRecords = dnsPacket
-                    .getHeader()
-                    .getAnswers()
-                    .stream()
-                    .filter(r -> r.getDataType().valueAsString().equals("1"))
-                    .collect(Collectors.toList());
-            if (dnsRecords.size() == 0) {
-                continue;
-            }
-
-            foundIpAddrs = dnsRecords.stream().map(r -> ((DnsRDataA) r.getRData()).getAddress().getHostAddress()).collect(Collectors.toList());
-            logger.debug("got   " + foundIpAddrs.size() + "dns answers");
-            break;
+            if(fillingCounter == cdns.size()) break;
 
         }
         handleDNS.close();
 
-        return foundIpAddrs;
     }
 
-    private List<List<Pair<Timestamp, Integer>>> measureThroughput(List<String> ipAddrs, String myAddr) throws PcapNativeException, NotOpenException {
+    private void measureThroughput(List<CDNsData> cdns, String myAddr) throws PcapNativeException, NotOpenException {
 
-        ipAddrs.add(myAddr);
+        List<String> ips = cdns.stream().flatMap(c -> c.ips.stream()).collect(Collectors.toList());
+        Map<String, CDNsData> ipMap= new HashMap<>();
+        for(CDNsData c: cdns){
+            c.ips.forEach(ip -> ipMap.put(ip, c));
+        }
+
+        ips.add(myAddr);
+
         PcapHandle handle = nif.openLive(snapLen, mode, timeout);
-
         StringBuilder filterBuilder = new StringBuilder("src ");
-        filterBuilder.append(ipAddrs.get(0));
-        if (ipAddrs.size() > 1) {
-            for (String ip : ipAddrs.subList(1, ipAddrs.size())) {
+        filterBuilder.append(ips.get(0));
+        if (ips.size() > 1) {
+            for (String ip : ips.subList(1, ips.size())) {
                 filterBuilder.append(" or src ");
                 filterBuilder.append(ip);
 
@@ -135,12 +177,12 @@ public class ThroughputServiceImpl implements ThroughputService {
         long startTime = System.currentTimeMillis();
         long stopTime = startTime + measurementTime;
 
-        List<List<Pair<Timestamp, Integer>>> sessions = new LinkedList<>();
-        List<Pair<Timestamp, Integer>> currentSession = new LinkedList<>();
-        sessions.add(currentSession);
+        cdns.forEach(c -> {
+            c.sessions = new LinkedList<>();
+            c.currentSession = new LinkedList<>();
+            c.sessions.add(c.currentSession);
+        });
 
-        boolean lastACKFlag = false;
-        long lastACKTime = 0;
         while (true) {
             if (System.currentTimeMillis() > stopTime) {
                 logger.debug("closing");
@@ -153,55 +195,55 @@ public class ThroughputServiceImpl implements ThroughputService {
             if (ipv4packet == null) continue;
             TcpPacket tcpPacket = ipv4packet.get(TcpPacket.class);
             if (tcpPacket == null) continue;
+            CDNsData cdn = ipMap.get(ipv4packet.getHeader().getSrcAddr().getHostAddress());
+            if(cdn == null){
+                logger.debug("cdn not found in map");
+                continue;
+            }
 
-            if (lastACKFlag) {
-                if (System.currentTimeMillis() - lastACKTime >= sessionBreakTime) {
-                    currentSession = new LinkedList<>();
-                    sessions.add(currentSession);
-                    logger.debug("----new session----");
+            if (cdn.lastACKFlag) {
+                if (System.currentTimeMillis() - cdn.lastACKTime >= sessionBreakTime) {
+                    cdn.currentSession = new LinkedList<>();
+                    cdn.sessions.add(cdn.currentSession);
+                    logger.debug("new session for {}", cdn.name);
                 }
             }
 
-            currentSession.add(Pair.of(handle.getTimestamp(), packet.length()));
+            cdn.currentSession.add(Pair.of(handle.getTimestamp(), packet.length()));
             logger.debug(ipv4packet.getHeader().getSrcAddr().getHostAddress());
 
             if (tcpPacket.getHeader().getAck() && ipv4packet.getHeader().getSrcAddr().getHostAddress().equals(myAddr)) {
-                lastACKFlag = tcpPacket.getHeader().getAck();
-                lastACKTime = System.currentTimeMillis();
-                logger.debug("ACK");
-                logger.debug(" src: " + ipv4packet.getHeader().getSrcAddr());
-                logger.debug(" len: " + packet.length());
+                cdn.lastACKFlag = tcpPacket.getHeader().getAck();
+                cdn.lastACKTime = System.currentTimeMillis();
             } else {
-                lastACKFlag = false;
+                cdn.lastACKFlag = false;
             }
 
 
         }
         handle.close();
 
-        return sessions;
     }
 
 
-    private double calcOutput(List<List<Pair<Timestamp, Integer>>> data) {
+    private void calcOutput(List<CDNsData> cdns) {
 
-        double timeSum = 0;
-        double byteSum = 0;
+        for(CDNsData c: cdns){
+            double timeSum = 0;
+            double byteSum = 0;
+            for (List<Pair<Timestamp, Integer>> s : c.sessions) {
+                if (s.size() <= 1) continue;
+                double timeDelta = s.get(s.size() - 1).getFirst().getTime() - s.get(0).getFirst().getTime();
+                timeSum += timeDelta / 1000.0;
+                double bytes = s.stream().map(Pair::getSecond).reduce(0, Integer::sum);
+                byteSum += bytes;
+                double throughput = (bytes / timeDelta);
 
-        for (List<Pair<Timestamp, Integer>> s : data) {
-            if (s.size() == 1) continue;
-            double timeDelta = s.get(s.size() - 1).getFirst().getTime() - s.get(0).getFirst().getTime();
-            timeSum += timeDelta / 1000.0;
-            double bytes = s.stream().map(Pair::getSecond).reduce(0, Integer::sum);
-            byteSum += bytes;
-            double throughput = (bytes / timeDelta);
-
-            logger.debug("FIRST: " + s.get(0).toString());
-            logger.debug("LAST: " + s.get(s.size() - 1).toString());
-            logger.debug(String.format("TIME: %f VALUE: %f THROUGHPUT:%f", timeDelta, bytes, throughput));
-            logger.debug("");
+            }
+            c.throughput = byteSum/timeSum;
+            logger.debug("CDN: name: {} ; time sum: {} ; byte sum: {}; throughput: {}", c.name, timeSum, byteSum, c.throughput);
         }
 
-        return byteSum / timeSum;
+
     }
 }
