@@ -31,10 +31,10 @@ public class PingServiceImpl implements PingService {
         }
     }
 
-    private RTTSample ping(String host){
+    private RTTSample ping(String host) {
         boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
 
-        String command = String.join(" ","ping", isWindows? "-n" : "-c", cqmConfiguration.getActiveTestsIntensity()+"","-i 0,2", host);
+        String command = String.join(" ", "ping", isWindows ? "-n" : "-c", cqmConfiguration.getActiveTestsIntensity() + "", "-i 0,2", host);
         System.out.println(command);
         List<String> lines = new ArrayList<>();
         try {
@@ -50,11 +50,11 @@ public class PingServiceImpl implements PingService {
         }
         return RTTSample.builder()
                 .id(0)
-                .packetLoss(getValFromString(lines.get(lines.size()-2), "(\\d+)% packet loss"))
-                .min(getValFromString(lines.get(lines.size()-1), " ((\\d+)(\\.)(\\d+))/"))
-                .average(getValFromString(lines.get(lines.size()-1), "/((\\d+)(\\.)(\\d+))/"))
-                .max(getValFromString(lines.get(lines.size()-1), "/((\\d+)(\\.)(\\d+))/((\\d+)(\\.)(\\d+)) ms"))
-                .standardDeviation(getValFromString(lines.get(lines.size()-1), "/((\\d+)(\\.)(\\d+)) ms"))
+                .packetLoss(getValFromString(lines.get(lines.size() - 2), "(\\d+)% packet loss"))
+                .min(getValFromString(lines.get(lines.size() - 1), " ((\\d+)(\\.)(\\d+))/"))
+                .average(getValFromString(lines.get(lines.size() - 1), "/((\\d+)(\\.)(\\d+))/"))
+                .max(getValFromString(lines.get(lines.size() - 1), "/((\\d+)(\\.)(\\d+))/((\\d+)(\\.)(\\d+)) ms"))
+                .standardDeviation(getValFromString(lines.get(lines.size() - 1), "/((\\d+)(\\.)(\\d+)) ms"))
                 .timestamp(Instant.now())
                 .build();
     }
@@ -65,7 +65,7 @@ public class PingServiceImpl implements PingService {
                 new InputStreamReader(p.getInputStream()));
     }
 
-    private static float getValFromString(String inputLine, String patternS){
+    private static float getValFromString(String inputLine, String patternS) {
         Pattern pattern = Pattern.compile(patternS);
         Matcher m = pattern.matcher(inputLine);
         if (m.find()) {
