@@ -19,6 +19,8 @@ dependencies {
 	runtimeOnly 'com.h2database:h2'
 	runtimeOnly 'org.postgresql:postgresql'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	compile 'org.pcap4j:pcap4j-core:1.+'
+	compile 'org.pcap4j:pcap4j-packetfactory-static:1.+'
 }
 
 test {
