@@ -25,10 +25,10 @@ public class MonitoringServiceImpl implements MonitoringService {
     private final CqmConfiguration cqmConfiguration;
 
     @Override
-    public Map<String, List<RTTSampleDTO>> getRTTSamples(Instant startTime, Instant endTime) {
+    public Map<String, List<RTTSampleDTO>> getRTTSamples(Instant startDate, Instant endDate) {
         return cqmConfiguration.getCdns().stream()
-            .map(address -> Pair.of(address, rttSampleRepository.findAllByTimestampBetweenAndAddress(startTime, endTime, address)))
-            .map(p -> Pair.of(
+            .map(address -> Pair.of(address, rttSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, address)))
+                .map(p -> Pair.of(
                 p.getFirst(),
                 p.getSecond().stream()
                     .map(RTTSample::toDTO)
@@ -37,14 +37,24 @@ public class MonitoringServiceImpl implements MonitoringService {
     }
 
     @Override
-    public Map<String, List<ThroughputSampleDTO>> getThroughputSamples(Instant startTime, Instant endTime) {
+    public Map<String, List<ThroughputSampleDTO>> getThroughputSamples(Instant startDate, Instant endDate) {
         return cqmConfiguration.getCdns().stream()
-            .map(address -> Pair.of(address, throughputSampleRepository.findAllByTimestampBetweenAndAddress(startTime, endTime, address)))
+            .map(address -> Pair.of(address, throughputSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, address)))
             .map(p -> Pair.of(
                 p.getFirst(),
                 p.getSecond().stream()
                     .map(ThroughputSample::toDTO)
                     .collect(Collectors.toList())))
             .collect(Pair.toMap());
+    }
+
+    @Override
+    public boolean checkRttSamplesExist(Instant startDate, Instant endDate) {
+        return rttSampleRepository.existsByTimestampBetween(startDate, endDate);
+    }
+
+    @Override
+    public boolean checkThroughputSamplesExist(Instant startDate, Instant endDate) {
+        return throughputSampleRepository.existsByTimestampBetween(startDate, endDate);
     }
 }

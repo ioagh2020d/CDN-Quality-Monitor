@@ -1,6 +1,6 @@
 FROM openjdk:15-jdk-oraclelinux7
 
-RUN yum install -y libpcap
+RUN yum install -y libpcap iputils
 
 ADD build/libs/cqm-*.jar cqm.jar
 

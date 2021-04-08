@@ -31,24 +31,24 @@ public class ThroughputServiceImpl implements ThroughputService {
     private final int timeout;
     private final int measurementTime;
     private final int sessionBreakTime;
-    private final List<String> hostsToLookFor;
-    private final String myIP;
+    private final String interfaceName;
+    private String myIP;
     private final List<CDNsData> cdns;
-    private  PcapNetworkInterface nif;
+    private PcapNetworkInterface nif;
 
-    public ThroughputServiceImpl(@Autowired CqmConfiguration configuration, @Autowired ThroughputSampleRepository dataRepository) throws UnknownHostException, PcapNativeException {
+    public ThroughputServiceImpl(CqmConfiguration configuration, ThroughputSampleRepository dataRepository) throws PcapNativeException {
         this.dataRepository = dataRepository;
         snapLen = configuration.getPcapMaxPacketLength();
         timeout = configuration.getPcapTimeout();
         measurementTime = 1000 * 30 * configuration.getPassiveSamplingRate();
         sessionBreakTime = configuration.getPcapSessionBreak();
-        hostsToLookFor = configuration.getCdns();
-        myIP = configuration.getCardIPAddress();
+        List<String> hostsToLookFor = configuration.getCdns();
+        interfaceName = configuration.getInterfaceName();
         cdns = new ArrayList<>(hostsToLookFor.size());
 
-        for (int i = 0; i < hostsToLookFor.size(); i++) {
+        for (String s : hostsToLookFor) {
             CDNsData cdn = new CDNsData();
-            cdn.name = hostsToLookFor.get(i);
+            cdn.name = s;
             cdns.add(cdn);
         }
 
@@ -57,9 +57,14 @@ public class ThroughputServiceImpl implements ThroughputService {
     }
 
 
-    private void getNIF() throws UnknownHostException, PcapNativeException {
+    private void getNIF() throws PcapNativeException {
 
-        this.nif = Pcaps.getDevByAddress(InetAddress.getByName(myIP));
+        this.nif = Pcaps.getDevByName(interfaceName);
+        if (nif == null) {
+            throw new IllegalArgumentException("Could not initialize NIF. Invalid interface name.");
+        }
+        myIP = nif.getAddresses().get(0).getAddress().getHostAddress();
+        logger.info("Local IP address: " + myIP);
     }
 
     public void doMeasurement() {
@@ -231,7 +236,7 @@ public class ThroughputServiceImpl implements ThroughputService {
 
     }
 
-    private class CDNsData {
+    private static class CDNsData {
         public String name;
         public List<List<Pair<Timestamp, Integer>>> sessions;
         public List<String> ips;
