@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -30,7 +31,7 @@ public class PingServiceImpl implements PingService {
     private final Logger logger = LogManager.getLogger(PingServiceImpl.class);
 
     @Override
-    public void addRTTSample() {
+    public void doMeasurement() {
         for (String domain : cqmConfiguration.getCdns()) {
             try {
                 rttSampleRepository.save(ping(domain));
@@ -41,20 +42,17 @@ public class PingServiceImpl implements PingService {
     }
 
     private RTTSample ping(String host) throws IOException {
-        boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
         DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance();
         DecimalFormatSymbols symbols = format.getDecimalFormatSymbols();
         char sep = symbols.getDecimalSeparator();
 
-        String command = String.join(" ", "ping", isWindows ? "-n" : "-c", cqmConfiguration.getActiveTestsIntensity() + "", "-i 0" + sep + "2", host);
-        System.out.println(command);
-        List<String> lines = new ArrayList<>();
+        String command = String.join(" ",
+                "ping", "-c", cqmConfiguration.getActiveTestsIntensity() + "", "-i 0" + sep + "2", host);
+        logger.info("Starting active sampling with command \"" + command + "\"");
         BufferedReader inputStream = runSystemCommand(command);
-        String s = "";
+
         // reading output stream of the command
-        while ((s = inputStream.readLine()) != null) {
-            lines.add(s);
-        }
+        List<String> lines = inputStream.lines().collect(Collectors.toList());
         return RTTSample.builder()
                 .id(0)
                 .packetLoss(getValFromString(lines.get(lines.size() - 2), "(\\d+)% packet loss"))

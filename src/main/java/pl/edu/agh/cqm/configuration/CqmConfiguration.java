@@ -33,7 +33,7 @@ public class CqmConfiguration {
     @Value("${cqm.pcap_session_break}")
     private int pcapSessionBreak; // in ms
 
-    @Value("${cqm.card_ip_address}")
-    private String cardIPAddress;
+    @Value("${cqm.interface_name}")
+    private String interfaceName;
 
 }
