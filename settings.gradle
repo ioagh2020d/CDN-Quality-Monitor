@@ -1,1 +1,2 @@
 rootProject.name = 'cqm'
+include 'spring-app'
