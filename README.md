@@ -187,3 +187,17 @@ volumes:
   }
 }
 ```
+
+### POST `/api/samples/update-parameters`
+
+#### Query parameters:
+
+`cdns` : List - CDNs
+
+`activeSamplingRate` : integer - active sampling rate
+
+`activeTestIntensity` : integer - active test intensity
+
+`passiveSamplingRate` : integer - passive sampling rate
+
+If some parameters are not in a query, they will not be updated.
