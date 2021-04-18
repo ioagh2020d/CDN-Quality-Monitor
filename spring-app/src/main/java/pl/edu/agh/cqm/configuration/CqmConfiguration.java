@@ -2,14 +2,15 @@ package pl.edu.agh.cqm.configuration;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.Synchronized;
 import lombok.ToString;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Getter
-@Setter
+@Getter(onMethod_={@Synchronized})
+@Setter(onMethod_={@Synchronized})
 @ToString
 @Component
 public class CqmConfiguration {

@@ -1,6 +1,7 @@
 package pl.edu.agh.cqm.controller;
 
 import java.time.Instant;
+import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -75,13 +76,17 @@ public class MonitoringController {
 
     @PostMapping("/update-parameters")
     public void ParametersDTO(
-            @Valid ParametersDTO parametersDTO
+            @Valid ConfigParametersDTO configParametersDTO
     ) {
-        int activeSamplingRate = parametersDTO.getActiveSamplingRate();
-        int activeTestIntensity = parametersDTO.getActiveTestIntensity();
-        int passiveSamplingRate = parametersDTO.getPassiveSamplingRate();
+        List<String> cdns = configParametersDTO.getCdns();
+
+        int activeSamplingRate = configParametersDTO.getActiveSamplingRate();
+        int activeTestIntensity = configParametersDTO.getActiveTestIntensity();
+
+        int passiveSamplingRate = configParametersDTO.getPassiveSamplingRate();
 
         updateParametersService.updateParameters(
+                cdns,
                 activeSamplingRate,
                 activeTestIntensity,
                 passiveSamplingRate
