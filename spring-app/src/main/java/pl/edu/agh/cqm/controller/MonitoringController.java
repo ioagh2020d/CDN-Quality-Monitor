@@ -4,24 +4,26 @@ import java.time.Instant;
 import javax.validation.Valid;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import pl.edu.agh.cqm.data.dto.AllParametersResponseDTO;
-import pl.edu.agh.cqm.data.dto.RTTSampleDTO;
-import pl.edu.agh.cqm.data.dto.SampleSearchDTO;
-import pl.edu.agh.cqm.data.dto.SingleParameterResponseDTO;
-import pl.edu.agh.cqm.data.dto.ThroughputSampleDTO;
+import pl.edu.agh.cqm.data.dto.*;
 import pl.edu.agh.cqm.exception.BadRequestException;
 import pl.edu.agh.cqm.service.MonitoringService;
+import pl.edu.agh.cqm.service.UpdateParametersService;
 
 @RestController
 @RequestMapping("/api/samples")
 public class MonitoringController {
 
     private final MonitoringService monitoringService;
+    private final UpdateParametersService updateParametersService;
 
-    public MonitoringController(MonitoringService monitoringService) {
+    public MonitoringController(MonitoringService monitoringService,
+                                UpdateParametersService updateParametersService
+    ) {
         this.monitoringService = monitoringService;
+        this.updateParametersService = updateParametersService;
     }
 
     @GetMapping("/rtt")
@@ -68,6 +70,21 @@ public class MonitoringController {
                 endDate,
                 monitoringService.getRTTSamples(startDate, endDate),
                 monitoringService.getThroughputSamples(startDate, endDate)
+        );
+    }
+
+    @PostMapping("/update-parameters")
+    public void ParametersDTO(
+            @Valid ParametersDTO parametersDTO
+    ) {
+        int activeSamplingRate = parametersDTO.getActiveSamplingRate();
+        int activeTestIntensity = parametersDTO.getActiveTestIntensity();
+        int passiveSamplingRate = parametersDTO.getPassiveSamplingRate();
+
+        updateParametersService.updateParameters(
+                activeSamplingRate,
+                activeTestIntensity,
+                passiveSamplingRate
         );
     }
 }
