@@ -21,7 +21,7 @@ public class SchedulerService {
         throughputService.doMeasurement();
     }
 
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedRate = 60000)
     public void schedulePing() {
         if (schedulePingCounter == 0) {
             pingService.doMeasurement();
