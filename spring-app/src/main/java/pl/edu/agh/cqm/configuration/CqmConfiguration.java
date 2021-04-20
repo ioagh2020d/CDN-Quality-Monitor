@@ -7,25 +7,11 @@ import lombok.ToString;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Getter(onMethod_={@Synchronized})
 @Setter(onMethod_={@Synchronized})
 @ToString
 @Component
 public class CqmConfiguration {
-
-    @Value("${cqm.cdns}")
-    private List<String> cdns;
-
-    @Value("${cqm.active.sampling_rate}")
-    private int activeSamplingRate;
-
-    @Value("${cqm.active.tests_intensity}")
-    private int activeTestsIntensity;
-
-    @Value("${cqm.passive.sampling_rate}")
-    private int passiveSamplingRate;
 
     @Value("${cqm.pcap_max_packet_length}")
     private int pcapMaxPacketLength;
@@ -38,5 +24,4 @@ public class CqmConfiguration {
 
     @Value("${cqm.interface_name}")
     private String interfaceName;
-
 }

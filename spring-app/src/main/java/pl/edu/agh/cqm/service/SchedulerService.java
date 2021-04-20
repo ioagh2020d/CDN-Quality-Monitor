@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
+import pl.edu.agh.cqm.data.repository.ConfigSampleRepository;
 
 @Service
 @Configuration
@@ -13,6 +14,7 @@ public class SchedulerService {
     private final PingService pingService;
     private final ThroughputService throughputService;
     private final CqmConfiguration cqmConfiguration;
+    private final ConfigSampleRepository configSampleRepository;
 
     private int schedulePingCounter = 0;
 
@@ -25,7 +27,7 @@ public class SchedulerService {
     public void schedulePing() {
         if (schedulePingCounter == 0) {
             pingService.doMeasurement();
-            schedulePingCounter = cqmConfiguration.getActiveSamplingRate();
+            schedulePingCounter = configSampleRepository.findFirstByOrderByIdDesc().getActiveSamplingRate();
         }
         schedulePingCounter--;
     }

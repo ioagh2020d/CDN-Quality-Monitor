@@ -76,17 +76,13 @@ public class MonitoringController {
             @Valid ConfigParametersDTO configParametersDTO
     ) {
         List<String> cdns = configParametersDTO.getCdns();
+        updateParametersService.updateCdns(cdns);
 
         int activeSamplingRate = configParametersDTO.getActiveSamplingRate();
         int activeTestIntensity = configParametersDTO.getActiveTestIntensity();
 
         int passiveSamplingRate = configParametersDTO.getPassiveSamplingRate();
 
-        updateParametersService.updateParameters(
-                cdns,
-                activeSamplingRate,
-                activeTestIntensity,
-                passiveSamplingRate
-        );
+        updateParametersService.updateSampleParameters(activeSamplingRate, activeTestIntensity, passiveSamplingRate);
     }
 }

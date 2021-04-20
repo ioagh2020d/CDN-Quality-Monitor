@@ -4,18 +4,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.core.*;
 import org.pcap4j.packet.*;
-import org.pcap4j.packet.namednumber.UdpPort;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
+import pl.edu.agh.cqm.data.model.ConfigCdn;
 import pl.edu.agh.cqm.data.model.ThroughputSample;
+import pl.edu.agh.cqm.data.repository.ConfigCdnRepository;
+import pl.edu.agh.cqm.data.repository.ConfigSampleRepository;
 import pl.edu.agh.cqm.data.repository.ThroughputSampleRepository;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,6 +24,8 @@ public class ThroughputServiceImpl implements ThroughputService {
 
     private final PcapNetworkInterface.PromiscuousMode mode = PcapNetworkInterface.PromiscuousMode.NONPROMISCUOUS;
     private final ThroughputSampleRepository dataRepository;
+    private final ConfigCdnRepository configCdnRepository;
+    private final ConfigSampleRepository configSampleRepository;
     private final CqmConfiguration configuration;
     private final Logger logger = LogManager.getLogger(ThroughputServiceImpl.class);
     private final int snapLen;
@@ -36,9 +36,14 @@ public class ThroughputServiceImpl implements ThroughputService {
     private String myIP;
     private PcapNetworkInterface nif;
 
-    public ThroughputServiceImpl(CqmConfiguration configuration, ThroughputSampleRepository dataRepository) throws PcapNativeException {
-        this.dataRepository = dataRepository;
+    public ThroughputServiceImpl(CqmConfiguration configuration,
+                                 ThroughputSampleRepository dataRepository,
+                                 ConfigCdnRepository configCdnRepository,
+                                 ConfigSampleRepository configSampleRepository) throws PcapNativeException {
         this.configuration = configuration;
+        this.dataRepository = dataRepository;
+        this.configCdnRepository = configCdnRepository;
+        this.configSampleRepository = configSampleRepository;
         snapLen = configuration.getPcapMaxPacketLength();
         timeout = configuration.getPcapTimeout();
         sessionBreakTime = configuration.getPcapSessionBreak();
@@ -62,13 +67,13 @@ public class ThroughputServiceImpl implements ThroughputService {
     public void doMeasurement() {
         try {
             // configuration
-            List<CDNsData> cdns = new ArrayList<>(configuration.getCdns().size());
-            for (String s : configuration.getCdns()) {
+            List<CDNsData> cdns = new ArrayList<>(configCdnRepository.findAll().size());
+            for (ConfigCdn config : configCdnRepository.findAll()) {
                 CDNsData cdn = new CDNsData();
-                cdn.name = s;
+                cdn.name = config.getCdn();
                 cdns.add(cdn);
             }
-            measurementTime = 1000 * 30 * configuration.getPassiveSamplingRate();
+            measurementTime = 1000 * 30 * configSampleRepository.findFirstByOrderByIdDesc().getPassiveSamplingRate();
 
             logger.info("looking for dns");
             this.findDns(cdns, myIP);

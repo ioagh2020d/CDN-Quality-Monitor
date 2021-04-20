@@ -6,7 +6,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
+import pl.edu.agh.cqm.data.model.ConfigCdn;
 import pl.edu.agh.cqm.data.model.RTTSample;
+import pl.edu.agh.cqm.data.repository.ConfigCdnRepository;
+import pl.edu.agh.cqm.data.repository.ConfigSampleRepository;
 import pl.edu.agh.cqm.data.repository.RTTSampleRepository;
 
 import java.io.BufferedReader;
@@ -15,7 +18,6 @@ import java.io.InputStreamReader;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,13 +30,15 @@ public class PingServiceImpl implements PingService {
 
     private final RTTSampleRepository rttSampleRepository;
     private final CqmConfiguration cqmConfiguration;
+    private final ConfigCdnRepository configCdnRepository;
+    private final ConfigSampleRepository configSampleRepository;
     private final Logger logger = LogManager.getLogger(PingServiceImpl.class);
 
     @Override
     public void doMeasurement() {
-        for (String domain : cqmConfiguration.getCdns()) {
+        for (ConfigCdn configCdn : configCdnRepository.findAll()) {
             try {
-                rttSampleRepository.save(ping(domain));
+                rttSampleRepository.save(ping(configCdn.getCdn()));
             } catch (IOException e) {
                 logger.error(e.getMessage());
             }
@@ -47,7 +51,7 @@ public class PingServiceImpl implements PingService {
         char sep = symbols.getDecimalSeparator();
 
         String command = String.join(" ",
-                "ping", "-c", cqmConfiguration.getActiveTestsIntensity() + "", "-i 0" + sep + "2", host);
+                "ping", "-c", configSampleRepository.findFirstByOrderByIdDesc().getActiveTestIntensity() + "", "-i 0" + sep + "2", host);
         logger.info("Starting active sampling with command \"" + command + "\"");
         BufferedReader inputStream = runSystemCommand(command);
 

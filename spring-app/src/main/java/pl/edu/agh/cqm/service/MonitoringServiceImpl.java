@@ -10,6 +10,7 @@ import pl.edu.agh.cqm.data.dto.RTTSampleDTO;
 import pl.edu.agh.cqm.data.dto.ThroughputSampleDTO;
 import pl.edu.agh.cqm.data.model.RTTSample;
 import pl.edu.agh.cqm.data.model.ThroughputSample;
+import pl.edu.agh.cqm.data.repository.ConfigCdnRepository;
 import pl.edu.agh.cqm.data.repository.RTTSampleRepository;
 import pl.edu.agh.cqm.data.repository.ThroughputSampleRepository;
 
@@ -22,12 +23,13 @@ public class MonitoringServiceImpl implements MonitoringService {
 
     private final RTTSampleRepository rttSampleRepository;
     private final ThroughputSampleRepository throughputSampleRepository;
+    private final ConfigCdnRepository configCdnRepository;
     private final CqmConfiguration cqmConfiguration;
 
     @Override
     public Map<String, List<RTTSampleDTO>> getRTTSamples(Instant startDate, Instant endDate) {
-        return cqmConfiguration.getCdns().stream()
-            .map(address -> Pair.of(address, rttSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, address)))
+        return configCdnRepository.findAll().stream()
+            .map(config -> Pair.of(config.getCdn(), rttSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, config.getCdn())))
                 .map(p -> Pair.of(
                 p.getFirst(),
                 p.getSecond().stream()
@@ -38,8 +40,8 @@ public class MonitoringServiceImpl implements MonitoringService {
 
     @Override
     public Map<String, List<ThroughputSampleDTO>> getThroughputSamples(Instant startDate, Instant endDate) {
-        return cqmConfiguration.getCdns().stream()
-            .map(address -> Pair.of(address, throughputSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, address)))
+        return configCdnRepository.findAll().stream()
+            .map(config -> Pair.of(config.getCdn(), throughputSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, config.getCdn())))
             .map(p -> Pair.of(
                 p.getFirst(),
                 p.getSecond().stream()
