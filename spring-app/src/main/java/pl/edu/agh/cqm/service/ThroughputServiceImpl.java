@@ -21,9 +21,7 @@ public class ThroughputServiceImpl implements ThroughputService {
 
     private final PcapNetworkInterface.PromiscuousMode mode = PcapNetworkInterface.PromiscuousMode.NONPROMISCUOUS;
     private final ThroughputSampleRepository dataRepository;
-    private final ParameterService parameterService;
-    private final CqmConfiguration configuration;
-    private final Logger logger = LogManager.getLogger(ThroughputServiceImpl.class);
+    private final Logger logger;
     private final int snapLen;
     private final int timeout;
     private int measurementTime;
@@ -32,10 +30,8 @@ public class ThroughputServiceImpl implements ThroughputService {
     private String myIP;
     private PcapNetworkInterface nif;
 
-    public ThroughputServiceImpl(CqmConfiguration configuration,
-                                 ThroughputSampleRepository dataRepository,
-                                 ParameterService parameterService) throws PcapNativeException {
-        this.configuration = configuration;
+    public ThroughputServiceImpl(CqmConfiguration configuration, ThroughputSampleRepository dataRepository) throws PcapNativeException {
+        logger = LogManager.getLogger("ThroughputServiceImpl");
         this.dataRepository = dataRepository;
         this.parameterService = parameterService;
         snapLen = configuration.getPcapMaxPacketLength();
@@ -59,6 +55,7 @@ public class ThroughputServiceImpl implements ThroughputService {
     }
 
     public void doMeasurement() {
+        logger.debug("throughput doMeasurement start");
         try {
             // configuration
             List<CDNsData> cdns = new ArrayList<>(parameterService.getCdns().size());
@@ -112,7 +109,7 @@ public class ThroughputServiceImpl implements ThroughputService {
             if (!dnsPacket.getHeader().isResponse()) {
                 continue;
             }
-            logger.debug("found dns response");
+//            logger.debug("found dns response");
             for (CDNsData cdn : cdns) {
                 if (!dnsPacket.getHeader().getQuestions().get(0).getQName().toString().contains(cdn.name)) {
                     continue;
@@ -126,7 +123,9 @@ public class ThroughputServiceImpl implements ThroughputService {
                 if (dnsRecords.size() == 0) {
                     continue;
                 }
-                fillingCounter++;
+                // check if ips was empty to count only new ips
+                // and be sure that every cdn has at least one ip
+                if(cdn.ips.size() == 0) fillingCounter++;
                 cdn.ips = dnsRecords.stream()
                         .map(r -> ((DnsRDataA) r.getRData()).getAddress().getHostAddress())
                         .collect(Collectors.toList());
@@ -185,27 +184,38 @@ public class ThroughputServiceImpl implements ThroughputService {
             if (tcpPacket == null) continue;
             CDNsData cdn = ipMap.get(ipv4packet.getHeader().getSrcAddr().getHostAddress());
             if (cdn == null) {
-                logger.debug("cdn not found in map");
+                cdn = ipMap.get(ipv4packet.getHeader().getDstAddr().getHostAddress());
+//                    logger.debug("cdn not found in map dst:{} src:{}"
+//                            , ipv4packet.getHeader().getDstAddr().getHostAddress()
+//                            , ipv4packet.getHeader().getSrcAddr().getHostAddress());
+                if(cdn != null){
+
+                    logger.debug("from me to them {}", cdn.name);
+                    if (cdn.lastACKFlag) {
+                        logger.debug("last ACK true {}", System.currentTimeMillis() - cdn.lastACKTime);
+                        if (System.currentTimeMillis() - cdn.lastACKTime >= sessionBreakTime) {
+                            cdn.currentSession = new LinkedList<>();
+                            cdn.sessions.add(cdn.currentSession);
+                            logger.debug("new session for {}", cdn.name);
+                            cdn.lastACKFlag = false;
+
+                        }
+                    }else if (tcpPacket.getHeader().getAck() && ipv4packet.getHeader().getSrcAddr().getHostAddress().equals(myAddr)) {
+                        logger.debug("ACK true");
+                        cdn.lastACKFlag = true;
+                        cdn.lastACKTime = System.currentTimeMillis();
+                    }
+                }
                 continue;
             }
 
-            if (cdn.lastACKFlag) {
-                if (System.currentTimeMillis() - cdn.lastACKTime >= sessionBreakTime) {
-                    cdn.currentSession = new LinkedList<>();
-                    cdn.sessions.add(cdn.currentSession);
-                    logger.debug("new session for {}", cdn.name);
-                }
-            }
+
 
             cdn.currentSession.add(Pair.of(handle.getTimestamp(), packet.length()));
-            logger.debug(ipv4packet.getHeader().getSrcAddr().getHostAddress());
+//            logger.debug(ipv4packet.getHeader().getSrcAddr().getHostAddress());
 
-            if (tcpPacket.getHeader().getAck() && ipv4packet.getHeader().getSrcAddr().getHostAddress().equals(myAddr)) {
-                cdn.lastACKFlag = tcpPacket.getHeader().getAck();
-                cdn.lastACKTime = System.currentTimeMillis();
-            } else {
-                cdn.lastACKFlag = false;
-            }
+            cdn.lastACKFlag = false;
+
 
 
         }
@@ -229,8 +239,12 @@ public class ThroughputServiceImpl implements ThroughputService {
                 byteSum += bytes;
 
             }
-            c.throughput = byteSum / timeSum;
-            logger.info("CDN: name: {} ; time sum: {} ; byte sum: {}; throughput: {}", c.name, timeSum, byteSum, c.throughput);
+            if(timeSum == 0){
+                c.throughput = 0;
+            }else{
+                c.throughput = byteSum*8 / timeSum;
+            }
+            logger.info("CDN: name: {} ; time sum: {} ; bit sum: {}; throughput: {}; sessions {}", c.name, timeSum, byteSum*8, c.throughput, c.sessions.size());
         }
 
 
