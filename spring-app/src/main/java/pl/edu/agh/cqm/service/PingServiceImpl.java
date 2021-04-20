@@ -20,6 +20,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static pl.edu.agh.cqm.configuration.CqmConfiguration.ActiveTestType.ICMP;
+import static pl.edu.agh.cqm.configuration.CqmConfiguration.ActiveTestType.TCP;
+
 @Service
 @AllArgsConstructor
 @Builder
@@ -33,11 +36,11 @@ public class PingServiceImpl implements PingService {
     public void doMeasurement() {
         for (String domain : cqmConfiguration.getCdns()) {
             try {
-                String type = cqmConfiguration.getActiveTestsType();
-                if (type.equals("ICMP")) {
-                    rttSampleRepository.save(pingICMP(domain, type));
-                } else if (type.equals("TCP")) {
-                    rttSampleRepository.save(pingTCP(domain, type));
+                CqmConfiguration.ActiveTestType type = cqmConfiguration.getActiveTestsType();
+                switch (type) {
+                    case ICMP -> rttSampleRepository.save(pingICMP(domain));
+                    case TCP -> rttSampleRepository.save(pingTCP(domain));
+                    default -> throw new IllegalStateException("Unexpected value: " + type);
                 }
             } catch (IOException e) {
                 logger.error(e.getMessage());
@@ -45,7 +48,7 @@ public class PingServiceImpl implements PingService {
         }
     }
 
-    private RTTSample pingTCP(String host, String type) throws IOException {
+    private RTTSample pingTCP(String host) throws IOException {
         DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance();
         DecimalFormatSymbols symbols = format.getDecimalFormatSymbols();
         char sep = symbols.getDecimalSeparator();
@@ -67,7 +70,7 @@ public class PingServiceImpl implements PingService {
                 vals[i-2] = val;
             }
         }
-        for (int i = 0; i < (int)(vals.length/2) ; i++) {
+        for (int i = 0; i < (vals.length/2); i++) {
             stds[i] = vals[2*i+1] - vals[2*i];
         }
         return RTTSample.builder()
@@ -76,34 +79,28 @@ public class PingServiceImpl implements PingService {
                 .min(getValFromString(lines.get(lines.size()-3).replaceAll("ms", " "), "Min rtt: ((\\d+)(\\.)(\\d+)) "))
                 .average(getValFromString(lines.get(lines.size()-3).replaceAll("ms", " "), "Avg rtt: ((\\d+)(\\.)(\\d+)) "))
                 .max(getValFromString(lines.get(lines.size()-3).replaceAll("ms", " "), "Max rtt: ((\\d+)(\\.)(\\d+)) "))
-                .standardDeviation(SD(stds))
+                .standardDeviation(getStandardDeviation(stds))
                 .timestamp(Instant.now())
-                .type(type)
+                .type(TCP)
                 .address(host)
                 .build();
     }
 
-    private double SD(double[] stds)
-    {
+    private double getStandardDeviation(double[] stds) {
         int n = stds.length;
         double sum = 0;
-        double res;
-        double mean;
+        for (double v : stds) {
+            sum = sum + v;
+        }
+        double mean = sum / (n);
         double standardDeviation = 0;
-        double sq;
-        for (int i = 0; i < n; i++) {
-            sum = sum + stds[i];
+        for (double std : stds) {
+            standardDeviation = standardDeviation + Math.pow((std - mean), 2);
         }
-        mean = sum / (n);
-        for (int i = 0; i < n; i++) {
-            standardDeviation = standardDeviation + Math.pow((stds[i] - mean), 2);
-        }
-        sq = standardDeviation / n;
-        res = Math.sqrt(sq);
-        return res;
+        return Math.sqrt(standardDeviation / n);
     }
 
-    private RTTSample pingICMP(String host, String type) throws IOException {
+    private RTTSample pingICMP(String host) throws IOException {
         DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance();
         DecimalFormatSymbols symbols = format.getDecimalFormatSymbols();
         char sep = symbols.getDecimalSeparator();
@@ -123,7 +120,7 @@ public class PingServiceImpl implements PingService {
                 .max(getValFromString(lines.get(lines.size() - 1), "/((\\d+)(\\.)(\\d+))/((\\d+)(\\.)(\\d+)) ms"))
                 .standardDeviation(getValFromString(lines.get(lines.size() - 1), "/((\\d+)(\\.)(\\d+)) ms"))
                 .timestamp(Instant.now())
-                .type(type)
+                .type(ICMP)
                 .address(host)
                 .build();
     }

@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import pl.edu.agh.cqm.configuration.CqmConfiguration;
 import pl.edu.agh.cqm.data.dto.RTTSampleDTO;
 import pl.edu.agh.cqm.service.PingService;
 import pl.edu.agh.cqm.service.PingServiceImpl;
@@ -48,8 +49,9 @@ public class RTTSample {
     @Column(nullable = false, updatable = false, length = 64)
     private String address;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, updatable = false, length = 8)
-    private String type;
+    private CqmConfiguration.ActiveTestType type;
 
     public RTTSampleDTO toDTO() {
         return RTTSampleDTO.builder()
