@@ -4,10 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import javax.validation.Valid;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.cqm.data.dto.*;
 import pl.edu.agh.cqm.exception.BadRequestException;
 import pl.edu.agh.cqm.service.MonitoringService;
@@ -74,7 +71,7 @@ public class MonitoringController {
         );
     }
 
-    @PostMapping("/update-parameters")
+    @PutMapping("/update-parameters")
     public void ParametersDTO(
             @Valid ConfigParametersDTO configParametersDTO
     ) {
