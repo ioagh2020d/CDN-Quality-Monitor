@@ -188,7 +188,7 @@ volumes:
 }
 ```
 
-### POST `/api/samples/update-parameters`
+### PUT `/api/samples/update-parameters`
 
 #### Query parameters:
 

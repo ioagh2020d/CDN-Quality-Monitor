@@ -30,7 +30,7 @@ public class UpdateParametersServiceImpl implements UpdateParametersService {
             updated = true;
             cqmConfiguration.setActiveSamplingRate(activeSamplingRate);
         }
-        if (activeTestIntensity > 0 && activeSamplingRate != cqmConfiguration.getActiveTestsIntensity()) {
+        if (activeTestIntensity > 0 && activeTestIntensity != cqmConfiguration.getActiveTestsIntensity()) {
             updated = true;
             cqmConfiguration.setActiveTestsIntensity(activeTestIntensity);
         }
