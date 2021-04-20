@@ -15,7 +15,6 @@ import java.io.InputStreamReader;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,14 +33,77 @@ public class PingServiceImpl implements PingService {
     public void doMeasurement() {
         for (String domain : cqmConfiguration.getCdns()) {
             try {
-                rttSampleRepository.save(ping(domain));
+                String type = cqmConfiguration.getActiveTestsType();
+                if (type.equals("ICMP")) {
+                    rttSampleRepository.save(pingICMP(domain, type));
+                } else if (type.equals("TCP")) {
+                    rttSampleRepository.save(pingTCP(domain, type));
+                }
             } catch (IOException e) {
                 logger.error(e.getMessage());
             }
         }
     }
 
-    private RTTSample ping(String host) throws IOException {
+    private RTTSample pingTCP(String host, String type) throws IOException {
+        DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance();
+        DecimalFormatSymbols symbols = format.getDecimalFormatSymbols();
+        char sep = symbols.getDecimalSeparator();
+
+        String command = String.join(" ",
+                "nping --tcp --delay ", "0" + sep + "2", "-c", cqmConfiguration.getActiveTestsIntensity() + "", host);
+        logger.info("Starting active sampling with command \"" + command + "\"");
+        BufferedReader inputStream = runSystemCommand(command);
+        // reading output stream of the command
+        List<String> lines = inputStream.lines().collect(Collectors.toList());
+
+        double std = 0;
+        double[] vals = new double[2*5]; //new ArrayList<>();
+        double[] stds = new double[5]; //new ArrayList<>();
+        for (int i = 2; i < lines.size()-3 ; i++) {
+            String line = lines.get(i);
+            double val = getValFromString(line.replaceAll("s", "qazwsx"), "((\\d+)(\\.)(\\d+))qazwsx");
+            if (val != -1) {
+                vals[i-2] = val;
+            }
+        }
+        for (int i = 0; i < (int)(vals.length/2) ; i++) {
+            stds[i] = vals[2*i+1] - vals[2*i];
+        }
+        return RTTSample.builder()
+                .id(0)
+                .packetLoss(getValFromString(lines.get(lines.size()-2), "(\\d+)(%)"))
+                .min(getValFromString(lines.get(lines.size()-3).replaceAll("ms", " "), "Min rtt: ((\\d+)(\\.)(\\d+)) "))
+                .average(getValFromString(lines.get(lines.size()-3).replaceAll("ms", " "), "Avg rtt: ((\\d+)(\\.)(\\d+)) "))
+                .max(getValFromString(lines.get(lines.size()-3).replaceAll("ms", " "), "Max rtt: ((\\d+)(\\.)(\\d+)) "))
+                .standardDeviation(SD(stds))
+                .timestamp(Instant.now())
+                .type(type)
+                .address(host)
+                .build();
+    }
+
+    private double SD(double[] stds)
+    {
+        int n = stds.length;
+        double sum = 0;
+        double res;
+        double mean;
+        double standardDeviation = 0;
+        double sq;
+        for (int i = 0; i < n; i++) {
+            sum = sum + stds[i];
+        }
+        mean = sum / (n);
+        for (int i = 0; i < n; i++) {
+            standardDeviation = standardDeviation + Math.pow((stds[i] - mean), 2);
+        }
+        sq = standardDeviation / n;
+        res = Math.sqrt(sq);
+        return res;
+    }
+
+    private RTTSample pingICMP(String host, String type) throws IOException {
         DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance();
         DecimalFormatSymbols symbols = format.getDecimalFormatSymbols();
         char sep = symbols.getDecimalSeparator();
@@ -61,6 +123,7 @@ public class PingServiceImpl implements PingService {
                 .max(getValFromString(lines.get(lines.size() - 1), "/((\\d+)(\\.)(\\d+))/((\\d+)(\\.)(\\d+)) ms"))
                 .standardDeviation(getValFromString(lines.get(lines.size() - 1), "/((\\d+)(\\.)(\\d+)) ms"))
                 .timestamp(Instant.now())
+                .type(type)
                 .address(host)
                 .build();
     }

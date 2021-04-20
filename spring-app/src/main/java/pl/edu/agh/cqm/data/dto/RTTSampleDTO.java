@@ -14,4 +14,6 @@ public class RTTSampleDTO extends SampleDTO {
     private float max;
     private float standardDeviation;
     private float packetLoss;
+    private String address;
+    private String type;
 }

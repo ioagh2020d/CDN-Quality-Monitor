@@ -21,6 +21,9 @@ public class CqmConfiguration {
     @Value("${cqm.active.tests_intensity}")
     private int activeTestsIntensity;
 
+    @Value("${cqm.active.tests_type}")
+    private String activeTestsType;
+
     @Value("${cqm.passive.sampling_rate}")
     private int passiveSamplingRate;
 

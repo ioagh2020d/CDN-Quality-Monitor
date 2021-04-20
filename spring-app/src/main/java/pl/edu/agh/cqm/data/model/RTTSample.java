@@ -48,6 +48,9 @@ public class RTTSample {
     @Column(nullable = false, updatable = false, length = 64)
     private String address;
 
+    @Column(nullable = false, updatable = false, length = 8)
+    private String type;
+
     public RTTSampleDTO toDTO() {
         return RTTSampleDTO.builder()
             .timestamp(timestamp)
@@ -56,6 +59,8 @@ public class RTTSample {
             .max(max)
             .standardDeviation(standardDeviation)
             .packetLoss(packetLoss)
+            .address(address)
+            .type(type)
             .build();
     }
 }
