@@ -20,22 +20,31 @@ public class UpdateParametersServiceImpl implements UpdateParametersService {
                                  int activeSamplingRate,
                                  int activeTestIntensity,
                                  int passiveSamplingRate) {
-        if (cdns != null) {
+        boolean updated = false;
+        if (cdns != null && !cdns.equals(cqmConfiguration.getCdns())) {
+            updated = true;
             cqmConfiguration.setCdns(cdns);
         }
 
-        if (activeSamplingRate > 0) {
+        if (activeSamplingRate > 0 && activeSamplingRate != cqmConfiguration.getActiveSamplingRate()) {
+            updated = true;
             cqmConfiguration.setActiveSamplingRate(activeSamplingRate);
         }
-        if (activeTestIntensity > 0) {
+        if (activeTestIntensity > 0 && activeSamplingRate != cqmConfiguration.getActiveTestsIntensity()) {
+            updated = true;
             cqmConfiguration.setActiveTestsIntensity(activeTestIntensity);
         }
 
-        if (passiveSamplingRate > 0) {
+        if (passiveSamplingRate > 0 && passiveSamplingRate != cqmConfiguration.getPassiveSamplingRate()) {
+            updated = true;
             cqmConfiguration.setPassiveSamplingRate(passiveSamplingRate);
         }
 
-        logger.info("Updated the parameters: " + cqmConfiguration);
+        if (updated) {
+            logger.info("Updated the parameters: " + cqmConfiguration);
+        } else {
+            logger.info("None of the parameters was updated");
+        }
     }
 
 }
