@@ -51,7 +51,7 @@ public class PingServiceImpl implements PingService {
         char sep = symbols.getDecimalSeparator();
 
         String command = String.join(" ",
-                "ping", "-c", configSampleRepository.findFirstByOrderByIdDesc().getActiveTestIntensity() + "", "-i 0" + sep + "2", host);
+                "ping", "-c", configSampleRepository.findFirstByOrderByTimestampDesc().getActiveTestIntensity() + "", "-i 0" + sep + "2", host);
         logger.info("Starting active sampling with command \"" + command + "\"");
         BufferedReader inputStream = runSystemCommand(command);
 

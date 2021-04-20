@@ -10,19 +10,13 @@ import java.time.Instant;
 @Entity
 @Builder
 @AllArgsConstructor
-@Table
-@EqualsAndHashCode
 public class ConfigSample {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private long id;
 
     @Column(nullable = false, updatable = false)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private Instant timestamp;
 
     @Column(nullable = false, updatable = false)

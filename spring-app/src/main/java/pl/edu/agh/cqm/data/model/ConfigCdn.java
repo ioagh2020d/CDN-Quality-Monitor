@@ -12,10 +12,12 @@ import javax.persistence.*;
 @Entity
 @Builder
 @AllArgsConstructor
-@Table
 public class ConfigCdn {
 
     @Id
-    @Column(nullable = false, updatable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
+    @Column(nullable = false, updatable = false, length = 64)
     String cdn;
 }

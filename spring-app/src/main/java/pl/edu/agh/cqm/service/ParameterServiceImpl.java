@@ -10,15 +10,16 @@ import pl.edu.agh.cqm.data.repository.ConfigCdnRepository;
 import pl.edu.agh.cqm.data.repository.ConfigSampleRepository;
 
 import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
 import java.time.Instant;
 import java.util.List;
 
 @Service
-public class UpdateParametersServiceImpl implements UpdateParametersService {
+public class ParameterServiceImpl implements ParameterService {
 
     private final ConfigCdnRepository configCdnRepository;
     private final ConfigSampleRepository configSampleRepository;
-    private final Logger logger = LogManager.getLogger(UpdateParametersService.class);
+    private final Logger logger = LogManager.getLogger(ParameterService.class);
 
     @Value("${cqm.cdns}")
     private List<String> cdns;
@@ -32,65 +33,43 @@ public class UpdateParametersServiceImpl implements UpdateParametersService {
     @Value("${cqm.passive.sampling_rate}")
     private int passiveSamplingRate;
 
-    public UpdateParametersServiceImpl(ConfigCdnRepository configCdnRepository,
-                                       ConfigSampleRepository configSampleRepository) {
+    public ParameterServiceImpl(ConfigCdnRepository configCdnRepository,
+                                ConfigSampleRepository configSampleRepository) {
         this.configCdnRepository = configCdnRepository;
         this.configSampleRepository = configSampleRepository;
     }
 
     @Override
+    @Transactional
     public void updateCdns(List<String> cdns) {
-        if (cdns != null) {
-            configCdnRepository.deleteAll();
-            for (String cdn : cdns) {
-                configCdnRepository.save(ConfigCdn.builder().cdn(cdn).build());
-            }
-            logger.info("Updated the cdns: " + cdns);
+        configCdnRepository.deleteAll();
+        for (String cdn : cdns) {
+            configCdnRepository.save(new ConfigCdn(0, cdn));
         }
-        else {
-            logger.info("Cdns were not updated");
-        }
+        System.out.println(configCdnRepository.findAll());
+        logger.info("Updated the cdns: " + cdns);
     }
 
     @Override
     public void updateSampleParameters(int activeSamplingRate, int activeTestIntensity, int passiveSamplingRate) {
 
-        ConfigSample prevParameters = configSampleRepository.findFirstByOrderByIdDesc();
-        ConfigSample configSample = new ConfigSample();
+        ConfigSample configSample = ConfigSample.builder()
+                .timestamp(Instant.now())
+                .activeSamplingRate(activeSamplingRate)
+                .activeTestIntensity(activeTestIntensity)
+                .passiveSamplingRate(passiveSamplingRate)
+                .build();
 
-        if (activeSamplingRate > 0) {
-            configSample.setActiveSamplingRate(activeSamplingRate);
-        } else {
-            configSample.setActiveSamplingRate(prevParameters.getActiveSamplingRate());
-        }
+        configSampleRepository.save(configSample);
 
-        if (activeTestIntensity > 0) {
-            configSample.setActiveTestIntensity(activeTestIntensity);
-        } else {
-            configSample.setActiveTestIntensity(prevParameters.getActiveTestIntensity());
-        }
-
-        if (passiveSamplingRate > 0) {
-            configSample.setPassiveSamplingRate(passiveSamplingRate);
-        } else {
-            configSample.setPassiveSamplingRate(prevParameters.getPassiveSamplingRate());
-        }
-
-        if (!prevParameters.equals(configSample)) {
-            configSample.setTimestamp(Instant.now());
-            configSampleRepository.save(configSample);
-
-            logger.info("Updated the sample parameters: " + configSample);
-        } else {
-            logger.info("None of the sample parameters were updated.");
-        }
+        logger.info("Updated the sample parameters: " + configSample);
     }
 
     @PostConstruct
     public void initConfigCdnsRepository() {
         if (configCdnRepository.count() == 0) {
             for (String cdn : cdns) {
-                configCdnRepository.save(ConfigCdn.builder().cdn(cdn).build());
+                configCdnRepository.save(new ConfigCdn(0, cdn));
             }
         }
     }

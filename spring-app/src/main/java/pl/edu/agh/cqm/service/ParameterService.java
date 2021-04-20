@@ -2,7 +2,7 @@ package pl.edu.agh.cqm.service;
 
 import java.util.List;
 
-public interface UpdateParametersService {
+public interface ParameterService {
 
     void updateCdns(List<String> cdns);
 

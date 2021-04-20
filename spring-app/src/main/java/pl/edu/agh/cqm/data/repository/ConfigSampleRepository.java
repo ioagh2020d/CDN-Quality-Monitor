@@ -7,7 +7,7 @@ import java.time.Instant;
 
 public interface ConfigSampleRepository extends JpaRepository<ConfigSample, Long> {
 
-    ConfigSample findFirstByOrderByIdDesc();
+    ConfigSample findFirstByOrderByTimestampDesc();
 
-    ConfigSample findFirstByTimestampGreaterThanEqual(Instant date);
+    ConfigSample findFirstByTimestampGreaterThanEqual(Instant timestamp);
 }

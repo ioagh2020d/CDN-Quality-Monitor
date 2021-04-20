@@ -27,7 +27,7 @@ public class SchedulerService {
     public void schedulePing() {
         if (schedulePingCounter == 0) {
             pingService.doMeasurement();
-            schedulePingCounter = configSampleRepository.findFirstByOrderByIdDesc().getActiveSamplingRate();
+            schedulePingCounter = configSampleRepository.findFirstByOrderByTimestampDesc().getActiveSamplingRate();
         }
         schedulePingCounter--;
     }

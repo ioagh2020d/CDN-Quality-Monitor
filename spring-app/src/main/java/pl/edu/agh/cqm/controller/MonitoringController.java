@@ -8,20 +8,20 @@ import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.cqm.data.dto.*;
 import pl.edu.agh.cqm.exception.BadRequestException;
 import pl.edu.agh.cqm.service.MonitoringService;
-import pl.edu.agh.cqm.service.UpdateParametersService;
+import pl.edu.agh.cqm.service.ParameterService;
 
 @RestController
 @RequestMapping("/api/samples")
 public class MonitoringController {
 
     private final MonitoringService monitoringService;
-    private final UpdateParametersService updateParametersService;
+    private final ParameterService parameterService;
 
     public MonitoringController(MonitoringService monitoringService,
-                                UpdateParametersService updateParametersService
+                                ParameterService parameterService
     ) {
         this.monitoringService = monitoringService;
-        this.updateParametersService = updateParametersService;
+        this.parameterService = parameterService;
     }
 
     @GetMapping("/rtt")
@@ -71,18 +71,18 @@ public class MonitoringController {
         );
     }
 
-    @PutMapping("/update-parameters")
+    @PutMapping("/updateParameters")
     public void ParametersDTO(
             @Valid ConfigParametersDTO configParametersDTO
     ) {
         List<String> cdns = configParametersDTO.getCdns();
-        updateParametersService.updateCdns(cdns);
+        parameterService.updateCdns(cdns);
 
         int activeSamplingRate = configParametersDTO.getActiveSamplingRate();
         int activeTestIntensity = configParametersDTO.getActiveTestIntensity();
 
         int passiveSamplingRate = configParametersDTO.getPassiveSamplingRate();
 
-        updateParametersService.updateSampleParameters(activeSamplingRate, activeTestIntensity, passiveSamplingRate);
+        parameterService.updateSampleParameters(activeSamplingRate, activeTestIntensity, passiveSamplingRate);
     }
 }

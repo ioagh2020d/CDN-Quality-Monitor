@@ -73,7 +73,7 @@ public class ThroughputServiceImpl implements ThroughputService {
                 cdn.name = config.getCdn();
                 cdns.add(cdn);
             }
-            measurementTime = 1000 * 30 * configSampleRepository.findFirstByOrderByIdDesc().getPassiveSamplingRate();
+            measurementTime = 1000 * 30 * configSampleRepository.findFirstByOrderByTimestampDesc().getPassiveSamplingRate();
 
             logger.info("looking for dns");
             this.findDns(cdns, myIP);
