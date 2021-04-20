@@ -26,31 +26,23 @@ public class ThroughputServiceImpl implements ThroughputService {
 
     private final PcapNetworkInterface.PromiscuousMode mode = PcapNetworkInterface.PromiscuousMode.NONPROMISCUOUS;
     private final ThroughputSampleRepository dataRepository;
+    private final CqmConfiguration configuration;
     private final Logger logger = LogManager.getLogger(ThroughputServiceImpl.class);
     private final int snapLen;
     private final int timeout;
-    private final int measurementTime;
+    private int measurementTime;
     private final int sessionBreakTime;
     private final String interfaceName;
     private String myIP;
-    private final List<CDNsData> cdns;
     private PcapNetworkInterface nif;
 
     public ThroughputServiceImpl(CqmConfiguration configuration, ThroughputSampleRepository dataRepository) throws PcapNativeException {
         this.dataRepository = dataRepository;
+        this.configuration = configuration;
         snapLen = configuration.getPcapMaxPacketLength();
         timeout = configuration.getPcapTimeout();
-        measurementTime = 1000 * 30 * configuration.getPassiveSamplingRate();
         sessionBreakTime = configuration.getPcapSessionBreak();
-        List<String> hostsToLookFor = configuration.getCdns();
         interfaceName = configuration.getInterfaceName();
-        cdns = new ArrayList<>(hostsToLookFor.size());
-
-        for (String s : hostsToLookFor) {
-            CDNsData cdn = new CDNsData();
-            cdn.name = s;
-            cdns.add(cdn);
-        }
 
         getNIF();
 
@@ -69,6 +61,15 @@ public class ThroughputServiceImpl implements ThroughputService {
 
     public void doMeasurement() {
         try {
+            // configuration
+            List<CDNsData> cdns = new ArrayList<>(configuration.getCdns().size());
+            for (String s : configuration.getCdns()) {
+                CDNsData cdn = new CDNsData();
+                cdn.name = s;
+                cdns.add(cdn);
+            }
+            measurementTime = 1000 * 30 * configuration.getPassiveSamplingRate();
+
             logger.info("looking for dns");
             this.findDns(cdns, myIP);
             logger.info("all dns found");
