@@ -80,7 +80,7 @@ public class PingServiceImpl implements PingService {
                 .min(getValFromString(lines.get(lines.size()-3).replaceAll("ms", " "), "Min rtt: ((\\d+)(\\.)(\\d+)) "))
                 .average(getValFromString(lines.get(lines.size()-3).replaceAll("ms", " "), "Avg rtt: ((\\d+)(\\.)(\\d+)) "))
                 .max(getValFromString(lines.get(lines.size()-3).replaceAll("ms", " "), "Max rtt: ((\\d+)(\\.)(\\d+)) "))
-                .standardDeviation(getStandardDeviation(stds))
+                .standardDeviation((float) getStandardDeviation(stds))
                 .timestamp(Instant.now())
                 .type(TCP)
                 .address(host)
