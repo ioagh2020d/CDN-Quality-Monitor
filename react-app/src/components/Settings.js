@@ -1,10 +1,11 @@
 import {Card} from "@material-ui/core";
+import Form from "./form";
 
 
 const Settings = ()=>{
   return (
     <Card>
-      <p>settings</p>
+      <Form/>
     </Card>
   )
 }

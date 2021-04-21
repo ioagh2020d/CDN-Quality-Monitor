@@ -1,16 +1,14 @@
 package pl.edu.agh.cqm.controller;
 
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.cqm.data.dto.ConfigParametersDTO;
 import pl.edu.agh.cqm.service.ParameterService;
 
 import javax.validation.Valid;
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("api/parameters")
 @AllArgsConstructor
@@ -20,7 +18,7 @@ public class ParameterController {
 
     @PutMapping
     public void put(
-            @Valid ConfigParametersDTO configParametersDTO
+            @Valid @RequestBody ConfigParametersDTO configParametersDTO
     ) {
         List<String> cdns = configParametersDTO.getCdns();
         parameterService.updateCdns(cdns);
