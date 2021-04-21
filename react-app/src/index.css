@@ -12,8 +12,9 @@ body {
   text-align: center;
 }
 .Chart{
-  height: 40vh;
+  height: 35vh;
   margin: 1em;
+  margin-bottom: 2em;
 
 }
 .ChartDatePickers{
