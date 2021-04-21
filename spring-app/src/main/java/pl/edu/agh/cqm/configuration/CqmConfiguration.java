@@ -11,6 +11,9 @@ import java.util.List;
 @ToString
 @Component
 public class CqmConfiguration {
+    public enum ActiveTestType {
+        TCP, ICMP;
+    }
 
     @Value("${cqm.cdns}")
     private List<String> cdns;
@@ -20,6 +23,9 @@ public class CqmConfiguration {
 
     @Value("${cqm.active.tests_intensity}")
     private int activeTestsIntensity;
+
+    @Value("${cqm.active.tests_type}")
+    private ActiveTestType activeTestsType;
 
     @Value("${cqm.passive.sampling_rate}")
     private int passiveSamplingRate;
