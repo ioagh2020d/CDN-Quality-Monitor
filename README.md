@@ -7,7 +7,7 @@
 
 Using docker-compose stack:
 
-```yml=
+```yml
 version: "3"
 services:
   cqm:
@@ -27,7 +27,7 @@ services:
 
 Using docker-compose stack:
 
-```yml=
+```yml
 version: "3"
 services:
   cqm:
@@ -72,7 +72,7 @@ volumes:
 
 #### Example response:
 
-```json=
+```json
 {
   "startDate": "2021-04-02T23:04:11Z",
   "endDate": "2022-04-02T23:04:11Z",
@@ -113,7 +113,7 @@ volumes:
 
 #### Example response:
 
-```json=
+```json
 {
   "startDate": "2021-04-02T23:04:11Z",
   "endDate": "2022-04-02T23:04:11Z",
@@ -145,7 +145,7 @@ volumes:
 
 #### Example response:
 
-```json=
+```json
 {
   "startDate": "2021-04-02T23:04:11Z",
   "endDate": "2022-04-02T23:04:11Z",
@@ -200,18 +200,18 @@ volumes:
 
 `passiveSamplingRate` : integer - passive sampling rate
 
-### GET `api/parameters`
+### GET `/api/parameters`
 
 #### Example response:
 
-```json=
+```json
 {
   "cdns": [
     "www.youtube.com",
     "www.facebook.com"
   ],
   "activeSamplingRate": 2,
-  "activeTestIntensity": 10
+  "activeTestIntensity": 10,
   "passiveSamplingRate": 5
 }
 ```
