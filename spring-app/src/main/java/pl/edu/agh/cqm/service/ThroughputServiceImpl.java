@@ -4,14 +4,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.core.*;
 import org.pcap4j.packet.*;
-
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
 import pl.edu.agh.cqm.data.model.ConfigCdn;
 import pl.edu.agh.cqm.data.model.ThroughputSample;
-import pl.edu.agh.cqm.data.repository.ConfigCdnRepository;
-import pl.edu.agh.cqm.data.repository.ConfigSampleRepository;
 import pl.edu.agh.cqm.data.repository.ThroughputSampleRepository;
 
 import java.sql.Timestamp;
@@ -24,8 +21,7 @@ public class ThroughputServiceImpl implements ThroughputService {
 
     private final PcapNetworkInterface.PromiscuousMode mode = PcapNetworkInterface.PromiscuousMode.NONPROMISCUOUS;
     private final ThroughputSampleRepository dataRepository;
-    private final ConfigCdnRepository configCdnRepository;
-    private final ConfigSampleRepository configSampleRepository;
+    private final ParameterService parameterService;
     private final CqmConfiguration configuration;
     private final Logger logger = LogManager.getLogger(ThroughputServiceImpl.class);
     private final int snapLen;
@@ -38,12 +34,10 @@ public class ThroughputServiceImpl implements ThroughputService {
 
     public ThroughputServiceImpl(CqmConfiguration configuration,
                                  ThroughputSampleRepository dataRepository,
-                                 ConfigCdnRepository configCdnRepository,
-                                 ConfigSampleRepository configSampleRepository) throws PcapNativeException {
+                                 ParameterService parameterService) throws PcapNativeException {
         this.configuration = configuration;
         this.dataRepository = dataRepository;
-        this.configCdnRepository = configCdnRepository;
-        this.configSampleRepository = configSampleRepository;
+        this.parameterService = parameterService;
         snapLen = configuration.getPcapMaxPacketLength();
         timeout = configuration.getPcapTimeout();
         sessionBreakTime = configuration.getPcapSessionBreak();
@@ -67,13 +61,13 @@ public class ThroughputServiceImpl implements ThroughputService {
     public void doMeasurement() {
         try {
             // configuration
-            List<CDNsData> cdns = new ArrayList<>(configCdnRepository.findAll().size());
-            for (ConfigCdn config : configCdnRepository.findAll()) {
+            List<CDNsData> cdns = new ArrayList<>(parameterService.getCdns().size());
+            for (ConfigCdn config : parameterService.getCdns()) {
                 CDNsData cdn = new CDNsData();
                 cdn.name = config.getCdn();
                 cdns.add(cdn);
             }
-            measurementTime = 1000 * 30 * configSampleRepository.findFirstByOrderByTimestampDesc().getPassiveSamplingRate();
+            measurementTime = 1000 * 30 * parameterService.getPassiveSamplingRate();
 
             logger.info("looking for dns");
             this.findDns(cdns, myIP);

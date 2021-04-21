@@ -53,20 +53,45 @@ public class ParameterServiceImpl implements ParameterService {
     @Override
     public void updateSampleParameters(int activeSamplingRate, int activeTestIntensity, int passiveSamplingRate) {
 
-        ConfigSample configSample = ConfigSample.builder()
-                .timestamp(Instant.now())
-                .activeSamplingRate(activeSamplingRate)
-                .activeTestIntensity(activeTestIntensity)
-                .passiveSamplingRate(passiveSamplingRate)
-                .build();
+        if (activeSamplingRate == getActiveSamplingRate()
+                && activeTestIntensity == getActiveTestIntensity()
+                && passiveSamplingRate == getPassiveSamplingRate()) {
+            logger.info("None of the sample parameters were updated");
+        } else {
+            ConfigSample configSample = ConfigSample.builder()
+                    .timestamp(Instant.now())
+                    .activeSamplingRate(activeSamplingRate)
+                    .activeTestIntensity(activeTestIntensity)
+                    .passiveSamplingRate(passiveSamplingRate)
+                    .build();
 
-        configSampleRepository.save(configSample);
+            configSampleRepository.save(configSample);
+            logger.info("Updated the sample parameters: " + configSample);
+        }
+    }
 
-        logger.info("Updated the sample parameters: " + configSample);
+    @Override
+    public List<ConfigCdn> getCdns() {
+        return configCdnRepository.findAll();
+    }
+
+    @Override
+    public int getActiveSamplingRate() {
+        return configSampleRepository.findFirstByOrderByTimestampDesc().getActiveSamplingRate();
+    }
+
+    @Override
+    public int getActiveTestIntensity() {
+        return configSampleRepository.findFirstByOrderByTimestampDesc().getActiveTestIntensity();
+    }
+
+    @Override
+    public int getPassiveSamplingRate() {
+        return configSampleRepository.findFirstByOrderByTimestampDesc().getPassiveSamplingRate();
     }
 
     @PostConstruct
-    public void initConfigCdnsRepository() {
+    private void initConfigCdnsRepository() {
         if (configCdnRepository.count() == 0) {
             for (String cdn : cdns) {
                 configCdnRepository.save(new ConfigCdn(0, cdn));
@@ -75,7 +100,7 @@ public class ParameterServiceImpl implements ParameterService {
     }
 
     @PostConstruct
-    public void initConfigSampleDirectory() {
+    private void initConfigSampleDirectory() {
         if (configSampleRepository.count() == 0) {
             configSampleRepository.save(ConfigSample.builder()
                     .timestamp(Instant.now())

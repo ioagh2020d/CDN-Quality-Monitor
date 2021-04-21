@@ -8,8 +8,6 @@ import org.springframework.stereotype.Service;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
 import pl.edu.agh.cqm.data.model.ConfigCdn;
 import pl.edu.agh.cqm.data.model.RTTSample;
-import pl.edu.agh.cqm.data.repository.ConfigCdnRepository;
-import pl.edu.agh.cqm.data.repository.ConfigSampleRepository;
 import pl.edu.agh.cqm.data.repository.RTTSampleRepository;
 
 import java.io.BufferedReader;
@@ -30,13 +28,12 @@ public class PingServiceImpl implements PingService {
 
     private final RTTSampleRepository rttSampleRepository;
     private final CqmConfiguration cqmConfiguration;
-    private final ConfigCdnRepository configCdnRepository;
-    private final ConfigSampleRepository configSampleRepository;
+    private final ParameterService parameterService;
     private final Logger logger = LogManager.getLogger(PingServiceImpl.class);
 
     @Override
     public void doMeasurement() {
-        for (ConfigCdn configCdn : configCdnRepository.findAll()) {
+        for (ConfigCdn configCdn : parameterService.getCdns()) {
             try {
                 rttSampleRepository.save(ping(configCdn.getCdn()));
             } catch (IOException e) {
@@ -51,7 +48,7 @@ public class PingServiceImpl implements PingService {
         char sep = symbols.getDecimalSeparator();
 
         String command = String.join(" ",
-                "ping", "-c", configSampleRepository.findFirstByOrderByTimestampDesc().getActiveTestIntensity() + "", "-i 0" + sep + "2", host);
+                "ping", "-c", parameterService.getActiveTestIntensity() + "", "-i 0" + sep + "2", host);
         logger.info("Starting active sampling with command \"" + command + "\"");
         BufferedReader inputStream = runSystemCommand(command);
 
