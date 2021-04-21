@@ -1,19 +1,10 @@
 import {getThroughput} from "./DataGetter";
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import SingleChartGeneral from "./SingleChartGeneral";
 
 
-const SingleChartTput = ({ data_init /* see data tab */ }) => {
-    let [data, setData] = useState([]);
-    useEffect( () => {
+const SingleChartTput = ({ data_init }) => {
 
-    let startDate = new Date(Date.now() - (1000*3600*5));
-    let endDate = new Date(Date.now());
-        getThroughput(startDate, endDate).then(d => {
-            setData(d);
-        });
-
-    }, [])
     // data = [
     //     {
     //         id: "throughput",
@@ -44,7 +35,9 @@ const SingleChartTput = ({ data_init /* see data tab */ }) => {
     // ]
 
 
-    return (<SingleChartGeneral dataInit={data}/>);
+    return (
+        <SingleChartGeneral dataInit={[]} getDataCb={getThroughput} chartDesc={{leftAxisDesc: "kb/s"}}/>
+    );
 
 }
 

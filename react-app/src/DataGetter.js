@@ -31,7 +31,7 @@ async function getThroughput(startDate, endDate){
             let samples = r[1].map(s => {
                 let x = new Date(s.timestamp)
                 let y = s.throughput;
-                return {x:x, y:y};
+                return {x:x, y:y/1000};
             });
             return {
                 id: id,

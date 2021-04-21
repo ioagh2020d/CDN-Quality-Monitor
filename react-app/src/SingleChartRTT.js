@@ -1,22 +1,9 @@
 import {getRTT} from "./DataGetter";
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import SingleChartGeneral from "./SingleChartGeneral";
 
 
-const SingleChartRTT = ({ data_init /* see data tab */ }) => {
-    const [data, setData] = useState([]);
-
-    // console.log(endDate.toISOString())
-    useEffect( () => {
-
-        let startDate = new Date(Date.now() - (1000*3600*5));
-        let endDate = new Date(Date.now());
-        getRTT(startDate, endDate).then(d => {
-            setData(d);
-            console.log(d);
-        });
-        
-    }, [])
+const SingleChartRTT = ({ data_init }) => {
 
     // data = [
     //     {
@@ -32,7 +19,7 @@ const SingleChartRTT = ({ data_init /* see data tab */ }) => {
     // ]
 
     return (
-        <SingleChartGeneral dataInit={data}/>
+        <SingleChartGeneral dataInit={[]} getDataCb={getRTT}/>
     );
 }
 

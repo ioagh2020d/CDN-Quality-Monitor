@@ -1,14 +1,14 @@
-// install (please make sure versions match peerDependencies)
 // yarn add @nivo/core @nivo/line
-import { ResponsiveLine } from '@nivo/line'
-import React from 'react';
-// make sure parent container have a defined height when using
-// responsive component, otherwise height will be 0 and
-// no chart will be rendered.
-// website examples showcase many properties,
-// you'll often use just a few of them.
+import { ResponsiveLine } from '@nivo/line';
+import React, { useState, useEffect } from 'react';
 
-
+// import DateFnsUtils from '@date-io/date-fns';
+// import 'date-fns';
+import {
+  MuiPickersUtilsProvider,
+  DateTimePicker,
+} from '@material-ui/pickers';
+import DateFnsUtils from '@date-io/date-fns';
 
 
 function findMinMaxDate(data){
@@ -24,28 +24,53 @@ function findMinMaxDate(data){
     // let min = new Date(max.getTime() - (1000*3600*3));
     return {min, max};
 }
-const SingleChartGeneral = ({ dataInit, chartDesc /* see data tab */ }) => {
-    let data = dataInit;
-    let minMax = {min: 'auto', max: 'auto'};
-    chartDesc = chartDesc | {};
+
+
+const SingleChartGeneral = ({ dataInit, chartDesc, getDataCb /* see data tab */ }) => {
+    
+    const [data, setData] = useState(dataInit);
+    const [minMax, setMinMax] = useState({min: 'auto', max: 'auto'})
+    const [startDateTime, setStartDateTime] = useState(new Date(Date.now() - (1000*3600*5)));
+    const [endDateTime, setEndDateTime] = useState(new Date(Date.now()));
+
+    chartDesc = chartDesc || {};
+
+
     const chartDescFin = {
         bottomAxisDesc: chartDesc.bottomAxisDesc || "time scale",
         leftAxisDesc: chartDesc.leftAxisDesc || "count"
     };
-    try{
-        minMax = findMinMaxDate(data);
 
-    }catch(e){
-        if(e instanceof TypeError){
-            
-        }else{
-            throw e;
-        }
+    function updateData(sd, ed){
+
+        getDataCb(sd, ed).then((d) =>{
+            setData(d);
+            let minmax = findMinMaxDate(d)
+            setMinMax({
+                min: new Date(minmax.min.getTime() - (1000*60*1)),
+                // max: new Date(minmax.max.getTime() + (1000*60*1))
+                max: minmax.max
+            });
+        });
+
     }
-    console.log(data);
-    return (<ResponsiveLine
+
+    // useEffect(() => updateData(startDateTime,endDateTime), []);
+    useEffect(() => {
+
+        updateData(startDateTime, endDateTime);
+    }, [startDateTime, endDateTime]);
+
+    return (<div className="Chart">
+        <div className="ChartDatePickers">
+        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+        <DateTimePicker ampm={false} value={startDateTime} onChange={sd => setStartDateTime(sd)} />
+        <DateTimePicker ampm={false} value={endDateTime} onChange={ed => setEndDateTime(ed)} />
+        </MuiPickersUtilsProvider>
+        </div>
+        <ResponsiveLine
         data={data}
-        margin={{ top: 50, right: 200, bottom: 50, left: 100 }}
+        margin={{ top: 50, right: 200, bottom: 50, left: 50 }}
         xScale={{
             type: 'time',
             format: "native",
@@ -62,10 +87,11 @@ const SingleChartGeneral = ({ dataInit, chartDesc /* see data tab */ }) => {
         axisLeft={{
             legend: chartDescFin.leftAxisDesc,
             legendOffset: 12,
+            
         }}
         axisBottom={{
             format: '%H:%M',
-            tickValues: 'every 15 minutes',
+            tickValues: 10,
             legendOffset: 33,
             legendPosition: "middle",
             legend:chartDescFin.bottomAxisDesc
@@ -105,7 +131,7 @@ const SingleChartGeneral = ({ dataInit, chartDesc /* see data tab */ }) => {
                 ]
             }
         ]}
-    />);
+    /></div>);
 }
 
 export default SingleChartGeneral;
