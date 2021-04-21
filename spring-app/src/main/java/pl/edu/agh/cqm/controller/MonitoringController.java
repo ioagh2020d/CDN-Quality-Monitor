@@ -3,6 +3,7 @@ package pl.edu.agh.cqm.controller;
 import java.time.Instant;
 import javax.validation.Valid;
 
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.cqm.data.dto.*;
 import pl.edu.agh.cqm.exception.BadRequestException;
@@ -10,13 +11,10 @@ import pl.edu.agh.cqm.service.MonitoringService;
 
 @RestController
 @RequestMapping("/api/samples")
+@AllArgsConstructor
 public class MonitoringController {
 
     private final MonitoringService monitoringService;
-
-    public MonitoringController(MonitoringService monitoringService) {
-        this.monitoringService = monitoringService;
-    }
 
     @GetMapping("/rtt")
     public SingleParameterResponseDTO<RTTSampleDTO> getRTT(

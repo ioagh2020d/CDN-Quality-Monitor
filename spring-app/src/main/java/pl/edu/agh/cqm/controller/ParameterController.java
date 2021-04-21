@@ -1,5 +1,6 @@
 package pl.edu.agh.cqm.controller;
 
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,13 +13,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/parameters")
+@AllArgsConstructor
 public class ParameterController {
 
     private final ParameterService parameterService;
-
-    public ParameterController(ParameterService parameterService) {
-        this.parameterService = parameterService;
-    }
 
     @PutMapping
     public void put(
