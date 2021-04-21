@@ -6,7 +6,7 @@ import SingleChartGeneral from "./SingleChartGeneral";
 const SingleChartRTT = ({ data_init }) => {
 
     return (
-        <SingleChartGeneral dataInit={[]} getDataCb={getRTT}/>
+        <SingleChartGeneral dataInit={[]} getDataCb={getRTT} chartDesc={{leftAxisDesc: "ms"}}/>
     );
 }
 
