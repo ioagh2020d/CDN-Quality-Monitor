@@ -9,6 +9,12 @@ import org.springframework.stereotype.Component;
 @ToString
 @Component
 public class CqmConfiguration {
+    public enum ActiveTestType {
+        TCP, ICMP;
+    }
+
+    @Value("${cqm.active.tests_type}")
+    private ActiveTestType activeTestsType;
 
     @Value("${cqm.pcap_max_packet_length}")
     private int pcapMaxPacketLength;
@@ -21,4 +27,5 @@ public class CqmConfiguration {
 
     @Value("${cqm.interface_name}")
     private String interfaceName;
+
 }
