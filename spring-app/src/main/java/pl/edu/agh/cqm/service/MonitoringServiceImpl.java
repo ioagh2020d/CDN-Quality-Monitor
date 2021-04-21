@@ -26,7 +26,7 @@ public class MonitoringServiceImpl implements MonitoringService {
     @Override
     public Map<String, List<RTTSampleDTO>> getRTTSamples(Instant startDate, Instant endDate) {
         return parameterService.getCdns().stream()
-            .map(config -> Pair.of(config.getCdn(), rttSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, config.getCdn())))
+            .map(cdn -> Pair.of(cdn, rttSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, cdn)))
                 .map(p -> Pair.of(
                 p.getFirst(),
                 p.getSecond().stream()
@@ -38,7 +38,7 @@ public class MonitoringServiceImpl implements MonitoringService {
     @Override
     public Map<String, List<ThroughputSampleDTO>> getThroughputSamples(Instant startDate, Instant endDate) {
         return parameterService.getCdns().stream()
-            .map(config -> Pair.of(config.getCdn(), throughputSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, config.getCdn())))
+            .map(cdn -> Pair.of(cdn, throughputSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, cdn)))
             .map(p -> Pair.of(
                 p.getFirst(),
                 p.getSecond().stream()

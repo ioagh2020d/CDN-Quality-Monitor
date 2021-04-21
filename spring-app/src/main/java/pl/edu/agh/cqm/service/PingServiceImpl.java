@@ -33,9 +33,9 @@ public class PingServiceImpl implements PingService {
 
     @Override
     public void doMeasurement() {
-        for (ConfigCdn configCdn : parameterService.getCdns()) {
+        for (String cdn : parameterService.getCdns()) {
             try {
-                rttSampleRepository.save(ping(configCdn.getCdn()));
+                rttSampleRepository.save(ping(cdn));
             } catch (IOException e) {
                 logger.error(e.getMessage());
             }

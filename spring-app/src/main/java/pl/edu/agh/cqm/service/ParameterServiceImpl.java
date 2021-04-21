@@ -13,6 +13,7 @@ import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ParameterServiceImpl implements ParameterService {
@@ -71,8 +72,8 @@ public class ParameterServiceImpl implements ParameterService {
     }
 
     @Override
-    public List<ConfigCdn> getCdns() {
-        return configCdnRepository.findAll();
+    public List<String> getCdns() {
+        return configCdnRepository.findAll().stream().map(x -> x.getCdn()).collect(Collectors.toList());
     }
 
     @Override
