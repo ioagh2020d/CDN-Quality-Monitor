@@ -188,7 +188,7 @@ volumes:
 }
 ```
 
-### PUT `/api/samples/update-parameters`
+### PUT `/api/parameters`
 
 #### Query parameters:
 
@@ -200,4 +200,18 @@ volumes:
 
 `passiveSamplingRate` : integer - passive sampling rate
 
-If some parameters are not in a query, they will not be updated.
+### GET `api/parameters`
+
+#### Example response:
+
+```json=
+{
+  "cdns": [
+    "www.youtube.com",
+    "www.facebook.com"
+  ],
+  "activeSamplingRate": 2,
+  "activeTestIntensity": 10
+  "passiveSamplingRate": 5
+}
+```
