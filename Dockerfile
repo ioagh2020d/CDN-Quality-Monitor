@@ -1,7 +1,7 @@
 FROM openjdk:15-jdk-oraclelinux7
 
-RUN yum install -y libpcap iputils
+RUN yum install -y libpcap iputils nmap
 
-ADD build/libs/cqm-*.jar cqm.jar
+ADD spring-app/build/libs/spring-app-*.jar cqm.jar
 
 CMD java -jar cqm.jar

@@ -3,6 +3,7 @@ package pl.edu.agh.cqm.controller;
 import java.time.Instant;
 import javax.validation.Valid;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +15,7 @@ import pl.edu.agh.cqm.data.dto.ThroughputSampleDTO;
 import pl.edu.agh.cqm.exception.BadRequestException;
 import pl.edu.agh.cqm.service.MonitoringService;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/samples")
 public class MonitoringController {
