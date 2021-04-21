@@ -45,12 +45,20 @@ const SingleChartGeneral = ({ dataInit, chartDesc, getDataCb /* see data tab */ 
 
         getDataCb(sd, ed).then((d) =>{
             setData(d);
-            let minmax = findMinMaxDate(d)
-            setMinMax({
-                min: new Date(minmax.min.getTime() - (1000*60*1)),
-                // max: new Date(minmax.max.getTime() + (1000*60*1))
-                max: minmax.max
-            });
+            try{
+                let minmax = findMinMaxDate(d)
+                setMinMax({
+                    min: new Date(minmax.min.getTime() - (1000*60*1)),
+                    max: new Date(minmax.max.getTime() + (1000*30*1))
+                    // max: minmax.max
+                });
+            }catch(e){
+                if(e instanceof TypeError){
+                    console.log("no data")
+                }else{
+                    throw e;
+                }
+            }
         });
 
     }
