@@ -61,7 +61,6 @@ public class RTTSample {
             .max(max)
             .standardDeviation(standardDeviation)
             .packetLoss(packetLoss)
-            .address(address)
             .type(type)
             .build();
     }

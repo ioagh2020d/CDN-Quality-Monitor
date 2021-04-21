@@ -187,3 +187,31 @@ volumes:
   }
 }
 ```
+
+### PUT `/api/parameters`
+
+#### Query parameters:
+
+`cdns` : List - CDNs
+
+`activeSamplingRate` : integer - active sampling rate
+
+`activeTestIntensity` : integer - active test intensity
+
+`passiveSamplingRate` : integer - passive sampling rate
+
+### GET `api/parameters`
+
+#### Example response:
+
+```json=
+{
+  "cdns": [
+    "www.youtube.com",
+    "www.facebook.com"
+  ],
+  "activeSamplingRate": 2,
+  "activeTestIntensity": 10
+  "passiveSamplingRate": 5
+}
+```

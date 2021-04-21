@@ -30,11 +30,12 @@ public class PingServiceImpl implements PingService {
 
     private final RTTSampleRepository rttSampleRepository;
     private final CqmConfiguration cqmConfiguration;
+    private final ParameterService parameterService;
     private final Logger logger = LogManager.getLogger(PingServiceImpl.class);
 
     @Override
     public void doMeasurement() {
-        for (String domain : cqmConfiguration.getCdns()) {
+        for (String domain : parameterService.getCdns()) {
             try {
                 CqmConfiguration.ActiveTestType type = cqmConfiguration.getActiveTestsType();
                 switch (type) {
@@ -54,7 +55,7 @@ public class PingServiceImpl implements PingService {
         char sep = symbols.getDecimalSeparator();
 
         String command = String.join(" ",
-                "nping --tcp --delay ", "0" + sep + "2", "-c", cqmConfiguration.getActiveTestsIntensity() + "", host);
+                "nping --tcp --delay ", "0" + sep + "2", "-c", parameterService.getActiveTestIntensity() + "", host);
         logger.info("Starting active sampling with command \"" + command + "\"");
         BufferedReader inputStream = runSystemCommand(command);
         // reading output stream of the command
@@ -79,7 +80,7 @@ public class PingServiceImpl implements PingService {
                 .min(getValFromString(lines.get(lines.size()-3).replaceAll("ms", " "), "Min rtt: ((\\d+)(\\.)(\\d+)) "))
                 .average(getValFromString(lines.get(lines.size()-3).replaceAll("ms", " "), "Avg rtt: ((\\d+)(\\.)(\\d+)) "))
                 .max(getValFromString(lines.get(lines.size()-3).replaceAll("ms", " "), "Max rtt: ((\\d+)(\\.)(\\d+)) "))
-                .standardDeviation(getStandardDeviation(stds))
+                .standardDeviation((float) getStandardDeviation(stds))
                 .timestamp(Instant.now())
                 .type(TCP)
                 .address(host)
@@ -106,7 +107,7 @@ public class PingServiceImpl implements PingService {
         char sep = symbols.getDecimalSeparator();
 
         String command = String.join(" ",
-                "ping", "-c", cqmConfiguration.getActiveTestsIntensity() + "", "-i 0" + sep + "2", host);
+                "ping", "-c", parameterService.getActiveTestIntensity() + "", "-i 0" + sep + "2", host);
         logger.info("Starting active sampling with command \"" + command + "\"");
         BufferedReader inputStream = runSystemCommand(command);
 
