@@ -1,5 +1,6 @@
 package pl.edu.agh.cqm.service;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ParameterServiceImpl implements ParameterService {
 
     private final ConfigCdnRepository configCdnRepository;
@@ -33,12 +35,6 @@ public class ParameterServiceImpl implements ParameterService {
 
     @Value("${cqm.passive.sampling_rate}")
     private int passiveSamplingRate;
-
-    public ParameterServiceImpl(ConfigCdnRepository configCdnRepository,
-                                ConfigSampleRepository configSampleRepository) {
-        this.configCdnRepository = configCdnRepository;
-        this.configSampleRepository = configSampleRepository;
-    }
 
     @Override
     @Transactional
