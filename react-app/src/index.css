@@ -8,9 +8,21 @@ body {
 }
 .App {
   /* background-color: red; */
-  height: 400px;
   width: auto;
   text-align: center;
+}
+.Chart{
+  height: 40vh;
+  margin: 1em;
+
+}
+.ChartDatePickers{
+  text-align: left;
+  margin-left: 2em;
+  /* background-color: rebeccapurple; */
+}
+.ChartDatePickers *{
+  margin-right: 1em;
 }
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
