@@ -1,11 +1,8 @@
 package pl.edu.agh.cqm.service;
 
-import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
-import pl.edu.agh.cqm.configuration.CqmConfiguration;
 import pl.edu.agh.cqm.data.dto.RTTSampleDTO;
 import pl.edu.agh.cqm.data.dto.ThroughputSampleDTO;
 import pl.edu.agh.cqm.data.model.RTTSample;
@@ -15,6 +12,8 @@ import pl.edu.agh.cqm.data.repository.ThroughputSampleRepository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -22,12 +21,12 @@ public class MonitoringServiceImpl implements MonitoringService {
 
     private final RTTSampleRepository rttSampleRepository;
     private final ThroughputSampleRepository throughputSampleRepository;
-    private final CqmConfiguration cqmConfiguration;
+    private final ParameterService parameterService;
 
     @Override
     public Map<String, List<RTTSampleDTO>> getRTTSamples(Instant startDate, Instant endDate) {
-        return cqmConfiguration.getCdns().stream()
-            .map(address -> Pair.of(address, rttSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, address)))
+        return parameterService.getCdns().stream()
+            .map(cdn -> Pair.of(cdn, rttSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, cdn)))
                 .map(p -> Pair.of(
                 p.getFirst(),
                 p.getSecond().stream()
@@ -38,8 +37,8 @@ public class MonitoringServiceImpl implements MonitoringService {
 
     @Override
     public Map<String, List<ThroughputSampleDTO>> getThroughputSamples(Instant startDate, Instant endDate) {
-        return cqmConfiguration.getCdns().stream()
-            .map(address -> Pair.of(address, throughputSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, address)))
+        return parameterService.getCdns().stream()
+            .map(cdn -> Pair.of(cdn, throughputSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, cdn)))
             .map(p -> Pair.of(
                 p.getFirst(),
                 p.getSecond().stream()

@@ -5,24 +5,16 @@ import lombok.ToString;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Getter
 @ToString
 @Component
 public class CqmConfiguration {
+    public enum ActiveTestType {
+        TCP, ICMP;
+    }
 
-    @Value("${cqm.cdns}")
-    private List<String> cdns;
-
-    @Value("${cqm.active.sampling_rate}")
-    private int activeSamplingRate;
-
-    @Value("${cqm.active.tests_intensity}")
-    private int activeTestsIntensity;
-
-    @Value("${cqm.passive.sampling_rate}")
-    private int passiveSamplingRate;
+    @Value("${cqm.active.tests_type}")
+    private ActiveTestType activeTestsType;
 
     @Value("${cqm.pcap_max_packet_length}")
     private int pcapMaxPacketLength;
