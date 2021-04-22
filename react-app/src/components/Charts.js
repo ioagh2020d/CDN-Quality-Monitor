@@ -5,7 +5,6 @@ const Charts = () => {
 
   return (
     <Card>
-      <p>charts</p>
       <SingleChartRTT />
       <SingleChartTput />
     </Card>

@@ -8,8 +8,6 @@ body {
 }
 .App {
   /* background-color: red; */
-  width: auto;
-  text-align: center;
 }
 .Chart{
   height: 35vh;

@@ -59,7 +59,7 @@ const SingleChartGeneral = ({ dataInit, chartDesc, getDataCb /* see data tab */ 
                     throw e;
                 }
             }
-        });
+        }).catch(e => console.log("no data"));
 
     }
 
