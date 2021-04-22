@@ -61,25 +61,24 @@ public class PingServiceImpl implements PingService {
         // reading output stream of the command
         List<String> lines = inputStream.lines().collect(Collectors.toList());
 
-        double std = 0;
-        double[] vals = new double[2*5]; //new ArrayList<>();
-        double[] stds = new double[5]; //new ArrayList<>();
-        for (int i = 2; i < lines.size()-3 ; i++) {
+        double[] vals = new double[lines.size() - 3]; //new ArrayList<>();
+        double[] stds = new double[(lines.size() - 3) / 2]; //new ArrayList<>();
+        for (int i = 2; i < lines.size() - 3; i++) {
             String line = lines.get(i);
             double val = getValFromString(line.replaceAll("s", "qazwsx"), "((\\d+)(\\.)(\\d+))qazwsx");
             if (val != -1) {
-                vals[i-2] = val;
+                vals[i - 2] = val;
             }
         }
-        for (int i = 0; i < (vals.length/2); i++) {
-            stds[i] = vals[2*i+1] - vals[2*i];
+        for (int i = 0; i < (vals.length / 2); i++) {
+            stds[i] = vals[2 * i + 1] - vals[2 * i];
         }
         return RTTSample.builder()
                 .id(0)
-                .packetLoss(getValFromString(lines.get(lines.size()-2), "(\\d+)(%)"))
-                .min(getValFromString(lines.get(lines.size()-3).replaceAll("ms", " "), "Min rtt: ((\\d+)(\\.)(\\d+)) "))
-                .average(getValFromString(lines.get(lines.size()-3).replaceAll("ms", " "), "Avg rtt: ((\\d+)(\\.)(\\d+)) "))
-                .max(getValFromString(lines.get(lines.size()-3).replaceAll("ms", " "), "Max rtt: ((\\d+)(\\.)(\\d+)) "))
+                .packetLoss(getValFromString(lines.get(lines.size() - 2), "(\\d+)(%)"))
+                .min(getValFromString(lines.get(lines.size() - 3).replaceAll("ms", " "), "Min rtt: ((\\d+)(\\.)(\\d+)) "))
+                .average(getValFromString(lines.get(lines.size() - 3).replaceAll("ms", " "), "Avg rtt: ((\\d+)(\\.)(\\d+)) "))
+                .max(getValFromString(lines.get(lines.size() - 3).replaceAll("ms", " "), "Max rtt: ((\\d+)(\\.)(\\d+)) "))
                 .standardDeviation((float) getStandardDeviation(stds))
                 .timestamp(Instant.now())
                 .type(TCP)
