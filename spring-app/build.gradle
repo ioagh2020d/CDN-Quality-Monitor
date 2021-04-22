@@ -1,8 +1,8 @@
 plugins {
-	id 'org.springframework.boot' version '2.4.4'
-	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-	id 'java'
-	id "io.freefair.lombok" version "5.3.0"
+    id 'org.springframework.boot' version '2.4.4'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+    id "io.freefair.lombok" version "5.3.0"
 }
 
 group = 'pl.edu.agh'
@@ -10,20 +10,33 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '15'
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	runtimeOnly 'com.h2database:h2'
-	runtimeOnly 'org.postgresql:postgresql'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	compile 'org.pcap4j:pcap4j-core:1.+'
-	compile 'org.pcap4j:pcap4j-packetfactory-static:1.+'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly(files("build/artifact/react-app.jar"))
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    compile 'org.pcap4j:pcap4j-core:1.+'
+    compile 'org.pcap4j:pcap4j-packetfactory-static:1.+'
 }
 
+tasks.register("packageReact", Zip) {
+    it.archiveFileName = "react-app.jar"
+    it.entryCompression = ZipEntryCompression.STORED
+    it.archiveExtension.set("jar")
+    it.destinationDir(file("build/artifact"))
+    it.from("../react-app/build") {
+        into("static")
+    }
+}
+
+bootJar.dependsOn packageReact
+
 test {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
