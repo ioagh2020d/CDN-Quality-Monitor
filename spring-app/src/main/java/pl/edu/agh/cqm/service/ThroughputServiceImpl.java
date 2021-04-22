@@ -25,19 +25,21 @@ public class ThroughputServiceImpl implements ThroughputService {
     private final Logger logger;
     private final int snapLen;
     private final int timeout;
+    private final ParameterService parameterService;
     private int measurementTime;
     private final int sessionBreakTime;
     private final String interfaceName;
     private String myIP;
     private PcapNetworkInterface nif;
+    private List<CDNsData> cdns;
 
-    public ThroughputServiceImpl(CqmConfiguration configuration, ThroughputSampleRepository dataRepository) throws PcapNativeException {
+    public ThroughputServiceImpl(CqmConfiguration configuration,ParameterService parameterService, ThroughputSampleRepository dataRepository) throws PcapNativeException {
         logger = LogManager.getLogger("ThroughputServiceImpl");
         this.dataRepository = dataRepository;
         this.parameterService = parameterService;
         snapLen = configuration.getPcapMaxPacketLength();
         timeout = configuration.getPcapTimeout();
-        measurementTime = 1000 * 60 * configuration.getPassiveSamplingRate();
+        measurementTime = 1000 * 60 * parameterService.getPassiveSamplingRate();
         sessionBreakTime = configuration.getPcapSessionBreak();
         interfaceName = configuration.getInterfaceName();
 
@@ -57,7 +59,12 @@ public class ThroughputServiceImpl implements ThroughputService {
     }
 
     public void doMeasurement() {
-
+        cdns = new ArrayList<>(parameterService.getCdns().size());
+        for (String cdn : parameterService.getCdns()) {
+            CDNsData cdnsData = new CDNsData();
+            cdnsData.name = cdn;
+            cdns.add(cdnsData);
+        }
         logger.debug("throughput doMeasurement start");
         try {
             this.measureThroughput(cdns, myIP);
@@ -93,7 +100,7 @@ public class ThroughputServiceImpl implements ThroughputService {
         }
         for (CDNsData cdn : cdns) {
             if (!dnsPacket.getHeader().getQuestions().get(0).getQName().toString().contains(cdn.name)) {
-                return false;
+                continue;
             }
             List<DnsResourceRecord> dnsRecords = dnsPacket
                     .getHeader()
@@ -108,8 +115,10 @@ public class ThroughputServiceImpl implements ThroughputService {
                     .map(r -> ((DnsRDataA) r.getRData()).getAddress().getHostAddress())
                     .forEach(cdn::tryAdd);
             logger.debug("found dns response for cdn {} : {} : {}", cdn.name, dnsPacket.getHeader().getQuestions().get(0).getQName().toString(), cdn.ips.get(0));
+            return true;
+
         }
-        return true;
+        return false;
     }
 
     private void measureThroughput(List<CDNsData> cdns, String myAddr) throws PcapNativeException, NotOpenException {
