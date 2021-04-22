@@ -22,7 +22,7 @@ public class ThroughputServiceImpl implements ThroughputService {
 
     private final PcapNetworkInterface.PromiscuousMode mode = PcapNetworkInterface.PromiscuousMode.NONPROMISCUOUS;
     private final ThroughputSampleRepository dataRepository;
-    private final Logger logger;
+    private final Logger logger = LogManager.getLogger(ThroughputServiceImpl.class);
     private final int snapLen;
     private final int timeout;
     private final ParameterService parameterService;
@@ -34,12 +34,10 @@ public class ThroughputServiceImpl implements ThroughputService {
     private List<CDNsData> cdns;
 
     public ThroughputServiceImpl(CqmConfiguration configuration,ParameterService parameterService, ThroughputSampleRepository dataRepository) throws PcapNativeException {
-        logger = LogManager.getLogger("ThroughputServiceImpl");
         this.dataRepository = dataRepository;
         this.parameterService = parameterService;
         snapLen = configuration.getPcapMaxPacketLength();
         timeout = configuration.getPcapTimeout();
-        measurementTime = 1000 * 60 * parameterService.getPassiveSamplingRate();
         sessionBreakTime = configuration.getPcapSessionBreak();
         interfaceName = configuration.getInterfaceName();
 
@@ -59,6 +57,7 @@ public class ThroughputServiceImpl implements ThroughputService {
     }
 
     public void doMeasurement() {
+        measurementTime = 1000 * 60 * parameterService.getPassiveSamplingRate();
         cdns = new ArrayList<>(parameterService.getCdns().size());
         for (String cdn : parameterService.getCdns()) {
             CDNsData cdnsData = new CDNsData();
