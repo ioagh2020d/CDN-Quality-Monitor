@@ -6,7 +6,23 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+.App {
+  /* background-color: red; */
+}
+.Chart{
+  height: 35vh;
+  margin: 1em;
+  margin-bottom: 2em;
 
+}
+.ChartDatePickers{
+  text-align: left;
+  margin-left: 2em;
+  /* background-color: rebeccapurple; */
+}
+.ChartDatePickers *{
+  margin-right: 1em;
+}
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
