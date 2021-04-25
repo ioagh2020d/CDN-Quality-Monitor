@@ -17,4 +17,6 @@ public class AllParametersResponseDTO {
     private Map<String, List<RTTSampleDTO>> rttSamples;
 
     private Map<String, List<ThroughputSampleDTO>> throughputSamples;
+
+    private Map<String, Map<String, List<DeviationDTO>>> deviations;
 }
