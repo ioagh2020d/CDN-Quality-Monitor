@@ -1,4 +1,4 @@
-import {getRTT} from "../DataGetter";
+import {getRTTAverage} from "../DataGetter";
 import React from 'react';
 import SingleChartGeneral from "./SingleChartGeneral";
 
@@ -6,7 +6,7 @@ import SingleChartGeneral from "./SingleChartGeneral";
 const SingleChartRTT = ({ data_init }) => {
 
     return (
-        <SingleChartGeneral dataInit={[]} getDataCb={getRTT} chartDesc={{leftAxisDesc: "ms"}}/>
+        <SingleChartGeneral dataInit={[]} getDataCb={getRTTAverage} chartDesc={{leftAxisDesc: "ms"}}/>
     );
 }
 

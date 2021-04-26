@@ -1,7 +1,6 @@
 // yarn add @nivo/core @nivo/line
 import { ResponsiveLine } from '@nivo/line';
 import React, { useState, useEffect } from 'react';
-
 // import DateFnsUtils from '@date-io/date-fns';
 // import 'date-fns';
 import {
@@ -29,6 +28,7 @@ function findMinMaxDate(data){
 const SingleChartGeneral = ({ dataInit, chartDesc, getDataCb /* see data tab */ }) => {
     
     const [data, setData] = useState(dataInit);
+    const [markers, setMarkers] = useState([]);
     const [minMax, setMinMax] = useState({min: 'auto', max: 'auto'})
     const [startDateTime, setStartDateTime] = useState(new Date(Date.now() - (1000*3600*5)));
     const [endDateTime, setEndDateTime] = useState(new Date(Date.now()));
@@ -44,22 +44,35 @@ const SingleChartGeneral = ({ dataInit, chartDesc, getDataCb /* see data tab */ 
     function updateData(sd, ed){
 
         getDataCb(sd, ed).then((d) =>{
-            setData(d);
+            setData(d.data);
+            if(d.markers){
+                setMarkers(d.markers);
+            }
             try{
-                let minmax = findMinMaxDate(d)
                 setMinMax({
-                    min: new Date(minmax.min.getTime() - (1000*60*1)),
-                    max: new Date(minmax.max.getTime() + (1000*30*1))
+                    min: startDateTime,
+                    max: endDateTime
                     // max: minmax.max
                 });
             }catch(e){
-                if(e instanceof TypeError){
-                    console.log("no data")
-                }else{
-                    throw e;
-                }
+
+                throw e;
             }
-        }).catch(e => console.log("no data"));
+        }).catch(e => {
+            setData([]);
+            setMarkers([]);
+            if(e instanceof SyntaxError){
+                console.warn(e);
+            }else if(e instanceof TypeError){
+                console.warn(e);
+            }else if(e.message == 500){
+                console.warn("internal server error");
+            }else if(e.message == 400){
+                console.log("no data")
+            }else{
+                throw e;
+            }
+        });
 
     }
 
@@ -113,6 +126,7 @@ const SingleChartGeneral = ({ dataInit, chartDesc, getDataCb /* see data tab */ 
         }}
         useMesh={true}
         enableSlices={false}
+        markers={markers}
         legends={[
             {
                 anchor: 'bottom-right',
