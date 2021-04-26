@@ -70,9 +70,9 @@ public class MonitoringController {
             throw new BadRequestException();
         }
         Map<String, List<RTTSampleDTO>> rttSamples =
-                monitoringService.getRTTSamples(searchDTO.getStartDate(), searchDTO.getEndDate());
+                monitoringService.getRTTSamples(startDate, endDate);
         Map<String, List<ThroughputSampleDTO>> throughputSamples =
-                monitoringService.getThroughputSamples(searchDTO.getStartDate(), searchDTO.getEndDate());
+                monitoringService.getThroughputSamples(startDate, endDate);
         return new AllParametersResponseDTO(
                 startDate,
                 endDate,
