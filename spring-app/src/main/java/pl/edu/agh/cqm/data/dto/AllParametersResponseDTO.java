@@ -3,6 +3,7 @@ package pl.edu.agh.cqm.data.dto;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -18,5 +19,5 @@ public class AllParametersResponseDTO {
 
     private Map<String, List<ThroughputSampleDTO>> throughputSamples;
 
-    private Map<String, Map<String, List<DeviationDTO>>> deviations;
+    private Map<String, CdnDeviations> deviations;
 }
