@@ -97,6 +97,16 @@ volumes:
         "packetLoss": 0
       }
     ]
+  },
+  "deviations": {
+    "www.facebook.com": {
+      "packetLoss": [],
+      "rtt": []
+    },
+    "www.youtube.com": {
+      "packetLoss": [],
+      "rtt": []
+    }
   }
 }
 ```
@@ -130,6 +140,14 @@ volumes:
         "throughput": 3376
       }
     ]
+  },
+  "deviations": {
+    "www.facebook.com": {
+      "throughput": []
+    },
+    "www.youtube.com": {
+      "throughput": []
+    }
   }
 }
 ```
@@ -184,6 +202,18 @@ volumes:
         "throughput": 3376
       }
     ]
+  },
+  "deviations": {
+    "www.facebook.com": {
+      "packetLoss": [],
+      "rtt": [],
+      "throughput": []
+    },
+    "www.youtube.com": {
+      "packetLoss": [],
+      "rtt": [],
+      "throughput": []
+    }
   }
 }
 ```

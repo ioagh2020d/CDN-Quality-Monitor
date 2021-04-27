@@ -7,10 +7,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.edu.agh.cqm.data.dto.*;
 import pl.edu.agh.cqm.exception.BadRequestException;
+import pl.edu.agh.cqm.service.DeviationsService;
 import pl.edu.agh.cqm.service.MonitoringService;
 
 import javax.validation.Valid;
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 
 @CrossOrigin
 @RestController
@@ -19,6 +22,7 @@ import java.time.Instant;
 public class MonitoringController {
 
     private final MonitoringService monitoringService;
+    private final DeviationsService deviationsService;
 
     @GetMapping("/rtt")
     public SingleParameterResponseDTO<RTTSampleDTO> getRTT(
@@ -27,10 +31,13 @@ public class MonitoringController {
         if (!monitoringService.checkRttSamplesExist(searchDTO.getStartDate(), searchDTO.getEndDate())) {
             throw new BadRequestException();
         }
+        Map<String, List<RTTSampleDTO>> rttSamples =
+                monitoringService.getRTTSamples(searchDTO.getStartDate(), searchDTO.getEndDate());
         return new SingleParameterResponseDTO<>(
                 searchDTO.getStartDate(),
                 searchDTO.getEndDate(),
-                monitoringService.getRTTSamples(searchDTO.getStartDate(), searchDTO.getEndDate())
+                rttSamples,
+                deviationsService.getRTTDeviations(rttSamples)
         );
     }
 
@@ -41,10 +48,13 @@ public class MonitoringController {
         if (!monitoringService.checkThroughputSamplesExist(searchDTO.getStartDate(), searchDTO.getEndDate())) {
             throw new BadRequestException();
         }
+        Map<String, List<ThroughputSampleDTO>> throughputSamples =
+                monitoringService.getThroughputSamples(searchDTO.getStartDate(), searchDTO.getEndDate());
         return new SingleParameterResponseDTO<>(
                 searchDTO.getStartDate(),
                 searchDTO.getEndDate(),
-                monitoringService.getThroughputSamples(searchDTO.getStartDate(), searchDTO.getEndDate())
+                throughputSamples,
+                deviationsService.getThroughputDeviations(throughputSamples)
         );
     }
 
@@ -59,11 +69,16 @@ public class MonitoringController {
                 && !monitoringService.checkThroughputSamplesExist(startDate, endDate)) {
             throw new BadRequestException();
         }
+        Map<String, List<RTTSampleDTO>> rttSamples =
+                monitoringService.getRTTSamples(startDate, endDate);
+        Map<String, List<ThroughputSampleDTO>> throughputSamples =
+                monitoringService.getThroughputSamples(startDate, endDate);
         return new AllParametersResponseDTO(
                 startDate,
                 endDate,
-                monitoringService.getRTTSamples(startDate, endDate),
-                monitoringService.getThroughputSamples(startDate, endDate)
+                rttSamples,
+                throughputSamples,
+                deviationsService.getAllDeviations(rttSamples, throughputSamples)
         );
     }
 }

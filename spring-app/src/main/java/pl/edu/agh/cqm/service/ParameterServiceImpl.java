@@ -43,7 +43,6 @@ public class ParameterServiceImpl implements ParameterService {
         for (String cdn : cdns) {
             configCdnRepository.save(new ConfigCdn(0, cdn));
         }
-        System.out.println(configCdnRepository.findAll());
         logger.info("Updated the cdns: " + cdns);
     }
 
