@@ -1,4 +1,4 @@
-package pl.edu.agh.cqm.service;
+package pl.edu.agh.cqm.service.impl;
 
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
@@ -6,6 +6,7 @@ import pl.edu.agh.cqm.data.dto.CdnDeviations;
 import pl.edu.agh.cqm.data.dto.DeviationDTO;
 import pl.edu.agh.cqm.data.dto.RTTSampleDTO;
 import pl.edu.agh.cqm.data.dto.ThroughputSampleDTO;
+import pl.edu.agh.cqm.service.DeviationsService;
 
 import java.time.Instant;
 import java.util.*;

@@ -9,9 +9,11 @@ import pl.edu.agh.cqm.data.dto.ThroughputSampleDTO;
 
 public interface MonitoringService {
 
-    Map<String, List<RTTSampleDTO>> getRTTSamples(Instant startDate, Instant endDate);
+    long DEFAULT_GRANULARITY = 1000 * 60 * 10;
 
-    Map<String, List<ThroughputSampleDTO>> getThroughputSamples(Instant startDate, Instant endDate);
+    Map<String, List<RTTSampleDTO>> getRTTSamples(Instant startDate, Instant endDate, Long granularity);
+
+    Map<String, List<ThroughputSampleDTO>> getThroughputSamples(Instant startDate, Instant endDate, Long granularity);
 
     boolean checkRttSamplesExist(Instant startDate, Instant endDate);
 

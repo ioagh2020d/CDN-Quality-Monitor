@@ -1,4 +1,4 @@
-package pl.edu.agh.cqm.service;
+package pl.edu.agh.cqm.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -9,6 +9,7 @@ import pl.edu.agh.cqm.data.model.ConfigCdn;
 import pl.edu.agh.cqm.data.model.ConfigSample;
 import pl.edu.agh.cqm.data.repository.ConfigCdnRepository;
 import pl.edu.agh.cqm.data.repository.ConfigSampleRepository;
+import pl.edu.agh.cqm.service.ParameterService;
 
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;

@@ -1,4 +1,4 @@
-package pl.edu.agh.cqm.service;
+package pl.edu.agh.cqm.service.impl;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -7,9 +7,10 @@ import org.pcap4j.packet.*;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
-import pl.edu.agh.cqm.data.model.ConfigCdn;
 import pl.edu.agh.cqm.data.model.ThroughputSample;
 import pl.edu.agh.cqm.data.repository.ThroughputSampleRepository;
+import pl.edu.agh.cqm.service.ParameterService;
+import pl.edu.agh.cqm.service.ThroughputService;
 
 import java.sql.Timestamp;
 import java.time.Instant;

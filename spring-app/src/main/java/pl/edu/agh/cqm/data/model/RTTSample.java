@@ -8,8 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
 import pl.edu.agh.cqm.data.dto.RTTSampleDTO;
-import pl.edu.agh.cqm.service.PingService;
-import pl.edu.agh.cqm.service.PingServiceImpl;
 
 import java.time.Instant;
 

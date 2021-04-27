@@ -1,4 +1,4 @@
-package pl.edu.agh.cqm.service;
+package pl.edu.agh.cqm.service.impl;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
 import pl.edu.agh.cqm.data.model.RTTSample;
 import pl.edu.agh.cqm.data.repository.RTTSampleRepository;
+import pl.edu.agh.cqm.service.ParameterService;
+import pl.edu.agh.cqm.service.PingService;
 
 import java.io.BufferedReader;
 import java.io.IOException;
