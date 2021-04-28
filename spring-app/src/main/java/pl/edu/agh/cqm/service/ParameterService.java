@@ -1,5 +1,8 @@
 package pl.edu.agh.cqm.service;
 
+import pl.edu.agh.cqm.data.dto.ConfigSampleDTO;
+
+import java.time.Instant;
 import java.util.List;
 
 public interface ParameterService {
@@ -11,4 +14,6 @@ public interface ParameterService {
     int getActiveSamplingRate();
     int getActiveTestIntensity();
     int getPassiveSamplingRate();
+
+    List<ConfigSampleDTO> getParameterHistory(Instant startDate, Instant endDate);
 }

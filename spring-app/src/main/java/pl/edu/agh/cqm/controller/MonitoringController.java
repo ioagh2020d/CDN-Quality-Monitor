@@ -9,6 +9,7 @@ import pl.edu.agh.cqm.data.dto.*;
 import pl.edu.agh.cqm.exception.BadRequestException;
 import pl.edu.agh.cqm.service.DeviationsService;
 import pl.edu.agh.cqm.service.MonitoringService;
+import pl.edu.agh.cqm.service.ParameterService;
 
 import javax.validation.Valid;
 import java.time.Instant;
@@ -23,6 +24,7 @@ public class MonitoringController {
 
     private final MonitoringService monitoringService;
     private final DeviationsService deviationsService;
+    private final ParameterService parameterService;
 
     @GetMapping("/rtt")
     public SingleParameterResponseDTO<RTTSampleDTO> getRTT(
@@ -37,7 +39,8 @@ public class MonitoringController {
                 searchDTO.getStartDate(),
                 searchDTO.getEndDate(),
                 rttSamples,
-                deviationsService.getRTTDeviations(rttSamples)
+                deviationsService.getRTTDeviations(rttSamples),
+                parameterService.getParameterHistory(searchDTO.getStartDate(), searchDTO.getEndDate())
         );
     }
 
@@ -54,7 +57,8 @@ public class MonitoringController {
                 searchDTO.getStartDate(),
                 searchDTO.getEndDate(),
                 throughputSamples,
-                deviationsService.getThroughputDeviations(throughputSamples)
+                deviationsService.getThroughputDeviations(throughputSamples),
+                parameterService.getParameterHistory(searchDTO.getStartDate(), searchDTO.getEndDate())
         );
     }
 
@@ -78,7 +82,8 @@ public class MonitoringController {
                 endDate,
                 rttSamples,
                 throughputSamples,
-                deviationsService.getAllDeviations(rttSamples, throughputSamples)
+                deviationsService.getAllDeviations(rttSamples, throughputSamples),
+                parameterService.getParameterHistory(startDate, endDate)
         );
     }
 }
