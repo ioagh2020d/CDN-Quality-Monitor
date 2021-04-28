@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import pl.edu.agh.cqm.data.dto.RTTSampleDTO;
 import pl.edu.agh.cqm.data.dto.ThroughputSampleDTO;
 import pl.edu.agh.cqm.data.model.RTTSample;
+import pl.edu.agh.cqm.data.model.Sample;
 import pl.edu.agh.cqm.data.model.ThroughputSample;
 import pl.edu.agh.cqm.data.repository.RTTSampleRepository;
 import pl.edu.agh.cqm.data.repository.ThroughputSampleRepository;
@@ -16,11 +17,11 @@ import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @AllArgsConstructor
@@ -36,7 +37,7 @@ public class MonitoringServiceImpl implements MonitoringService {
             .map(cdn -> Pair.of(cdn, rttSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, cdn)))
             .map(p -> Pair.of(
                 p.getFirst(),
-                groupRTT(p.getSecond(), granularity, startDate)))
+                groupRTT(p.getSecond(), granularity)))
             .collect(Pair.toMap());
     }
 
@@ -46,7 +47,7 @@ public class MonitoringServiceImpl implements MonitoringService {
             .map(cdn -> Pair.of(cdn, throughputSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, cdn)))
             .map(p -> Pair.of(
                 p.getFirst(),
-                groupThroughput(p.getSecond(), granularity, startDate)))
+                groupThroughput(p.getSecond(), granularity)))
             .collect(Pair.toMap());
     }
 
@@ -60,34 +61,34 @@ public class MonitoringServiceImpl implements MonitoringService {
         return throughputSampleRepository.existsByTimestampBetween(startDate, endDate);
     }
 
-    private List<ThroughputSampleDTO> groupThroughput(List<ThroughputSample> samples, long granularity, Instant start) {
-        return samples.stream()
-            .collect(Collectors.groupingByConcurrent(sample -> sample.getTimestamp().toEpochMilli() / granularity))
-            .entrySet()
-            .stream()
-            .sorted((a, b) -> (int) (a.getKey() - b.getKey()))
+    private List<ThroughputSampleDTO> groupThroughput(List<ThroughputSample> samples, long granularity) {
+        return group(samples, granularity)
             .map(entry -> ThroughputSampleDTO.builder()
-                .timestamp(Instant.ofEpochMilli(entry.getKey() * granularity + start.toEpochMilli()))
+                .timestamp(Instant.ofEpochMilli(entry.getKey() * granularity))
                 .throughput(average(entry.getValue(), ThroughputSample::getThroughput))
                 .build())
             .collect(Collectors.toList());
     }
 
-    private List<RTTSampleDTO> groupRTT(List<RTTSample> samples, long granularity, Instant start) {
+    private List<RTTSampleDTO> groupRTT(List<RTTSample> samples, long granularity) {
+        return group(samples, granularity)
+            .map(entry -> RTTSampleDTO.builder()
+                .timestamp(Instant.ofEpochMilli(entry.getKey() * granularity))
+                .packetLoss(average(entry.getValue(), RTTSample::getPacketLoss))
+                .average(average(entry.getValue(), RTTSample::getAverage))
+                .standardDeviation(average(entry.getValue(), RTTSample::getAverage))
+                .max(max(entry.getValue(), RTTSample::getMax))
+                .min(min(entry.getValue(), RTTSample::getMin))
+                .build())
+            .collect(Collectors.toList());
+    }
+
+    private <T extends Sample> Stream<Map.Entry<Long, List<T>>> group(List<T> samples, long granularity) {
         return samples.stream()
             .collect(Collectors.groupingByConcurrent(sample -> sample.getTimestamp().toEpochMilli() / granularity))
             .entrySet()
             .stream()
-            .sorted((a, b) -> (int) (a.getKey() - b.getKey()))
-            .map(entry -> RTTSampleDTO.builder()
-                .timestamp(Instant.ofEpochMilli(entry.getKey() * granularity + start.toEpochMilli()))
-                .packetLoss(average(samples, RTTSample::getPacketLoss))
-                .average(average(samples, RTTSample::getAverage))
-                .standardDeviation(average(samples, RTTSample::getAverage))
-                .max(max(samples, RTTSample::getMax))
-                .min(min(samples, RTTSample::getMin))
-                .build())
-            .collect(Collectors.toList());
+            .sorted((a, b) -> (int) (a.getKey() - b.getKey()));
     }
 
     private Long average(List<ThroughputSample> samples, ToLongFunction<ThroughputSample> extractor) {
