@@ -76,7 +76,7 @@ public class MonitoringServiceImpl implements MonitoringService {
                 .timestamp(Instant.ofEpochMilli(entry.getKey() * granularity))
                 .packetLoss(average(entry.getValue(), RTTSample::getPacketLoss))
                 .average(average(entry.getValue(), RTTSample::getAverage))
-                .standardDeviation(average(entry.getValue(), RTTSample::getAverage))
+                .standardDeviation(average(entry.getValue(), RTTSample::getStandardDeviation))
                 .max(max(entry.getValue(), RTTSample::getMax))
                 .min(min(entry.getValue(), RTTSample::getMin))
                 .build())
