@@ -8,6 +8,55 @@ import {
   DateTimePicker,
 } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
+import Typography from '@material-ui/core/Typography';
+import Slider from '@material-ui/core/Slider';
+import {makeStyles} from "@material-ui/core";
+
+const useStyles = makeStyles({
+    granularity: {
+        width: 450,
+    },
+});
+
+const granularityValues = [5, 10 ,20, 30, 60, 120, 240, 720, 1440]
+const granularityMarks = [
+    {
+        value: 1,
+        label: '5 min',
+    },
+    {
+        value: 2,
+        label: '10 min',
+    },
+    {
+        value: 3,
+        label: '20 min',
+    },
+    {
+        value: 4,
+        label: '30 min',
+    },
+    {
+        value: 5,
+        label: '1 h',
+    },
+    {
+        value: 6,
+        label: '2 h',
+    },
+    {
+        value: 7,
+        label: '4 h',
+    },
+    {
+        value: 8,
+        label: '12 h',
+    },
+    {
+        value: 9,
+        label: '1 day',
+    },
+];
 
 
 function findMinMaxDate(data){
@@ -32,6 +81,7 @@ const SingleChartGeneral = ({ dataInit, chartDesc, getDataCb /* see data tab */ 
     const [minMax, setMinMax] = useState({min: 'auto', max: 'auto'})
     const [startDateTime, setStartDateTime] = useState(new Date(Date.now() - (1000*3600*5)));
     const [endDateTime, setEndDateTime] = useState(new Date(Date.now()));
+    const [granularityValue, setGranularityValue] = useState(10);
 
     chartDesc = chartDesc || {};
 
@@ -41,8 +91,7 @@ const SingleChartGeneral = ({ dataInit, chartDesc, getDataCb /* see data tab */ 
         leftAxisDesc: chartDesc.leftAxisDesc || "count"
     };
 
-    function updateData(sd, ed){
-
+    function updateData(sd, ed, gr){
         getDataCb(sd, ed).then((d) =>{
             setData(d.data);
             if(d.markers){
@@ -78,15 +127,32 @@ const SingleChartGeneral = ({ dataInit, chartDesc, getDataCb /* see data tab */ 
 
     // useEffect(() => updateData(startDateTime,endDateTime), []);
     useEffect(() => {
-
-        updateData(startDateTime, endDateTime);
-    }, [startDateTime, endDateTime]);
+        updateData(startDateTime, endDateTime, granularityValue);
+    }, [startDateTime, endDateTime, granularityValue]);
 
     return (<div className="Chart">
         <div className="ChartDatePickers">
         <MuiPickersUtilsProvider utils={DateFnsUtils}>
         <DateTimePicker ampm={false} value={startDateTime} onChange={sd => setStartDateTime(sd)} />
         <DateTimePicker ampm={false} value={endDateTime} onChange={ed => setEndDateTime(ed)} />
+
+        <div className={useStyles().granularity}>
+            <Typography id="granularity" gutterBottom>
+                Granularity
+            </Typography>
+            <Slider
+              min={1}
+              max={9}
+              defaultValue={granularityValues.findIndex((v)=>v.valueOf() === granularityValue)+1}
+              step={null}
+              scale={(x) => granularityValues[x]}
+              valueLabelFormat={(x) => ""}
+              aria-labelledby="granularity"
+              valueLabelDisplay="auto"
+              marks={granularityMarks}
+              onChangeCommitted={(event, gr) => setGranularityValue(granularityValues[gr-1])}
+            />
+        </div>
         </MuiPickersUtilsProvider>
         </div>
         <ResponsiveLine
