@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import pl.edu.agh.cqm.data.dto.ConfigSampleDTO;
 import pl.edu.agh.cqm.data.model.ConfigCdn;
 import pl.edu.agh.cqm.data.model.ConfigSample;
 import pl.edu.agh.cqm.data.repository.ConfigCdnRepository;
@@ -85,6 +86,17 @@ public class ParameterServiceImpl implements ParameterService {
     @Override
     public int getPassiveSamplingRate() {
         return configSampleRepository.findFirstByOrderByTimestampDesc().getPassiveSamplingRate();
+    }
+
+    @Override
+    public List<ConfigSampleDTO> getParameterHistory(Instant startDate, Instant endDate) {
+        ConfigSample firstConfig = configSampleRepository.findFirstByTimestampLessThanEqualOrderByTimestampDesc(startDate);
+        List<ConfigSample> configs = configSampleRepository.findAllByTimestampBetweenOrderByTimestamp(startDate, endDate);
+        if (firstConfig != null) {
+            configs.add(0, firstConfig);
+        }
+
+        return configs.stream().map(ConfigSample::toDTO).collect(Collectors.toList());
     }
 
     @PostConstruct

@@ -12,12 +12,11 @@ import lombok.Data;
 public class AllParametersResponseDTO {
 
     private Instant startDate;
-
     private Instant endDate;
 
     private Map<String, List<RTTSampleDTO>> rttSamples;
-
     private Map<String, List<ThroughputSampleDTO>> throughputSamples;
 
     private Map<String, CdnDeviations> deviations;
+    private List<ConfigSampleDTO> parameterHistory;
 }
