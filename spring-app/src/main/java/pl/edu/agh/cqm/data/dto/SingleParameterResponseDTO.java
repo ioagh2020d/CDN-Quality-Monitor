@@ -13,7 +13,9 @@ public class SingleParameterResponseDTO<T extends SampleDTO> {
 
     private Instant startDate;
     private Instant endDate;
+
     private Map<String, List<T>> samples;
 
     private Map<String, CdnDeviations> deviations;
+    private List<ConfigSampleDTO> parameterHistory;
 }
