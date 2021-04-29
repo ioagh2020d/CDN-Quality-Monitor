@@ -4,11 +4,11 @@ const throughputEndpoint = "/api/samples/throughput"
 
 
 
-async function getRTT(param, startDate, endDate){
+async function getRTT(param, startDate, endDate, granularity){
     if(typeof param !== "string"){
         throw new Error("no param in getRTT");
     }
-    return fetch(apiURL + rttEndpoint + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`)
+    return fetch(apiURL + rttEndpoint + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}`)
     .then(response => {
         if(response.status !== 200){
             throw new Error(response.status)
