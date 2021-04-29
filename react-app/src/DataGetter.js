@@ -60,6 +60,7 @@ async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, e
             }
         });
 
+
         // for(const deviation of deviations){
         //     markers.push({
         //         axis: 'x',
@@ -99,11 +100,11 @@ async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, e
             }
         }
         datasets.push({id: cdn, data: dataFinal});
-        datasets.push({id: "&DEVS&"+cdn, data: deviationsFinal});     
+        datasets.push({id: "deviation "+cdn, data: deviationsFinal});     
 
     }
     console.log(datasets);
-    return {data: datasets, markers: markers};
+    return {data: datasets, markers: markers, response: response};
 }
 
 
