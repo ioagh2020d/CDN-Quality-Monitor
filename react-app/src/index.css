@@ -12,6 +12,8 @@ body {
 .Chart{
   height: 30em;
   margin: 1em;
+  padding-bottom: 4em;
+  /* background-color: salmon; */
   margin-bottom: 2em;
 
 }
@@ -28,6 +30,7 @@ body {
 }
 
 .Granularity{
+  /* background-color: red; */
   padding-left: 2em;
   width: 35em;
   min-width: 30em;

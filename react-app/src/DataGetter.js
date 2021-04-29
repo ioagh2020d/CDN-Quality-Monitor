@@ -4,10 +4,7 @@ const throughputEndpoint = "/api/samples/throughput"
 
 
 
-async function getRTT(param, startDate, endDate, granularity){
-    if(typeof param !== "string"){
-        throw new Error("no param in getRTT");
-    }
+async function getRTT(startDate, endDate, granularity){
     return fetch(apiURL + rttEndpoint + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}`)
     .then(response => {
         if(response.status !== 200){
@@ -18,7 +15,7 @@ async function getRTT(param, startDate, endDate, granularity){
 }
 
 
-async function getThroughput(startDate, endDate){
+async function getThroughput(startDate, endDate, granularity){
 
     return fetch(apiURL + throughputEndpoint + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}`)
     .then(response => {
@@ -30,10 +27,18 @@ async function getThroughput(startDate, endDate){
   
 }
 
-async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, ed){
-    const response = await getDataJson(sd, ed);
+async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, ed, granularity){
+    const response = await getDataJson(sd, ed, granularity);
     const datasets = [];
     const markers = [];
+
+
+    // TODO filter out markers by date 
+    response.parameterHistory = response.parameterHistory.filter( o => {
+        const ts = new Date(o.timestamp);
+        return (sd <= ts && ts <= ed);
+    });
+
     function matchAnyDeviation(sample, deviations){
         for(const deviation of deviations){
             if(deviation.startDate <= sample.x && sample.x <= deviation.endDate){
