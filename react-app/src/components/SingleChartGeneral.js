@@ -97,6 +97,8 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
   };
 
   function updateData(sd, ed, gr) {
+
+
     getDataCb(sd, ed, gr).then((d) => {
       d.data = d.data.map(cdn => {
         cdn.id = cdn.id+gr.toString();
