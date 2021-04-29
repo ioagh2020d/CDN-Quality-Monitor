@@ -1,12 +1,20 @@
-import {getThroughput} from "../DataGetter";
+import {getThroughput, getDataPrepared} from "../DataGetter";
 import React from 'react';
 import SingleChartGeneral from "./SingleChartGeneral";
+
+
+
+async function getDataCb(sd, ed){
+
+    return getDataPrepared(getThroughput, 'throughput', 'throughput', sd, ed);
+    
+} 
 
 
 const SingleChartTput = ({ data_init }) => {
 
     return (
-        <SingleChartGeneral dataInit={[]} getDataCb={getThroughput} chartDesc={{leftAxisDesc: "kb/s"}}/>
+        <SingleChartGeneral dataInit={[]} getDataCb={getDataCb} chartDesc={{leftAxisDesc: "kb/s"}}/>
     );
 
 }
