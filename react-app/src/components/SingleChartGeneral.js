@@ -1,23 +1,11 @@
-// yarn add @nivo/core @nivo/line
 import {ResponsiveLine} from '@nivo/line';
 import React, {useState, useEffect} from 'react';
-// import DateFnsUtils from '@date-io/date-fns';
-// import 'date-fns';
 import {
   MuiPickersUtilsProvider,
   DateTimePicker,
 } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
-import Typography from '@material-ui/core/Typography';
 import Slider from '@material-ui/core/Slider';
-import {makeStyles} from "@material-ui/core";
-
-// const useStyles = makeStyles({
-//   granularity: {
-//
-//     width: 450,
-//   },
-// });
 
 const granularityValues = [5, 10, 20, 30, 60, 120, 240, 720, 1440]
 const granularityMarks = [
@@ -73,8 +61,6 @@ function findMinMaxDate(data) {
   let max = dates_arr.reduce((a, b) => {
     return a > b ? a : b;
   });
-  // max = new Date(max.getTime() + (1000*60*30));
-  // let min = new Date(max.getTime() - (1000*3600*3));
   return {min, max};
 }
 
@@ -97,7 +83,7 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
   };
 
   function updateData(sd, ed, gr) {
-    
+
     getDataCb(sd, ed, gr).then((d) => {
       d.data = d.data.map(cdn => {
         cdn.id = cdn.id+" ".repeat(granularityValues.findIndex((v) => v.valueOf() === granularityValue));
@@ -135,7 +121,6 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
 
   }
 
-  // useEffect(() => updateData(startDateTime,endDateTime), []);
   useEffect(() => {
     updateData(startDateTime, endDateTime, granularityValue);
   }, [startDateTime, endDateTime, granularityValue]);
@@ -147,12 +132,11 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
         <DateTimePicker ampm={false} value={endDateTime} onChange={ed => setEndDateTime(ed)}/>
       </MuiPickersUtilsProvider>
 
-      {/*<div className={useStyles().granularity}>*/}
       <div className="Granularity">
         <Slider
           min={1}
           max={9}
-          defaultValue={2}//granularityValues.findIndex((v) => v.valueOf() === granularityValue) + 1}
+          defaultValue={2}
           step={null}
           scale={(x) => granularityValues[x]}
           valueLabelFormat={(x) => ""}
