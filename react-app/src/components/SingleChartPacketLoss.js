@@ -3,9 +3,9 @@ import React from 'react';
 import SingleChartGeneral from "./SingleChartGeneral";
 
 
-async function getDataCb(sd, ed){
+async function getDataCb(...args){
 
-    return getDataPrepared(getRTT, 'packetLoss', 'packetLoss', sd, ed);
+    return getDataPrepared(getRTT, 'packetLoss', 'packetLoss', ...args);
 
 } 
 

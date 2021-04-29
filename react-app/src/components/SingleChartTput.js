@@ -4,9 +4,9 @@ import SingleChartGeneral from "./SingleChartGeneral";
 
 
 
-async function getDataCb(sd, ed){
+async function getDataCb(...args){
 
-    return getDataPrepared(getThroughput, 'throughput', 'throughput', sd, ed);
+    return getDataPrepared(getThroughput, 'throughput', 'throughput', ...args);
     
 } 
 
