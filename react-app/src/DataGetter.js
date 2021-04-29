@@ -4,60 +4,17 @@ const throughputEndpoint = "/api/samples/throughput"
 
 
 
-async function getRTT(param, startDate, endDate, granularity){
-    if(typeof param !== "string"){
-        throw new Error("no param in getRTT");
-    }
+async function getRTT(startDate, endDate, granularity){
     return fetch(apiURL + rttEndpoint + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}`)
     .then(response => {
         if(response.status !== 200){
             throw new Error(response.status)
         }      
-        return response.json()
-    }).then(d => {
-        const dArr = Object.entries(d.samples).map(r => {
-            let id = r[0];
-            let samples = r[1].map(s => {
-                let x = new Date(s.timestamp)
-                let y = s[param];
-                return {x:x, y:y};
-            });
-            return {
-                id: id,
-                data: samples
-            };
-        });
-
-        const markers = []; // TODO
-        // const markers = d.parameterHistory.map(r => {
-        //     const ts = new Date(r.timestamp);
-        //     const legend = `activeSamplingRate ${r.activeSamplingRate}\r\nactiveTestIntensity ${r.nactiveTestIntensity}`;
-        //     return {
-        //         axis: 'x',
-        //         value: ts,
-        //         lineStyle: { stroke: '#b0413e', strokeWidth: 2 },
-        //         legend: legend
-        //     };
-        // })
-        return {data: dArr, markers: markers};
-    });    
+        return response.json();
+    });   
 }
 
-async function getRTTAverage(...args){
-    return getRTT("average", ...args);
-}
-async function getRTTMin(...args){
-    return getRTT("min", ...args);
-}
-async function getRTTMax(...args){
-    return getRTT("max", ...args);
-}
-async function getRTTStdDev(...args){
-    return getRTT("standardDeviation", ...args);
-}
-async function getRTTPacketLoss(...args){
-    return getRTT("packetLoss", ...args);
-}
+
 async function getThroughput(startDate, endDate, granularity){
 
     return fetch(apiURL + throughputEndpoint + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}`)
@@ -66,38 +23,95 @@ async function getThroughput(startDate, endDate, granularity){
             throw new Error(response.status)
         }      
         return response.json()
-    })
-    .then(d => {
-        const dArr = Object.entries(d.samples).map(r => {
-            let id = r[0];
-            let samples = r[1].map(s => {
-                let x = new Date(s.timestamp)
-                let y = s.throughput;
-                return {x:x, y:y/1000};
-            });
-            return {
-                id: id,
-                data: samples
-            };
-        });
-        const markers = [{
-            axis: 'x',
-            value: new Date(Date.now() - (1000*60*10)),
-            lineStyle: { stroke: '#b0413e', strokeWidth: 2 },
-            legend: 'x marker',
-        }]; // TODO
-        // const markers = d.parameterHistory.map(r => {
-        //     const ts = new Date(r.timestamp);
-        //     const legend = `passiveSamplingRate ${r.passiveSamplingRate}`;
-        //     return {
-        //         axis: 'x',
-        //         value: ts,
-        //         lineStyle: { stroke: '#b0413e', strokeWidth: 2 },
-        //         legend: legend
-        //     };
-        // })
-        return {data: dArr, markers: markers};
-    });    
+    });
+  
 }
 
-export {getRTTAverage, getThroughput, getRTTPacketLoss};
+async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, ed, granularity){
+    const response = await getDataJson(sd, ed, granularity);
+    const datasets = [];
+    const markers = [];
+
+
+    // TODO filter out markers by date 
+    response.parameterHistory = response.parameterHistory.filter( o => {
+        const ts = new Date(o.timestamp);
+        return (sd <= ts && ts <= ed);
+    });
+
+    function matchAnyDeviation(sample, deviations){
+        for(const deviation of deviations){
+            if(deviation.startDate <= sample.x && sample.x <= deviation.endDate){
+                return true;
+            } 
+        }
+        return false;
+
+    }
+
+    for(const cdn in response.samples){
+        let samples = response.samples[cdn].map(s => {
+            const ts = new Date(s.timestamp);
+            const value = s[samplesParam];
+            return { x: ts, y: value};
+        });
+        let deviations = response.deviations[cdn][deviationsParam].map((r) => {
+            return {
+                // startDate: new Date(new Date(r.startDate)).getTime() + (1000*60*2), // TODO
+                // endDate: new Date(new Date(r.endDate)).getTime() + (1000*60*8), // TODO
+                startDate: new Date(r.startDate), // TODO
+                endDate: new Date(r.endDate), // TODO
+                description: r.description
+            }
+        });
+
+
+        // for(const deviation of deviations){
+        //     markers.push({
+        //         axis: 'x',
+        //         // legend: `start of deviation`,
+        //         value: deviation.startDate,
+        //         lineStyle: { stroke: '#00ff00', strokeWidth: 2 }
+        //     });
+        //     markers.push({
+        //         axis: 'x',
+        //         // legend: `end of deviation`,
+        //         value: deviation.endDate,
+        //         lineStyle: { stroke: '#ff0000', strokeWidth: 2 }
+        //     });            
+        // }
+
+        let dataFinal = []
+        let deviationsFinal = []
+        let last_dev = false;
+        for(const sample of samples){
+            if(matchAnyDeviation(sample, deviations)){
+                deviationsFinal.push(sample);
+                if(!last_dev){
+                    dataFinal.push(sample);
+                }else{
+                    dataFinal.push({x: sample.x, y: null});
+                }
+                last_dev = true;
+            }else{
+                
+                dataFinal.push(sample);
+                if(last_dev){
+                    deviationsFinal.push(sample);
+                }else{
+                    deviationsFinal.push({x: sample.x, y: null});
+                }
+                last_dev = false;
+            }
+        }
+        datasets.push({id: cdn, data: dataFinal});
+        datasets.push({id: "deviation "+cdn, data: deviationsFinal});     
+
+    }
+    console.log(datasets);
+    return {data: datasets, markers: markers, response: response};
+}
+
+
+
+export {getRTT, getThroughput, getDataPrepared};

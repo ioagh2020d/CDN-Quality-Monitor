@@ -1,5 +1,8 @@
 import {ResponsiveLine} from '@nivo/line';
 import React, {useState, useEffect} from 'react';
+// yarn add @nivo/core @nivo/line
+// import DateFnsUtils from '@date-io/date-fns';
+// import 'date-fns';
 import {
   MuiPickersUtilsProvider,
   DateTimePicker,
@@ -46,24 +49,6 @@ const granularityMarks = [
     label: '1 day',
   },
 ];
-
-
-function findMinMaxDate(data) {
-  let dates_arr = Object.entries(data)
-    .map(r => r[1].data)
-    .flat()
-    .map(r => r.x);
-
-
-  let min = dates_arr.reduce((a, b) => {
-    return a < b ? a : b;
-  });
-  let max = dates_arr.reduce((a, b) => {
-    return a > b ? a : b;
-  });
-  return {min, max};
-}
-
 
 const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */}) => {
 
@@ -200,8 +185,7 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
           symbolSize: 12,
           symbolShape: 'circle',
           symbolBorderColor: 'rgba(0, 0, 0, .5)',
-          effects: [
-            {
+          effects: [{
               on: 'hover',
               style: {
                 itemBackground: 'rgba(0, 0, 0, .03)',
