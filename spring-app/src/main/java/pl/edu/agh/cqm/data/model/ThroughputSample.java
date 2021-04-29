@@ -8,6 +8,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import pl.edu.agh.cqm.data.dto.ThroughputSampleDTO;
@@ -19,8 +20,7 @@ import pl.edu.agh.cqm.data.dto.ThroughputSampleDTO;
     @Index(columnList = "address"),
     @Index(columnList = "timestamp")
 })
-public class ThroughputSample {
-
+public class ThroughputSample implements Sample {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,11 +34,4 @@ public class ThroughputSample {
 
     @Column(nullable = false, updatable = false)
     private long throughput;
-
-    public ThroughputSampleDTO toDTO() {
-        return ThroughputSampleDTO.builder()
-            .timestamp(timestamp)
-            .throughput(throughput)
-            .build();
-    }
 }

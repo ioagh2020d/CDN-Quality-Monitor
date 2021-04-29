@@ -1,16 +1,12 @@
 package pl.edu.agh.cqm.data.model;
 
-import javax.persistence.*;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
-import pl.edu.agh.cqm.data.dto.RTTSampleDTO;
-import pl.edu.agh.cqm.service.PingService;
-import pl.edu.agh.cqm.service.PingServiceImpl;
 
+import javax.persistence.*;
 import java.time.Instant;
 
 @Data
@@ -19,10 +15,10 @@ import java.time.Instant;
 @Builder
 @AllArgsConstructor
 @Table(indexes = {
-        @Index(columnList = "address"),
-        @Index(columnList = "timestamp")
+    @Index(columnList = "address"),
+    @Index(columnList = "timestamp")
 })
-public class RTTSample {
+public class RTTSample implements Sample {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,16 +48,4 @@ public class RTTSample {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, updatable = false, length = 8)
     private CqmConfiguration.ActiveTestType type;
-
-    public RTTSampleDTO toDTO() {
-        return RTTSampleDTO.builder()
-            .timestamp(timestamp)
-            .average(average)
-            .min(min)
-            .max(max)
-            .standardDeviation(standardDeviation)
-            .packetLoss(packetLoss)
-            .type(type)
-            .build();
-    }
 }
