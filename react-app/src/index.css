@@ -16,6 +16,9 @@ body {
 
 }
 .ChartDatePickers{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   text-align: left;
   margin-left: 2em;
   /* background-color: rebeccapurple; */
@@ -23,6 +26,13 @@ body {
 .ChartDatePickers *{
   margin-right: 1em;
 }
+
+.Granularity{
+  padding-left: 2em;
+  width: 35em;
+  min-width: 30em;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
