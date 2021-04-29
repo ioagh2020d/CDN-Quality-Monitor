@@ -58,9 +58,9 @@ async function getRTTStdDev(...args){
 async function getRTTPacketLoss(...args){
     return getRTT("packetLoss", ...args);
 }
-async function getThroughput(startDate, endDate){
+async function getThroughput(startDate, endDate, granularity){
 
-    return fetch(apiURL + throughputEndpoint + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`)
+    return fetch(apiURL + throughputEndpoint + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}`)
     .then(response => {
         if(response.status !== 200){
             throw new Error(response.status)

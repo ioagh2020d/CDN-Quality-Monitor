@@ -97,11 +97,10 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
   };
 
   function updateData(sd, ed, gr) {
-
-
+    
     getDataCb(sd, ed, gr).then((d) => {
       d.data = d.data.map(cdn => {
-        cdn.id = cdn.id+gr.toString();
+        cdn.id = cdn.id+" ".repeat(granularityValues.findIndex((v) => v.valueOf() === granularityValue));
         return cdn;
       });
       setData(d.data);
@@ -149,7 +148,7 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
       </MuiPickersUtilsProvider>
 
       {/*<div className={useStyles().granularity}>*/}
-      <div className="granularity">
+      <div className="Granularity">
         <Slider
           min={1}
           max={9}
