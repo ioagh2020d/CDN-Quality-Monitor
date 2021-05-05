@@ -34,7 +34,7 @@ services:
     image: hubertus248/cqm
     network_mode: host
     environment:
-#      - CQM_DDL_AUTO=create #uncomment for first run and database initialization
+      #      - CQM_DDL_AUTO=create #uncomment for first run and database initialization
       - CQM_JDBC_STRING=jdbc:postgresql://localhost/postgres
       - CQM_DB_USER=postgres
       - CQM_DB_PASS=secret_password #replace with a new random password
@@ -44,7 +44,7 @@ services:
       - CQM_ACTIVE_SAMPLING_RATE=10 #default 10 minutes
       - CQM_ACTIVE_TEST_INTENSITY=100 #default 100 samples
       - CQM_PASSIVE_SAMPLING_RATE=5 #default 5 minutes
-  
+
   postgres:
     image: postgres
     volumes:
@@ -53,7 +53,7 @@ services:
       - POSTGRES_PASSWORD=secret_password #replace with a new random password
     ports:
       - 5432:5432
-      
+
 volumes:
   postgres-data:
 ```
@@ -107,7 +107,15 @@ volumes:
       "packetLoss": [],
       "rtt": []
     }
-  }
+  },
+  "parameterHistory": [
+    {
+      "timestamp": "2021-04-02T23:04:11Z",
+      "activeSamplingRate": 2,
+      "activeTestsIntensity": 10,
+      "passiveSamplingRate": 5
+    }
+  ]
 }
 ```
 
@@ -148,7 +156,15 @@ volumes:
     "www.youtube.com": {
       "throughput": []
     }
-  }
+  },
+  "parameterHistory": [
+    {
+      "timestamp": "2021-04-02T23:04:11Z",
+      "activeSamplingRate": 2,
+      "activeTestsIntensity": 10,
+      "passiveSamplingRate": 5
+    }
+  ]
 }
 ```
 
@@ -214,7 +230,15 @@ volumes:
       "rtt": [],
       "throughput": []
     }
-  }
+  },
+  "parameterHistory": [
+    {
+      "timestamp": "2021-04-02T23:04:11Z",
+      "activeSamplingRate": 2,
+      "activeTestsIntensity": 10,
+      "passiveSamplingRate": 5
+    }
+  ]
 }
 ```
 
@@ -222,7 +246,7 @@ volumes:
 
 #### Query parameters:
 
-`cdns` : List - CDNs
+`cdns` : Map - key: CDN, value: List of urls
 
 `activeSamplingRate` : integer - active sampling rate
 
@@ -236,10 +260,15 @@ volumes:
 
 ```json
 {
-  "cdns": [
-    "www.youtube.com",
-    "www.facebook.com"
-  ],
+  "cdns": {
+    "www.facebook.com": [
+      "www.fb.com"
+    ],
+    "www.youtube.com": [
+      "www.yt.com",
+      "www.yt2.com"
+    ]
+  },
   "activeSamplingRate": 2,
   "activeTestIntensity": 10,
   "passiveSamplingRate": 5
