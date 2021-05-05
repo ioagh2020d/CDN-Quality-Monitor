@@ -94,12 +94,78 @@ public class DeviationsServiceImpl implements DeviationsService {
         return Map.of("throughput", throughputValues);
     }
 
-    // TODO - CQM-51
     private List<DeviationDTO> detectDeviations(List<Pair<Instant, Number>> values) {
         if (values.isEmpty()) {
             return List.of();
         } else {
-            return List.of(new DeviationDTO(values.get(0).getFirst(), values.get(0).getFirst().plusSeconds(1), "test"));
+            List<DeviationDTO> deviations = new ArrayList<>(rappidChanges(values, 0.2));
+            deviations.addAll(slowChanges(values, 5));
+            return deviations;
         }
+    }
+
+    private List<DeviationDTO> slowChanges(List<Pair<Instant, Number>> values, double slowChangeMinLength) {
+        if (values.size() > slowChangeMinLength) {
+            List<DeviationDTO> slowChanges = new ArrayList<>();
+            for (int i = 1; i < values.size(); i++) {
+                if (values.get(i - 1).getSecond().doubleValue() > values.get(i).getSecond().doubleValue()) {
+                    int is = i - 1;
+                    while (i < values.size() && values.get(i - 1).getSecond().doubleValue() > values.get(i).getSecond().doubleValue()) {
+                        i++;
+                    }
+                    i--;
+                    int ie = i;
+                    if (~ i < values.size()){
+                        ie--;
+                    }
+                    if (ie - is >= slowChangeMinLength) {
+                        slowChanges.add(new DeviationDTO(values.get(is).getFirst(), values.get(ie).getFirst(), "Decrease"));
+                    }
+                } else if (values.get(i - 1).getSecond().doubleValue() < values.get(i).getSecond().doubleValue()) {
+                    int is = i - 1;
+                    while (i < values.size() && values.get(i - 1).getSecond().doubleValue() < values.get(i).getSecond().doubleValue()) {
+                        i++;
+                    }
+                    i--;
+                    int ie = i;
+                    if (~ i < values.size()){
+                        ie--;
+                    }
+                    if (ie - is >= slowChangeMinLength) {
+                        slowChanges.add(new DeviationDTO(values.get(is).getFirst(), values.get(ie).getFirst(), "Increase"));
+                    }
+                }
+            }
+            return slowChanges;
+        }
+        return List.of();
+    }
+
+    private List<DeviationDTO> rappidChanges(List<Pair<Instant, Number>> values, double rappidChangePercentage) {
+        if (values.size() > 1) {
+            List<DeviationDTO> rappidChanges = new ArrayList<>();
+            for (int i = 1; i < values.size(); i++) {
+                if (values.get(i - 1).getSecond().doubleValue() >
+                        (1 + rappidChangePercentage) * values.get(i).getSecond().doubleValue() ||
+                        values.get(i - 1).getSecond().doubleValue() <
+                                (1 - rappidChangePercentage) * values.get(i).getSecond().doubleValue()) {
+                    int is = i - 1;
+                    while (i < values.size() && (values.get(i - 1).getSecond().doubleValue() >
+                            (1 + rappidChangePercentage) * values.get(i).getSecond().doubleValue() ||
+                            values.get(i - 1).getSecond().doubleValue() <
+                                    (1 - rappidChangePercentage) * values.get(i).getSecond().doubleValue())) {
+                        i++;
+                    }
+                    i--;
+                    int ie = i;
+                    if (~ i < values.size()){
+                        ie--;
+                    }
+                    rappidChanges.add(new DeviationDTO(values.get(is).getFirst(), values.get(ie).getFirst(), "Rappid Changes"));
+                }
+            }
+            return rappidChanges;
+        }
+        return List.of();
     }
 }
