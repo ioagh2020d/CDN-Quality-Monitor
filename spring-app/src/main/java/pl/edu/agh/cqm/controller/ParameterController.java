@@ -3,10 +3,13 @@ package pl.edu.agh.cqm.controller;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.cqm.data.dto.ConfigParametersDTO;
+import pl.edu.agh.cqm.data.repository.CdnRepository;
+import pl.edu.agh.cqm.data.repository.UrlRepository;
 import pl.edu.agh.cqm.service.ParameterService;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin
 @RestController
@@ -20,8 +23,8 @@ public class ParameterController {
     public void put(
             @Valid @RequestBody ConfigParametersDTO configParametersDTO
     ) {
-        List<String> cdns = configParametersDTO.getCdns();
-        parameterService.updateCdns(cdns);
+        Map<String, List<String>> cdns = configParametersDTO.getCdns();
+        parameterService.updateCdnsWithUrls(cdns);
 
         int activeSamplingRate = configParametersDTO.getActiveSamplingRate();
         int activeTestIntensity = configParametersDTO.getActiveTestIntensity();
@@ -32,7 +35,7 @@ public class ParameterController {
     @GetMapping
     public ConfigParametersDTO get() {
         return ConfigParametersDTO.builder()
-                .cdns(parameterService.getCdns())
+                .cdns(parameterService.getCdnsWithUrls())
                 .activeSamplingRate(parameterService.getActiveSamplingRate())
                 .activeTestIntensity(parameterService.getActiveTestIntensity())
                 .passiveSamplingRate(parameterService.getPassiveSamplingRate())
