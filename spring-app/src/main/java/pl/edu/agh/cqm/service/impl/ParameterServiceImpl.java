@@ -80,6 +80,7 @@ public class ParameterServiceImpl implements ParameterService {
                 }
             }
         }
+        logger.info("Updated the cdns and urls: " + cdnsWithUrls);
     }
 
     @Override
