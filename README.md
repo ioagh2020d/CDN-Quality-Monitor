@@ -246,7 +246,7 @@ volumes:
 
 #### Query parameters:
 
-`cdns` : Map - key: CDN, value: List of urls
+`cdns` : List of objects with fields: "name" - cdn name, "urls" - cdn urls
 
 `activeSamplingRate` : integer - active sampling rate
 
@@ -260,15 +260,21 @@ volumes:
 
 ```json
 {
-  "cdns": {
-    "www.facebook.com": [
-      "www.fb.com"
-    ],
-    "www.youtube.com": [
-      "www.yt.com",
-      "www.yt2.com"
-    ]
-  },
+  "cdns": [
+    {
+      "name": "Youtube",
+      "urls": [
+        "www.youtube.com",
+        "www.yt.com"
+      ]
+    },
+    {
+      "name": "Facebook",
+      "urls": [
+        "www.fb.com"
+      ]
+    }
+  ],
   "activeSamplingRate": 2,
   "activeTestIntensity": 10,
   "passiveSamplingRate": 5

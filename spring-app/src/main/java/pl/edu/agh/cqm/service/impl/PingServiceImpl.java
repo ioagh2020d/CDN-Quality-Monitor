@@ -37,7 +37,7 @@ public class PingServiceImpl implements PingService {
 
     @Override
     public void doMeasurement() {
-        for (String domain : parameterService.getCdns()) {
+        for (String domain : parameterService.getCdnNames()) {
             try {
                 CqmConfiguration.ActiveTestType type = cqmConfiguration.getActiveTestsType();
                 switch (type) {

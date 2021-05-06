@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -17,7 +16,7 @@ import java.util.Map;
 public class ConfigParametersDTO {
 
     @NotNull
-    private Map<String, List<String>> cdns;
+    private List<CdnWithUrlsDTO> cdns;
 
     @NotNull
     @Min(1)
