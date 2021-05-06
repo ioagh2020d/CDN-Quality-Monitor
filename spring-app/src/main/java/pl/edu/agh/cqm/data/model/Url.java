@@ -22,11 +22,11 @@ public class Url {
     private String address;
 
     @Column(nullable = false)
-    boolean inUse;
+    boolean active;
 
     public Url(long cdnId, String address) {
         this.cdnId = cdnId;
         this.address = address;
-        this.inUse = true;
+        this.active = true;
     }
 }

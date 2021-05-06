@@ -10,5 +10,5 @@ import java.util.List;
 public interface CdnRepository extends JpaRepository<Cdn, Long> {
 
     Cdn findByNameEquals(String name);
-    List<Cdn> findByInUseTrue();
+    List<Cdn> findByActiveTrue();
 }

@@ -22,7 +22,7 @@ public class ParameterController {
             @Valid @RequestBody ConfigParametersDTO configParametersDTO
     ) {
         List<CdnWithUrlsDTO> cdns = configParametersDTO.getCdns();
-        parameterService.updateCdns(cdns);
+        parameterService.updateCdnsWithUrls(cdns);
 
         int activeSamplingRate = configParametersDTO.getActiveSamplingRate();
         int activeTestIntensity = configParametersDTO.getActiveTestIntensity();
@@ -33,7 +33,7 @@ public class ParameterController {
     @GetMapping
     public ConfigParametersDTO get() {
         return ConfigParametersDTO.builder()
-                .cdns(parameterService.getCdns())
+                .cdns(parameterService.getActiveCdnsWithUrls())
                 .activeSamplingRate(parameterService.getActiveSamplingRate())
                 .activeTestIntensity(parameterService.getActiveTestIntensity())
                 .passiveSamplingRate(parameterService.getPassiveSamplingRate())

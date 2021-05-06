@@ -18,10 +18,10 @@ public class Cdn {
     private String name;
 
     @Column(nullable = false)
-    private boolean inUse;
+    private boolean active;
 
     public Cdn(String name) {
         this.name = name;
-        this.inUse = true;
+        this.active = true;
     }
 }

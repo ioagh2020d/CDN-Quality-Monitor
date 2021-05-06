@@ -18,7 +18,6 @@ import pl.edu.agh.cqm.service.ParameterService;
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import java.time.Instant;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,49 +44,42 @@ public class ParameterServiceImpl implements ParameterService {
 
     @Override
     @Transactional
-    public void updateCdnNames(Collection<String> cdnNames) {
+    public void updateCdnsWithUrls(List<CdnWithUrlsDTO> cdnsWithUrls) {
+        // set all cdns to unactive
         for (Cdn cdn : cdnRepository.findAll()) {
-            cdn.setInUse(false);
+            cdn.setActive(false);
             cdnRepository.save(cdn);
         }
 
-        for (String cdnName : cdnNames) {
-            Cdn cdn = cdnRepository.findByNameEquals(cdnName);
-            if (cdn != null) {
-                cdn.setInUse(true);
-                cdnRepository.save(cdn);
-            } else {
-                cdnRepository.save(new Cdn(cdnName));
-            }
-        }
-    }
-
-    @Override
-    @Transactional
-    public void updateUrls(String cdnName, Collection<String> urls) {
-        long cdnId = getCdnId(cdnName);
-
-        for (Url url : urlRepository.findByCdnIdEquals(cdnId)) {
-            url.setInUse(false);
+        // set all urls to unactive
+        for (Url url : urlRepository.findAll()) {
+            url.setActive(false);
             urlRepository.save(url);
         }
 
-        for (String address : urls) {
-            Url url = urlRepository.findByCdnIdEqualsAndAddressEquals(cdnId, address);
-            if (url != null) {
-                url.setInUse(true);
-                urlRepository.save(url);
+        // set to active or add new cdns and urls
+        for (CdnWithUrlsDTO cdnWithUrls : cdnsWithUrls) {
+            // cdns
+            Cdn cdn = cdnRepository.findByNameEquals(cdnWithUrls.getName());
+            if (cdn == null) {
+                cdn = new Cdn(cdnWithUrls.getName());
+                cdnRepository.save(cdn);
             } else {
-                urlRepository.save(new Url(cdnId, address));
+                cdn.setActive(true);
+                cdnRepository.save(cdn);
+            }
+
+            // urls
+            for (String address : cdnWithUrls.getUrls()) {
+                Url url = urlRepository.findByCdnIdEqualsAndAddressEquals(cdn.getId(), address);
+                if (url == null) {
+                    urlRepository.save(new Url(cdn.getId(), address));
+                } else {
+                    url.setActive(true);
+                    urlRepository.save(url);
+                }
             }
         }
-    }
-
-    @Override
-    @Transactional
-    public void updateCdns(List<CdnWithUrlsDTO> cdns) {
-        updateCdnNames(cdns.stream().map(CdnWithUrlsDTO::getName).collect(Collectors.toList()));
-        cdns.stream().forEach(x -> updateUrls(x.getName(), x.getUrls()));
     }
 
     @Override
@@ -109,24 +101,29 @@ public class ParameterServiceImpl implements ParameterService {
         }
     }
 
+    // TODO: delete (temporary method)
     @Override
-    public List<String> getCdnNames() {
-        return cdnRepository.findByInUseTrue().stream()
-                .map(Cdn::getName)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<String> getUrls(String cdn) {
-        long cdnId = getCdnId(cdn);
-        return urlRepository.findByCdnIdEqualsAndInUseTrue(cdnId).stream()
+    public List<String> getActiveUrlAddresses() {
+        return urlRepository.findByActiveTrue().stream()
                 .map(Url::getAddress)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<CdnWithUrlsDTO> getCdns() {
-        return getCdnNames().stream().map(cdn -> new CdnWithUrlsDTO(cdn, getUrls(cdn))).collect(Collectors.toList());
+    public List<Url> getActiveUrls() {
+        return urlRepository.findByActiveTrue();
+    }
+
+    @Override
+    public List<Url> getActiveUrls(String cdn) {
+        return urlRepository.findByCdnIdEqualsAndActiveTrue(getCdnId(cdn));
+    }
+
+    @Override
+    public List<CdnWithUrlsDTO> getActiveCdnsWithUrls() {
+        return cdnRepository.findByActiveTrue().stream()
+                .map(cdn -> new CdnWithUrlsDTO(cdn.getName(), getActiveUrlAddresses(cdn.getId())))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -155,8 +152,14 @@ public class ParameterServiceImpl implements ParameterService {
         return configs.stream().map(ConfigSample::toDTO).collect(Collectors.toList());
     }
 
-    private long getCdnId(String cdnName) {
-        return cdnRepository.findByNameEquals(cdnName).getId();
+    private Long getCdnId(String cdn) {
+        return cdnRepository.findByNameEquals(cdn).getId();
+    }
+
+    private List<String> getActiveUrlAddresses(long cdnId) {
+        return urlRepository.findByCdnIdEqualsAndActiveTrue(cdnId).stream()
+                .map(Url::getAddress)
+                .collect(Collectors.toList());
     }
 
     @PostConstruct

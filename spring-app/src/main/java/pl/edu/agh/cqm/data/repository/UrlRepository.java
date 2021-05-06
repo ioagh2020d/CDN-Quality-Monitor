@@ -9,7 +9,7 @@ import java.util.List;
 @Repository
 public interface UrlRepository extends JpaRepository<Url, Long> {
 
-    List<Url> findByCdnIdEquals(long cdnId);
+    List<Url> findByActiveTrue();
+    List<Url> findByCdnIdEqualsAndActiveTrue(long cdnId);
     Url findByCdnIdEqualsAndAddressEquals(long cdnId, String address);
-    List<Url> findByCdnIdEqualsAndInUseTrue(long cdnId);
 }

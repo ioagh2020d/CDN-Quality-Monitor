@@ -33,7 +33,7 @@ public class MonitoringServiceImpl implements MonitoringService {
 
     @Override
     public Map<String, List<RTTSampleDTO>> getRTTSamples(Instant startDate, Instant endDate, Long granularity) {
-        return parameterService.getCdnNames().stream()
+        return parameterService.getActiveUrlAddresses().stream()
             .map(cdn -> Pair.of(cdn, rttSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, cdn)))
             .map(p -> Pair.of(
                 p.getFirst(),
@@ -43,7 +43,7 @@ public class MonitoringServiceImpl implements MonitoringService {
 
     @Override
     public Map<String, List<ThroughputSampleDTO>> getThroughputSamples(Instant startDate, Instant endDate, Long granularity) {
-        return parameterService.getCdnNames().stream()
+        return parameterService.getActiveUrlAddresses().stream()
             .map(cdn -> Pair.of(cdn, throughputSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, cdn)))
             .map(p -> Pair.of(
                 p.getFirst(),
