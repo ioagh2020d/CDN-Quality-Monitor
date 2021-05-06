@@ -77,14 +77,14 @@ const Settings = () => {
                     endAdornment: <InputAdornment position={"end"}>packets</InputAdornment>
                   }}
                   InputLabelProps={{shrink: true}}
-                  inputRef={activeSamplingRateRef} {...activeSamplingRateParams}/>
+                  inputRef={activeTestIntensityRef} {...activeTestIntensityParams}/>
                 <TextField
                   label={"Test rate"}
                   InputProps={{
                     endAdornment: <InputAdornment position={"end"}>min</InputAdornment>
                   }}
                   InputLabelProps={{shrink: true}}
-                  inputRef={activeTestIntensityRef} {...activeTestIntensityParams}/>
+                  inputRef={activeSamplingRateRef} {...activeSamplingRateParams}/>
               </Box>
             </Box>
 
