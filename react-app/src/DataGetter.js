@@ -105,7 +105,7 @@ async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, e
             }
         }
         datasets.push({id: cdn, data: dataFinal});
-        datasets.push({id: "deviation "+cdn, data: deviationsFinal});     
+        // datasets.push({id: "deviation "+cdn, data: deviationsFinal});
 
     }
     console.log(datasets);

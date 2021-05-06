@@ -17,10 +17,6 @@ services:
       - spring.profiles.active=h2
       - CQM_INTERFACE=ens33
       - CQM_PORT=8080
-      - CQM_CDNS=www.facebook.com,www.youtube.com
-      - CQM_ACTIVE_SAMPLING_RATE=10 #default 10 minutes
-      - CQM_ACTIVE_TEST_INTENSITY=100 #default 100 samples
-      - CQM_PASSIVE_SAMPLING_RATE=5 #default 5 minutes
 ```
 
 ### Postgres
@@ -40,19 +36,14 @@ services:
       - CQM_DB_PASS=secret_password #replace with a new random password
       - CQM_INTERFACE=ens33
       - CQM_PORT=8080
-      - CQM_CDNS=www.facebook.com,www.youtube.com
-      - CQM_ACTIVE_SAMPLING_RATE=10 #default 10 minutes
-      - CQM_ACTIVE_TEST_INTENSITY=100 #default 100 samples
-      - CQM_PASSIVE_SAMPLING_RATE=5 #default 5 minutes
   
   postgres:
     image: postgres
+    network_mode: host
     volumes:
       - postgres-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=secret_password #replace with a new random password
-    ports:
-      - 5432:5432
       
 volumes:
   postgres-data:
