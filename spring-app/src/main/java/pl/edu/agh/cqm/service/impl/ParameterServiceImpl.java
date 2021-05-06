@@ -52,7 +52,7 @@ public class ParameterServiceImpl implements ParameterService {
         }
 
         for (String cdnName : cdnNames) {
-            Cdn cdn = cdnRepository.findByAddressEquals(cdnName);
+            Cdn cdn = cdnRepository.findByNameEquals(cdnName);
             if (cdn != null) {
                 cdn.setInUse(true);
                 cdnRepository.save(cdn);
@@ -112,7 +112,7 @@ public class ParameterServiceImpl implements ParameterService {
     @Override
     public List<String> getCdnNames() {
         return cdnRepository.findByInUseTrue().stream()
-                .map(Cdn::getAddress)
+                .map(Cdn::getName)
                 .collect(Collectors.toList());
     }
 
@@ -156,7 +156,7 @@ public class ParameterServiceImpl implements ParameterService {
     }
 
     private long getCdnId(String cdnName) {
-        return cdnRepository.findByAddressEquals(cdnName).getId();
+        return cdnRepository.findByNameEquals(cdnName).getId();
     }
 
     @PostConstruct

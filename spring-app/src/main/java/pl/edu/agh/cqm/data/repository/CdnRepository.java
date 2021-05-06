@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface CdnRepository extends JpaRepository<Cdn, Long> {
 
-    Cdn findByAddressEquals(String address);
+    Cdn findByNameEquals(String name);
     List<Cdn> findByInUseTrue();
 }

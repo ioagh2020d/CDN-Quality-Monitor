@@ -15,13 +15,13 @@ public class Cdn {
     private long id;
 
     @Column(nullable = false, updatable = false, unique = true, length = 64)
-    private String address;
+    private String name;
 
     @Column(nullable = false)
     private boolean inUse;
 
-    public Cdn(String address) {
-        this.address = address;
+    public Cdn(String name) {
+        this.name = name;
         this.inUse = true;
     }
 }
