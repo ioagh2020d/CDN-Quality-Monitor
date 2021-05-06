@@ -14,7 +14,11 @@ import {useHistory} from "react-router-dom"
 
 const useStyles = makeStyles(theme => ({
   flexGap: {
-    gap: theme.spacing(3)
+    gap: theme.spacing(3),
+  },
+  urlField: {
+    display: "flex",
+    flexGrow: 1
   }
 }))
 
@@ -30,7 +34,11 @@ const Settings = () => {
         .then(data => {
           reset({
             ...data,
-            cdns: data["cdns"].join(','),
+            cdns: data["cdns"],
+            cdns1: data["cdns"][0].split(',')[0],
+            cdns2: data["cdns"][0].split(',')[1],
+            cdns3: data["cdns"][0].split(',')[2],
+            cdns4: data["cdns"][0].split(',')[3]
           })
         })
         .catch(error => console.log(error))
@@ -38,10 +46,16 @@ const Settings = () => {
   )
 
   const onSubmit = (data) => {
+    var dict = {}
+    dict[data.cdns1.toString()] = data.urls1.split(',')
+    dict[data.cdns2.toString()] = data.urls2.split(',')
+    dict[data.cdns3.toString()] = data.urls3.split(',')
+    dict[data.cdns4.toString()] = data.urls4.split(',')
     data = {
       ...data,
-      cdns: data.cdns.split(',')
+      cdns: dict,
     }
+    console.log(data)
     fetch(process.env.REACT_APP_API_URL + "/api/parameters", {
       "method": "PUT",
       headers: {"Content-Type": "application/json"},
@@ -53,7 +67,14 @@ const Settings = () => {
   const {ref: activeSamplingRateRef, ...activeSamplingRateParams} = register("activeSamplingRate")
   const {ref: activeTestIntensityRef, ...activeTestIntensityParams} = register("activeTestIntensity")
   const {ref: passiveSamplingRateRef, ...passiveSamplingRateParams} = register("passiveSamplingRate")
-  const {ref: cdnsRef, ...cdnsParams} = register("cdns")
+  const {ref: cdnsRef1, ...cdnsParams1} = register("cdns1")
+  const {ref: cdnsRef2, ...cdnsParams2} = register("cdns2")
+  const {ref: cdnsRef3, ...cdnsParams3} = register("cdns3")
+  const {ref: cdnsRef4, ...cdnsParams4} = register("cdns4")
+  const {ref: urlsRef1, ...urlsParams1} = register("urls1")
+  const {ref: urlsRef2, ...urlsParams2} = register("urls2")
+  const {ref: urlsRef3, ...urlsParams3} = register("urls3")
+  const {ref: urlsRef4, ...urlsParams4} = register("urls4")
 
   return (
     <Card>
@@ -64,10 +85,53 @@ const Settings = () => {
             <Divider/>
           </Box>
           <Box display={"flex"} flexDirection={"column"}>
-            <TextField
-              label="CDN domains (coma separated)"
-              inputRef={cdnsRef} {...cdnsParams}
-              InputLabelProps={{shrink: true}}/>
+            <Box>
+              <Typography variant={"h6"}>CDN domains</Typography>
+              <Box display={"flex"} className={classes.flexGap} mt={1}>
+                <TextField
+                  label="CDN name"
+                  inputRef={cdnsRef1} {...cdnsParams1}
+                  InputLabelProps={{shrink: true}}/>
+                <TextField
+                  className={classes.urlField}
+                  label="urls (coma separated)"
+                  inputRef={urlsRef1} {...urlsParams1}
+                  InputLabelProps={{shrink: true}}/>
+              </Box>
+              <Box display={"flex"} className={classes.flexGap} mt={1}>
+                <TextField
+                  label="CDN name"
+                  inputRef={cdnsRef2} {...cdnsParams2}
+                  InputLabelProps={{shrink: true}}/>
+                <TextField
+                  className={classes.urlField}
+                  label="urls (coma separated)"
+                  inputRef={urlsRef2} {...urlsParams2}
+                  InputLabelProps={{shrink: true}}/>
+              </Box>
+              <Box display={"flex"} className={classes.flexGap} mt={1}>
+                <TextField
+                  label="CDN name"
+                  inputRef={cdnsRef3} {...cdnsParams3}
+                  InputLabelProps={{shrink: true}}/>
+                <TextField
+                  className={classes.urlField}
+                  label="urls (coma separated)"
+                  inputRef={urlsRef3} {...urlsParams3}
+                  InputLabelProps={{shrink: true}}/>
+              </Box>
+              <Box display={"flex"} className={classes.flexGap} mt={1}>
+                <TextField
+                  label="CDN name"
+                  inputRef={cdnsRef4} {...cdnsParams4}
+                  InputLabelProps={{shrink: true}}/>
+                <TextField
+                  className={classes.urlField}
+                  label="urls (coma separated)"
+                  inputRef={urlsRef4} {...urlsParams4}
+                  InputLabelProps={{shrink: true}}/>
+              </Box>
+            </Box>
             <Box mt={3}>
               <Typography variant={"h6"}>Active Tests</Typography>
               <Box display={"flex"} className={classes.flexGap} mt={1}>
