@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
 import pl.edu.agh.cqm.data.model.RTTSample;
+import pl.edu.agh.cqm.data.model.Url;
 import pl.edu.agh.cqm.data.repository.RTTSampleRepository;
 import pl.edu.agh.cqm.service.ParameterService;
 import pl.edu.agh.cqm.service.PingService;
@@ -37,12 +38,12 @@ public class PingServiceImpl implements PingService {
 
     @Override
     public void doMeasurement() {
-        for (String domain : parameterService.getActiveUrlAddresses()) {
+        for (Url url : parameterService.getActiveUrls()) {
             try {
                 CqmConfiguration.ActiveTestType type = cqmConfiguration.getActiveTestsType();
                 switch (type) {
-                    case ICMP -> rttSampleRepository.save(pingICMP(domain));
-                    case TCP -> rttSampleRepository.save(pingTCP(domain));
+                    case ICMP -> rttSampleRepository.save(pingICMP(url.getAddress()));
+                    case TCP -> rttSampleRepository.save(pingTCP(url.getAddress()));
                     default -> throw new IllegalStateException("Unexpected value: " + type);
                 }
             } catch (IOException e) {
