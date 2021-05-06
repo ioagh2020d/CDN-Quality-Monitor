@@ -13,6 +13,8 @@ import java.util.*;
 
 @Service
 public class DeviationsServiceImpl implements DeviationsService {
+    private static int slowChangeMinLength = 5;
+    private static double rapidChangePercentage = 0.2;
 
     @Override
     public Map<String, CdnDeviations> getRTTDeviations(
@@ -98,41 +100,65 @@ public class DeviationsServiceImpl implements DeviationsService {
         if (values.isEmpty()) {
             return List.of();
         } else {
-            List<DeviationDTO> deviations = new ArrayList<>(rappidChanges(values, 0.2));
-            deviations.addAll(slowChanges(values, 5));
+            List<DeviationDTO> deviations = new ArrayList<>(rapidChanges(values));
+            deviations.addAll(slowChanges(values));
             return deviations;
         }
     }
 
-    private List<DeviationDTO> slowChanges(List<Pair<Instant, Number>> values, double slowChangeMinLength) {
+    private double getSampleValue(List<Pair<Instant, Number>> values, int index){
+        return values.get(index).getSecond().doubleValue();
+    }
+
+    private Instant getSampleTime(List<Pair<Instant, Number>> values, int index){
+        return values.get(index).getFirst();
+    }
+
+    private boolean smallerThanPrev(List<Pair<Instant, Number>> values, int index){
+        return getSampleValue(values, index) < getSampleValue(values, index-1);
+    }
+
+    private boolean biggerThanPrev(List<Pair<Instant, Number>> values, int index){
+        return getSampleValue(values, index) > getSampleValue(values, index-1);
+    }
+
+    private boolean smallerThanPrevScaled(List<Pair<Instant, Number>> values, int index, double scale){
+        return getSampleValue(values, index) < scale*getSampleValue(values, index-1);
+    }
+
+    private boolean biggerThanPrevScaled(List<Pair<Instant, Number>> values, int index, double scale){
+        return getSampleValue(values, index) > scale*getSampleValue(values, index-1);
+    }
+
+    private boolean rapidChangeDetected(List<Pair<Instant, Number>> values, int index){
+        return smallerThanPrevScaled(values, index, (1 - rapidChangePercentage)) || biggerThanPrevScaled(values, index, (1 + rapidChangePercentage));
+    }
+
+    private DeviationDTO getDeviationDTO(List<Pair<Instant, Number>> values, int startIndex, int endIndex, String description){
+        return new DeviationDTO(getSampleTime(values, startIndex), getSampleTime(values,endIndex), description);
+    }
+
+    private List<DeviationDTO> slowChanges(List<Pair<Instant, Number>> values) {
         if (values.size() > slowChangeMinLength) {
             List<DeviationDTO> slowChanges = new ArrayList<>();
             for (int i = 1; i < values.size(); i++) {
-                if (values.get(i - 1).getSecond().doubleValue() > values.get(i).getSecond().doubleValue()) {
-                    int is = i - 1;
-                    while (i < values.size() && values.get(i - 1).getSecond().doubleValue() > values.get(i).getSecond().doubleValue()) {
+                if (smallerThanPrev(values, i)) {
+                    int startIndex = i - 1;
+                    do {
                         i++;
-                    }
+                    } while (i < values.size() && smallerThanPrev(values, i));
                     i--;
-                    int ie = i;
-                    if (~ i < values.size()){
-                        ie--;
+                    if (i - startIndex >= slowChangeMinLength) {
+                        slowChanges.add(getDeviationDTO(values, startIndex, i, "Decrease"));
                     }
-                    if (ie - is >= slowChangeMinLength) {
-                        slowChanges.add(new DeviationDTO(values.get(is).getFirst(), values.get(ie).getFirst(), "Decrease"));
-                    }
-                } else if (values.get(i - 1).getSecond().doubleValue() < values.get(i).getSecond().doubleValue()) {
-                    int is = i - 1;
-                    while (i < values.size() && values.get(i - 1).getSecond().doubleValue() < values.get(i).getSecond().doubleValue()) {
+                } else if (biggerThanPrev(values, i)) {
+                    int startIndex = i - 1;
+                    do {
                         i++;
-                    }
+                    } while (i < values.size() && biggerThanPrev(values, i));
                     i--;
-                    int ie = i;
-                    if (~ i < values.size()){
-                        ie--;
-                    }
-                    if (ie - is >= slowChangeMinLength) {
-                        slowChanges.add(new DeviationDTO(values.get(is).getFirst(), values.get(ie).getFirst(), "Increase"));
+                    if (i - startIndex >= slowChangeMinLength) {
+                        slowChanges.add(getDeviationDTO(values, startIndex, i, "Increase"));
                     }
                 }
             }
@@ -141,30 +167,20 @@ public class DeviationsServiceImpl implements DeviationsService {
         return List.of();
     }
 
-    private List<DeviationDTO> rappidChanges(List<Pair<Instant, Number>> values, double rappidChangePercentage) {
+    private List<DeviationDTO> rapidChanges(List<Pair<Instant, Number>> values) {
         if (values.size() > 1) {
-            List<DeviationDTO> rappidChanges = new ArrayList<>();
+            List<DeviationDTO> rapidChanges = new ArrayList<>();
             for (int i = 1; i < values.size(); i++) {
-                if (values.get(i - 1).getSecond().doubleValue() >
-                        (1 + rappidChangePercentage) * values.get(i).getSecond().doubleValue() ||
-                        values.get(i - 1).getSecond().doubleValue() <
-                                (1 - rappidChangePercentage) * values.get(i).getSecond().doubleValue()) {
-                    int is = i - 1;
-                    while (i < values.size() && (values.get(i - 1).getSecond().doubleValue() >
-                            (1 + rappidChangePercentage) * values.get(i).getSecond().doubleValue() ||
-                            values.get(i - 1).getSecond().doubleValue() <
-                                    (1 - rappidChangePercentage) * values.get(i).getSecond().doubleValue())) {
+                if (rapidChangeDetected(values, i)) {
+                    int startIndex = i - 1;
+                    do {
                         i++;
-                    }
+                    } while (i < values.size() && rapidChangeDetected(values, i));
                     i--;
-                    int ie = i;
-                    if (~ i < values.size()){
-                        ie--;
-                    }
-                    rappidChanges.add(new DeviationDTO(values.get(is).getFirst(), values.get(ie).getFirst(), "Rappid Changes"));
+                    rapidChanges.add(getDeviationDTO(values, startIndex, i, "Rappid Changes"));
                 }
             }
-            return rappidChanges;
+            return rapidChanges;
         }
         return List.of();
     }

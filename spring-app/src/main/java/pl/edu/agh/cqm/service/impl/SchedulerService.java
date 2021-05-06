@@ -18,12 +18,12 @@ public class SchedulerService {
 
     private int schedulePingCounter = 0;
 
-//    @Scheduled(fixedDelay = 1)
+    @Scheduled(fixedDelay = 1)
     public void scheduledThroughput(){
         throughputService.doMeasurement();
     }
 
-//    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 60000)
     public void schedulePing() {
         if (schedulePingCounter == 0) {
             pingService.doMeasurement();
