@@ -32,13 +32,18 @@ const Settings = () => {
       fetch(process.env.REACT_APP_API_URL + "/api/parameters")
         .then(response => response.json())
         .then(data => {
+          console.log(data)
           reset({
             ...data,
             cdns: data["cdns"],
-            cdns1: data["cdns"][0].split(',')[0],
-            cdns2: data["cdns"][0].split(',')[1],
-            cdns3: data["cdns"][0].split(',')[2],
-            cdns4: data["cdns"][0].split(',')[3]
+            cdns1: data["cdns"][0].name,
+            cdns2: data["cdns"][1].name,
+            cdns3: data["cdns"][2].name,
+            cdns4: data["cdns"][3].name,
+            urls1: data["cdns"][0].urls.join(','),
+            urls2: data["cdns"][1].urls.join(','),
+            urls3: data["cdns"][2].urls.join(','),
+            urls4: data["cdns"][3].urls.join(','),
           })
         })
         .catch(error => console.log(error))
@@ -46,14 +51,17 @@ const Settings = () => {
   )
 
   const onSubmit = (data) => {
-    var dict = {}
-    dict[data.cdns1.toString()] = data.urls1.split(',')
-    dict[data.cdns2.toString()] = data.urls2.split(',')
-    dict[data.cdns3.toString()] = data.urls3.split(',')
-    dict[data.cdns4.toString()] = data.urls4.split(',')
+    var cdns = [
+      {name: data.cdns1.toString(), urls: data.urls1.split(',')},
+      {name: data.cdns2.toString(), urls: data.urls2.split(',')},
+      {name: data.cdns3.toString(), urls: data.urls3.split(',')},
+      {name: data.cdns4.toString(), urls: data.urls4.split(',')}
+    ]
     data = {
-      ...data,
-      cdns: dict,
+      activeSamplingRate: data.activeSamplingRate,
+      activeTestIntensity: data.activeTestIntensity,
+      passiveSamplingRate: data.passiveSamplingRate,
+      cdns: cdns,
     }
     console.log(data)
     fetch(process.env.REACT_APP_API_URL + "/api/parameters", {
