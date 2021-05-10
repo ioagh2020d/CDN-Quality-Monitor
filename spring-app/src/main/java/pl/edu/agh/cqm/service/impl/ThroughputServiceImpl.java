@@ -59,8 +59,8 @@ public class ThroughputServiceImpl implements ThroughputService {
 
     public void doMeasurement() {
         measurementTime = 1000 * 60 * parameterService.getPassiveSamplingRate();
-        cdns = new ArrayList<>(parameterService.getCdns().size());
-        for (String cdn : parameterService.getCdns()) {
+        cdns = new ArrayList<>(parameterService.getActiveUrlAddresses().size());
+        for (String cdn : parameterService.getActiveUrlAddresses()) {
             CDNsData cdnsData = new CDNsData();
             cdnsData.name = cdn;
             cdns.add(cdnsData);
