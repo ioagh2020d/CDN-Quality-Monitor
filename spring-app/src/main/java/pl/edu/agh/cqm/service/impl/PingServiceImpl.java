@@ -61,11 +61,10 @@ public class PingServiceImpl implements PingService {
                 "nping --tcp --delay ", "0" + sep + "2", "-c", parameterService.getActiveTestIntensity() + "", host);
         logger.info("Starting active sampling with command \"" + command + "\"");
         BufferedReader inputStream = runSystemCommand(command);
-        // reading output stream of the command
         List<String> lines = inputStream.lines().collect(Collectors.toList());
 
-        double[] vals = new double[lines.size() - 3]; //new ArrayList<>();
-        double[] stds = new double[(lines.size() - 3) / 2]; //new ArrayList<>();
+        double[] vals = new double[lines.size() - 3];
+        double[] stds = new double[(lines.size() - 3) / 2];
         for (int i = 2; i < lines.size() - 3; i++) {
             String line = lines.get(i);
             double val = getValFromString(line.replaceAll("s", "qazwsx"), "((\\d+)(\\.)(\\d+))qazwsx");
