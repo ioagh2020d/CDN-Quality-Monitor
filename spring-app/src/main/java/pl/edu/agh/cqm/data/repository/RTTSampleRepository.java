@@ -12,7 +12,10 @@ import java.util.List;
 public interface RTTSampleRepository extends JpaRepository<RTTSample, Long> {
 
     @OrderBy("timestamp ASC")
-    List<RTTSample> findAllByTimestampBetweenAndAddress(Instant startDate, Instant endDate, String address);
+    List<RTTSample> findAllByTimestampBetweenAndAddress(Instant startDate, Instant endDate, String address); // TODO deprecated function
+
+    @OrderBy("timestamp ASC")
+    List<RTTSample> findAllByTimestampBetweenAndUrlId(Instant startDate, Instant endDate, Long urlId);
 
     boolean existsByTimestampBetween(Instant startDate, Instant endDate);
 }

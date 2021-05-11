@@ -34,7 +34,7 @@ public class MonitoringServiceImpl implements MonitoringService {
     @Override
     public Map<String, List<RTTSampleDTO>> getRTTSamples(Instant startDate, Instant endDate, Long granularity) {
         return parameterService.getActiveUrlAddresses().stream()
-            .map(cdn -> Pair.of(cdn, rttSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, cdn)))
+            .map(cdn -> Pair.of(cdn, rttSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, cdn)))// TODO deprecated
             .map(p -> Pair.of(
                 p.getFirst(),
                 groupRTT(p.getSecond(), granularity)))
