@@ -9,7 +9,8 @@ import {
 } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import Slider from '@material-ui/core/Slider';
-
+import { WaveLoading } from 'react-loadingg';
+import Fade from '@material-ui/core/Fade';
 const granularityValues = [5, 10, 20, 30, 60, 120, 240, 720, 1440]
 const granularityMarks = [
   {
@@ -58,6 +59,7 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
   const [startDateTime, setStartDateTime] = useState(new Date(Date.now() - (1000 * 3600 * 5)));
   const [endDateTime, setEndDateTime] = useState(new Date(Date.now()));
   const [granularityValue, setGranularityValue] = useState(10);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   chartDesc = chartDesc || {};
 
@@ -68,7 +70,7 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
   };
 
   function updateData(sd, ed, gr) {
-
+    setDataLoaded(false);
     getDataCb(sd, ed, gr).then((d) => {
       d.data = d.data.map(cdn => {
         cdn.id = cdn.id+" ".repeat(granularityValues.findIndex((v) => v.valueOf() === granularityValue));
@@ -78,6 +80,7 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
       if (d.markers) {
         setMarkers(d.markers);
       }
+      setDataLoaded(true);
       try {
         setMinMax({
           min: startDateTime,
@@ -132,6 +135,15 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
         />
       </div>
     </div>
+    <div className="ChartPlot">
+
+    <Fade in={!dataLoaded}>
+      <div style={{gridColumn: "1/1", gridRow: "1/1"}}>
+        <WaveLoading style={{"margin": "auto"}} size="large"/>
+      </div>
+    </Fade>
+    <Fade in={dataLoaded}>
+      <div style={{height: "95%", width: "100%", gridColumn: "1/1", gridRow: "1/1"}}>
     <ResponsiveLine
       data={data}
       margin={{top: 50, right: 200, bottom: 50, left: 50}}
@@ -195,7 +207,14 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
           ]
         }
       ]}
-    /></div>);
+    />
+
+
+    </div>
+    </Fade>
+    </div>
+
+    </div>);
 }
 
 export default SingleChartGeneral;
