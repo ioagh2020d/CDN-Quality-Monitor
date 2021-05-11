@@ -3,6 +3,7 @@ import {Box, Card, Container, makeStyles} from "@material-ui/core";
 import Settings from "./Settings";
 import {Route, Switch} from "react-router-dom"
 import Charts from "./Charts";
+import ChartsIndividual from "./ChartsIndividual";
 
 const Main = () => {
   return (
@@ -13,6 +14,9 @@ const Main = () => {
           <Switch>
             <Route path={"/settings"}>
               <Settings/>
+            </Route>
+            <Route path={"/individualCDN"}>
+              <ChartsIndividual/>
             </Route>
             <Route path={""}>
               <Charts/>

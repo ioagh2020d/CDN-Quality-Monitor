@@ -38,6 +38,13 @@ const MenuBar = () => {
               </Typography>
             </IconButton>
           </Box>
+          <Box className={classes.title}>
+            <IconButton color={"inherit"}>
+              <Typography variant={"h6"} component={Link} color={"inherit"} to={"/individualCDN"} className={classes.titleText}>
+                Individual
+              </Typography>
+            </IconButton>
+          </Box>
           <IconButton component={Link} to={"/settings"} color={"inherit"}>
             <Settings/>
           </IconButton>
