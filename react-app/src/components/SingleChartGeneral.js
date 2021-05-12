@@ -78,8 +78,7 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
         cdn.id = cdn.id+" ".repeat(granularityValues.findIndex((v) => v.valueOf() === granularityValue));
         return cdn;
       }).map((d, id) => {
-        if(d.id.endsWith(" deviation ")) d.color = availableColors[id+1];
-        else d.color = availableColors[id];
+        d.color = availableColors[Math.floor(id/2)];
         return d;
       });
       setData(d.data);
@@ -117,7 +116,7 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
 
   const styleById = (key) =>{
 
-    if(key.endsWith(" deviation ")){
+    if(key.includes(" deviation")){
       return{
         strokeDasharray: '1, 8',
         strokeWidth: 4,
