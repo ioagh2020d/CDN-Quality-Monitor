@@ -18,4 +18,6 @@ public interface RTTSampleRepository extends JpaRepository<RTTSample, Long> {
     List<RTTSample> findAllByTimestampBetweenAndUrlId(Instant startDate, Instant endDate, Long urlId);
 
     boolean existsByTimestampBetween(Instant startDate, Instant endDate);
+
+    boolean existsByTimestampBetweenAndUrlIdIn(Instant startDate, Instant endDate, List<Long> urlIds);
 }

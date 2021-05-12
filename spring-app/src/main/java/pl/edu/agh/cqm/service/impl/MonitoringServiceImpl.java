@@ -42,6 +42,19 @@ public class MonitoringServiceImpl implements MonitoringService {
     }
 
     @Override
+    public Map<String, List<RTTSampleDTO>> getRTTSamples(String cdn, Instant startDate,
+                                                         Instant endDate, Long granularity) {
+        return parameterService.getActiveUrls(cdn).stream()
+                .map(url -> Pair.of(
+                        url.getAddress(),
+                        rttSampleRepository.findAllByTimestampBetweenAndUrlId(startDate, endDate, url.getId())))
+                .map(p -> Pair.of(
+                        p.getFirst(),
+                        groupRTT(p.getSecond(), granularity)))
+                .collect(Pair.toMap());
+    }
+
+    @Override
     public Map<String, List<ThroughputSampleDTO>> getThroughputSamples(Instant startDate, Instant endDate, Long granularity) {
         return parameterService.getActiveUrlAddresses().stream()
             .map(cdn -> Pair.of(cdn, throughputSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, cdn)))
@@ -52,13 +65,54 @@ public class MonitoringServiceImpl implements MonitoringService {
     }
 
     @Override
+    public Map<String, List<ThroughputSampleDTO>> getThroughputSamples(String cdn, Instant startDate,
+                                                                       Instant endDate, Long granularity) {
+        return parameterService.getActiveUrls(cdn).stream()
+                .map(url -> Pair.of(
+                        url.getAddress(),
+//                        throughputSampleRepository.findAllByTimestampBetweenAndUrlId(startDate, endDate, url.getId())  // TODO: uncomment after CQM-55
+                        throughputSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, cdn)))
+                .map(p -> Pair.of(
+                        p.getFirst(),
+                        groupThroughput(p.getSecond(), granularity)))
+                .collect(Pair.toMap());
+    }
+
+    @Override
     public boolean checkRttSamplesExist(Instant startDate, Instant endDate) {
         return rttSampleRepository.existsByTimestampBetween(startDate, endDate);
     }
 
     @Override
+    public boolean checkRttSamplesExist(String cdn, Instant startDate, Instant endDate) {
+        List<Long> urlIds = parameterService.getActiveUrlIds(cdn);
+        if (urlIds == null) {
+            return false;
+        } else {
+            return rttSampleRepository.existsByTimestampBetweenAndUrlIdIn(
+                    startDate,
+                    endDate,
+                    urlIds);
+        }
+    }
+
+    @Override
     public boolean checkThroughputSamplesExist(Instant startDate, Instant endDate) {
         return throughputSampleRepository.existsByTimestampBetween(startDate, endDate);
+    }
+
+    @Override
+    public boolean checkThroughputSamplesExist(String cdn, Instant startDate, Instant endDate) {
+        List<Long> urlIds = parameterService.getActiveUrlIds(cdn);
+        if (urlIds == null) {
+            return false;
+        } else {
+//            return throughputSampleRepository.existsByTimestampBetweenAndUrlIdIn(  // TODO: uncomment after CQM-55
+//                    startDate,
+//                    endDate,
+//                    urlIds);
+            return throughputSampleRepository.existsByTimestampBetween(startDate, endDate);
+        }
     }
 
     private List<ThroughputSampleDTO> groupThroughput(List<ThroughputSample> samples, long granularity) {

@@ -17,6 +17,7 @@ public interface ParameterService {
 
     List<Url> getActiveUrls();
     List<Url> getActiveUrls(String cdn);
+    List<Long> getActiveUrlIds(String cdn);
     List<CdnWithUrlsDTO> getActiveCdnsWithUrls();
 
     int getActiveSamplingRate();

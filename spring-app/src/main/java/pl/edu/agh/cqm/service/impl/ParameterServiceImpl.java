@@ -117,7 +117,22 @@ public class ParameterServiceImpl implements ParameterService {
 
     @Override
     public List<Url> getActiveUrls(String cdn) {
-        return urlRepository.findByCdnIdEqualsAndActiveTrue(getCdnId(cdn));
+        Long cdnId = getCdnId(cdn);
+        if (cdnId == null) {
+            return null;
+        } else {
+            return urlRepository.findByCdnIdEqualsAndActiveTrue(cdnId);
+        }
+    }
+
+    @Override
+    public List<Long> getActiveUrlIds(String cdn) {
+        List<Url> activeUrls = getActiveUrls(cdn);
+        if (activeUrls == null) {
+            return null;
+        } else {
+            return activeUrls.stream().map(Url::getId).collect(Collectors.toList());
+        }
     }
 
     @Override
@@ -153,8 +168,13 @@ public class ParameterServiceImpl implements ParameterService {
         return configs.stream().map(ConfigSample::toDTO).collect(Collectors.toList());
     }
 
-    private Long getCdnId(String cdn) {
-        return cdnRepository.findByNameEquals(cdn).getId();
+    private Long getCdnId(String cdnName) {
+        Cdn cdn = cdnRepository.findByNameEquals(cdnName);
+        if (cdn == null) {
+            return null;
+        } else {
+            return cdn.getId();
+        }
     }
 
     private List<String> getActiveUrlAddresses(long cdnId) {
