@@ -17,7 +17,7 @@ async function getDataCb(...args){
             legend: legend
         };
     })
-    data.markers = markers;
+    data.markers.concat(markers);
     return data;
 } 
 
