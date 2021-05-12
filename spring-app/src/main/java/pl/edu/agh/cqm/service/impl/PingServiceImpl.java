@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
 import pl.edu.agh.cqm.data.model.RTTSample;
+import pl.edu.agh.cqm.data.model.Url;
 import pl.edu.agh.cqm.data.repository.RTTSampleRepository;
 import pl.edu.agh.cqm.service.ParameterService;
 import pl.edu.agh.cqm.service.PingService;
@@ -37,12 +38,12 @@ public class PingServiceImpl implements PingService {
 
     @Override
     public void doMeasurement() {
-        for (String domain : parameterService.getActiveUrlAddresses()) {
+        for (Url url : parameterService.getActiveUrls()) {
             try {
                 CqmConfiguration.ActiveTestType type = cqmConfiguration.getActiveTestsType();
                 switch (type) {
-                    case ICMP -> rttSampleRepository.save(pingICMP(domain));
-                    case TCP -> rttSampleRepository.save(pingTCP(domain));
+                    case ICMP -> rttSampleRepository.save(pingICMP(url));
+                    case TCP -> rttSampleRepository.save(pingTCP(url));
                     default -> throw new IllegalStateException("Unexpected value: " + type);
                 }
             } catch (IOException e) {
@@ -51,20 +52,19 @@ public class PingServiceImpl implements PingService {
         }
     }
 
-    private RTTSample pingTCP(String host) throws IOException {
+    private RTTSample pingTCP(Url url) throws IOException {
         DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance();
         DecimalFormatSymbols symbols = format.getDecimalFormatSymbols();
         char sep = symbols.getDecimalSeparator();
 
         String command = String.join(" ",
-                "nping --tcp --delay ", "0" + sep + "2", "-c", parameterService.getActiveTestIntensity() + "", host);
+                "nping --tcp --delay ", "0" + sep + "2", "-c", parameterService.getActiveTestIntensity() + "", url.getAddress());
         logger.info("Starting active sampling with command \"" + command + "\"");
         BufferedReader inputStream = runSystemCommand(command);
-        // reading output stream of the command
         List<String> lines = inputStream.lines().collect(Collectors.toList());
 
-        double[] vals = new double[lines.size() - 3]; //new ArrayList<>();
-        double[] stds = new double[(lines.size() - 3) / 2]; //new ArrayList<>();
+        double[] vals = new double[lines.size() - 3];
+        double[] stds = new double[(lines.size() - 3) / 2];
         for (int i = 2; i < lines.size() - 3; i++) {
             String line = lines.get(i);
             double val = getValFromString(line.replaceAll("s", "qazwsx"), "((\\d+)(\\.)(\\d+))qazwsx");
@@ -84,7 +84,8 @@ public class PingServiceImpl implements PingService {
                 .standardDeviation((float) getStandardDeviation(stds))
                 .timestamp(Instant.now())
                 .type(TCP)
-                .address(host)
+                .address(url.getAddress()) // TODO deprecated field - remove
+                .urlId(url.getId())
                 .build();
     }
 
@@ -102,13 +103,13 @@ public class PingServiceImpl implements PingService {
         return Math.sqrt(standardDeviation / n);
     }
 
-    private RTTSample pingICMP(String host) throws IOException {
+    private RTTSample pingICMP(Url url) throws IOException {
         DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance();
         DecimalFormatSymbols symbols = format.getDecimalFormatSymbols();
         char sep = symbols.getDecimalSeparator();
 
         String command = String.join(" ",
-                "ping", "-c", parameterService.getActiveTestIntensity() + "", "-i 0" + sep + "2", host);
+                "ping", "-c", parameterService.getActiveTestIntensity() + "", "-i 0" + sep + "2", url.getAddress());
         logger.info("Starting active sampling with command \"" + command + "\"");
         BufferedReader inputStream = runSystemCommand(command);
 
@@ -123,7 +124,8 @@ public class PingServiceImpl implements PingService {
                 .standardDeviation(getValFromString(lines.get(lines.size() - 1), "/((\\d+)(\\.)(\\d+)) ms"))
                 .timestamp(Instant.now())
                 .type(ICMP)
-                .address(host)
+                .address(url.getAddress()) // TODO deprecated field - remove
+                .urlId(url.getId())
                 .build();
     }
 
