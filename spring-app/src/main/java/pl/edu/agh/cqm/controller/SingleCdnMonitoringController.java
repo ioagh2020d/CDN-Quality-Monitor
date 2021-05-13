@@ -34,68 +34,82 @@ public class SingleCdnMonitoringController {
     public SingleCdnSingleParameterResponseDTO<RTTSampleDTO> getRTT(
             @Valid SingleCdnSampleSearchDTO searchDTO
     ) {
-        if (!monitoringService.checkRttSamplesExist(searchDTO.getCdn(), searchDTO.getStartDate(),
-                searchDTO.getEndDate())) {
+        try {
+            Map<String, List<RTTSampleDTO>> rttSamples = monitoringService.getRTTSamples(searchDTO.getCdn(),
+                    searchDTO.getStartDate(), searchDTO.getEndDate(), searchDTO.getGranularity());
+            if (rttSamples.values().stream().allMatch(List::isEmpty)) {
+                throw new IllegalArgumentException();
+            }
+
+            return new SingleCdnSingleParameterResponseDTO<>(
+                    searchDTO.getCdn(),
+                    searchDTO.getStartDate(),
+                    searchDTO.getEndDate(),
+                    rttSamples,
+                    deviationsService.getRTTDeviations(rttSamples),
+                    parameterService.getParameterHistory(searchDTO.getStartDate(), searchDTO.getEndDate())
+            );
+        } catch (IllegalArgumentException e) {
             throw new BadRequestException();
         }
-        Map<String, List<RTTSampleDTO>> rttSamples = monitoringService.getRTTSamples(searchDTO.getCdn(),
-                searchDTO.getStartDate(), searchDTO.getEndDate(), searchDTO.getGranularity());
-        return new SingleCdnSingleParameterResponseDTO<>(
-                searchDTO.getCdn(),
-                searchDTO.getStartDate(),
-                searchDTO.getEndDate(),
-                rttSamples,
-                deviationsService.getRTTDeviations(rttSamples),
-                parameterService.getParameterHistory(searchDTO.getStartDate(), searchDTO.getEndDate())
-        );
     }
 
     @GetMapping("/throughput")
     public SingleCdnSingleParameterResponseDTO<ThroughputSampleDTO> getThroughput(
             @Valid SingleCdnSampleSearchDTO searchDTO
     ) {
-        if (!monitoringService.checkThroughputSamplesExist(searchDTO.getCdn(), searchDTO.getStartDate(),
-                searchDTO.getEndDate())) {
+        try {
+            Map<String, List<ThroughputSampleDTO>> throughputSamples = monitoringService.getThroughputSamples(
+                    searchDTO.getCdn(), searchDTO.getStartDate(), searchDTO.getEndDate(), searchDTO.getGranularity());
+            if (throughputSamples.values().stream().allMatch(List::isEmpty)) {
+                throw new IllegalArgumentException();
+            }
+
+            return new SingleCdnSingleParameterResponseDTO<>(
+                    searchDTO.getCdn(),
+                    searchDTO.getStartDate(),
+                    searchDTO.getEndDate(),
+                    throughputSamples,
+                    deviationsService.getThroughputDeviations(throughputSamples),
+                    parameterService.getParameterHistory(searchDTO.getStartDate(), searchDTO.getEndDate())
+            );
+        } catch (IllegalArgumentException e) {
             throw new BadRequestException();
         }
-        Map<String, List<ThroughputSampleDTO>> throughputSamples = monitoringService.getThroughputSamples(
-                searchDTO.getCdn(), searchDTO.getStartDate(), searchDTO.getEndDate(), searchDTO.getGranularity());
-        return new SingleCdnSingleParameterResponseDTO<>(
-                searchDTO.getCdn(),
-                searchDTO.getStartDate(),
-                searchDTO.getEndDate(),
-                throughputSamples,
-                deviationsService.getThroughputDeviations(throughputSamples),
-                parameterService.getParameterHistory(searchDTO.getStartDate(), searchDTO.getEndDate())
-        );
     }
 
     @GetMapping("/all")
     public SingleCdnAllParametersResponseDTO getAll(
             @Valid SingleCdnSampleSearchDTO searchDTO
     ) {
-        String cdn = searchDTO.getCdn();
-        Instant startDate = searchDTO.getStartDate();
-        Instant endDate = searchDTO.getEndDate();
-        Long granularity = searchDTO.getGranularity();
+        try {
+            String cdn = searchDTO.getCdn();
+            Instant startDate = searchDTO.getStartDate();
+            Instant endDate = searchDTO.getEndDate();
+            Long granularity = searchDTO.getGranularity();
 
-        if (!monitoringService.checkRttSamplesExist(cdn, startDate, endDate)
-                && !monitoringService.checkThroughputSamplesExist(cdn, startDate, endDate)) {
+            Map<String, List<RTTSampleDTO>> rttSamples =
+                    monitoringService.getRTTSamples(cdn, startDate, endDate, granularity);
+            Map<String, List<ThroughputSampleDTO>> throughputSamples =
+                    monitoringService.getThroughputSamples(cdn, startDate, endDate, granularity);
+
+            if (rttSamples.values().stream().allMatch(List::isEmpty)
+                    && throughputSamples.values().stream().allMatch(List::isEmpty)) {
+                throw new IllegalArgumentException();
+            }
+
+            return new SingleCdnAllParametersResponseDTO(
+                    cdn,
+                    startDate,
+                    endDate,
+                    rttSamples,
+                    throughputSamples,
+                    deviationsService.getAllDeviations(rttSamples, throughputSamples),
+                    parameterService.getParameterHistory(startDate, endDate)
+            );
+        } catch (IllegalArgumentException e) {
             throw new BadRequestException();
         }
-        Map<String, List<RTTSampleDTO>> rttSamples =
-                monitoringService.getRTTSamples(cdn, startDate, endDate, granularity);
-        Map<String, List<ThroughputSampleDTO>> throughputSamples =
-                monitoringService.getThroughputSamples(cdn, startDate, endDate, granularity);
-        return new SingleCdnAllParametersResponseDTO(
-                cdn,
-                startDate,
-                endDate,
-                rttSamples,
-                throughputSamples,
-                deviationsService.getAllDeviations(rttSamples, throughputSamples),
-                parameterService.getParameterHistory(startDate, endDate)
-        );
     }
 
 }

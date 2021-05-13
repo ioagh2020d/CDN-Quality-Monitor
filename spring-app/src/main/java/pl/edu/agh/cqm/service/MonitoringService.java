@@ -24,9 +24,5 @@ public interface MonitoringService {
 
     boolean checkRttSamplesExist(Instant startDate, Instant endDate);
 
-    boolean checkRttSamplesExist(String cdn, Instant startDate, Instant endDate);
-
     boolean checkThroughputSamplesExist(Instant startDate, Instant endDate);
-
-    boolean checkThroughputSamplesExist(String cdn, Instant startDate, Instant endDate);
 }

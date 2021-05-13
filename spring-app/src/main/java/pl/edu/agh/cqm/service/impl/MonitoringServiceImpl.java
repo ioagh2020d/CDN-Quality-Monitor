@@ -47,7 +47,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         return parameterService.getActiveUrls(cdn).stream()
                 .map(url -> Pair.of(
                         url.getAddress(),
-                        rttSampleRepository.findAllByTimestampBetweenAndUrlId(startDate, endDate, url.getId())))
+                        rttSampleRepository.findAllByTimestampBetweenAndUrl(startDate, endDate, url)))
                 .map(p -> Pair.of(
                         p.getFirst(),
                         groupRTT(p.getSecond(), granularity)))
@@ -70,8 +70,7 @@ public class MonitoringServiceImpl implements MonitoringService {
         return parameterService.getActiveUrls(cdn).stream()
                 .map(url -> Pair.of(
                         url.getAddress(),
-//                        throughputSampleRepository.findAllByTimestampBetweenAndUrlId(startDate, endDate, url.getId())  // TODO: uncomment after CQM-55
-                        throughputSampleRepository.findAllByTimestampBetweenAndAddress(startDate, endDate, cdn)))
+                        throughputSampleRepository.findAllByTimestampBetweenAndUrl(startDate, endDate, url)))
                 .map(p -> Pair.of(
                         p.getFirst(),
                         groupThroughput(p.getSecond(), granularity)))
@@ -84,35 +83,8 @@ public class MonitoringServiceImpl implements MonitoringService {
     }
 
     @Override
-    public boolean checkRttSamplesExist(String cdn, Instant startDate, Instant endDate) {
-        List<Long> urlIds = parameterService.getActiveUrlIds(cdn);
-        if (urlIds == null) {
-            return false;
-        } else {
-            return rttSampleRepository.existsByTimestampBetweenAndUrlIdIn(
-                    startDate,
-                    endDate,
-                    urlIds);
-        }
-    }
-
-    @Override
     public boolean checkThroughputSamplesExist(Instant startDate, Instant endDate) {
         return throughputSampleRepository.existsByTimestampBetween(startDate, endDate);
-    }
-
-    @Override
-    public boolean checkThroughputSamplesExist(String cdn, Instant startDate, Instant endDate) {
-        List<Long> urlIds = parameterService.getActiveUrlIds(cdn);
-        if (urlIds == null) {
-            return false;
-        } else {
-//            return throughputSampleRepository.existsByTimestampBetweenAndUrlIdIn(  // TODO: uncomment after CQM-55
-//                    startDate,
-//                    endDate,
-//                    urlIds);
-            return throughputSampleRepository.existsByTimestampBetween(startDate, endDate);
-        }
     }
 
     private List<ThroughputSampleDTO> groupThroughput(List<ThroughputSample> samples, long granularity) {
