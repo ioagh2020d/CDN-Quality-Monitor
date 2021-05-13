@@ -36,14 +36,14 @@ const Settings = () => {
           reset({
             ...data,
             cdns: data["cdns"],
-            cdns1: data["cdns"][0].name,
-            cdns2: data["cdns"][1].name,
-            cdns3: data["cdns"][2].name,
-            cdns4: data["cdns"][3].name,
-            urls1: data["cdns"][0].urls.join(','),
-            urls2: data["cdns"][1].urls.join(','),
-            urls3: data["cdns"][2].urls.join(','),
-            urls4: data["cdns"][3].urls.join(','),
+            cdns1: data["cdns"][0]?.name,
+            cdns2: data["cdns"][1]?.name,
+            cdns3: data["cdns"][2]?.name,
+            cdns4: data["cdns"][3]?.name,
+            urls1: data["cdns"][0]?.urls?.join(','),
+            urls2: data["cdns"][1]?.urls?.join(','),
+            urls3: data["cdns"][2]?.urls?.join(','),
+            urls4: data["cdns"][3]?.urls?.join(','),
           })
         })
         .catch(error => console.log(error))
@@ -97,45 +97,45 @@ const Settings = () => {
               <Typography variant={"h6"}>CDN domains</Typography>
               <Box display={"flex"} className={classes.flexGap} mt={1}>
                 <TextField
-                  label="CDN name"
+                  label="First CDN name"
                   inputRef={cdnsRef1} {...cdnsParams1}
                   InputLabelProps={{shrink: true}}/>
                 <TextField
                   className={classes.urlField}
-                  label="urls (coma separated)"
+                  label="First CDN urls (coma separated)"
                   inputRef={urlsRef1} {...urlsParams1}
                   InputLabelProps={{shrink: true}}/>
               </Box>
               <Box display={"flex"} className={classes.flexGap} mt={1}>
                 <TextField
-                  label="CDN name"
+                  label="Second CDN name"
                   inputRef={cdnsRef2} {...cdnsParams2}
                   InputLabelProps={{shrink: true}}/>
                 <TextField
                   className={classes.urlField}
-                  label="urls (coma separated)"
+                  label="Second CDN urls (coma separated)"
                   inputRef={urlsRef2} {...urlsParams2}
                   InputLabelProps={{shrink: true}}/>
               </Box>
               <Box display={"flex"} className={classes.flexGap} mt={1}>
                 <TextField
-                  label="CDN name"
+                  label="Third CDN name"
                   inputRef={cdnsRef3} {...cdnsParams3}
                   InputLabelProps={{shrink: true}}/>
                 <TextField
                   className={classes.urlField}
-                  label="urls (coma separated)"
+                  label="Third CDN urls (coma separated)"
                   inputRef={urlsRef3} {...urlsParams3}
                   InputLabelProps={{shrink: true}}/>
               </Box>
               <Box display={"flex"} className={classes.flexGap} mt={1}>
                 <TextField
-                  label="CDN name"
+                  label="Fourth CDN name"
                   inputRef={cdnsRef4} {...cdnsParams4}
                   InputLabelProps={{shrink: true}}/>
                 <TextField
                   className={classes.urlField}
-                  label="urls (coma separated)"
+                  label="Fourth CDN urls (coma separated)"
                   inputRef={urlsRef4} {...urlsParams4}
                   InputLabelProps={{shrink: true}}/>
               </Box>

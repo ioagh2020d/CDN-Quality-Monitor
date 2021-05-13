@@ -84,8 +84,7 @@ public class PingServiceImpl implements PingService {
                 .standardDeviation((float) getStandardDeviation(stds))
                 .timestamp(Instant.now())
                 .type(TCP)
-                .address(url.getAddress()) // TODO deprecated field - remove
-                .urlId(url.getId())
+                .url(url)
                 .build();
     }
 
@@ -124,8 +123,7 @@ public class PingServiceImpl implements PingService {
                 .standardDeviation(getValFromString(lines.get(lines.size() - 1), "/((\\d+)(\\.)(\\d+)) ms"))
                 .timestamp(Instant.now())
                 .type(ICMP)
-                .address(url.getAddress()) // TODO deprecated field - remove
-                .urlId(url.getId())
+                .url(url)
                 .build();
     }
 

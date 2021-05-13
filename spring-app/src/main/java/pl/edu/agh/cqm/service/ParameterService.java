@@ -13,10 +13,8 @@ public interface ParameterService {
 
     void updateSampleParameters(int activeSamplingRate, int activeTestIntensity, int passiveSamplingRate);
 
-    List<String> getActiveUrlAddresses();  // TODO: delete (temporary method)
-
     List<Url> getActiveUrls();
-    List<Url> getActiveUrls(String cdn);
+    List<Url> getActiveUrls(String cdnName);
     List<CdnWithUrlsDTO> getActiveCdnsWithUrls();
 
     int getActiveSamplingRate();

@@ -5,10 +5,12 @@ import org.springframework.stereotype.Repository;
 import pl.edu.agh.cqm.data.model.Cdn;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CdnRepository extends JpaRepository<Cdn, Long> {
 
-    Cdn findByNameEquals(String name);
+    Optional<Cdn> findByNameEquals(String name);
+
     List<Cdn> findByActiveTrue();
 }

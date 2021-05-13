@@ -15,7 +15,6 @@ import java.time.Instant;
 @Builder
 @AllArgsConstructor
 @Table(indexes = {
-    @Index(columnList = "address"), // TODO deprecated field - remove
     @Index(columnList = "timestamp")
 })
 public class RTTSample implements Sample {
@@ -42,14 +41,10 @@ public class RTTSample implements Sample {
     @Column(nullable = false, updatable = false)
     private float packetLoss;
 
-    @Column(nullable = false, updatable = false, length = 64)
-    private String address; // TODO deprecated field - remove
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    private Url url;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, updatable = false, length = 8)
     private CqmConfiguration.ActiveTestType type;
-
-    @Column(nullable = false, updatable = false)
-    private long urlId;
-
 }
