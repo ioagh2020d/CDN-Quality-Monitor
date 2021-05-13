@@ -80,7 +80,7 @@ async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, e
         //         lineStyle: { stroke: '#ff0000', strokeWidth: 2 }
         //     });            
         // }
-
+        
         let dataFinal = []
         let deviationsFinal = []
         let last_dev = false;
@@ -104,11 +104,11 @@ async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, e
                 last_dev = false;
             }
         }
+        datasets.push({id: cdn + " deviation", data: deviationsFinal});
         datasets.push({id: cdn, data: dataFinal});
-        // datasets.push({id: "deviation "+cdn, data: deviationsFinal});
 
     }
-    console.log(datasets);
+
     return {data: datasets, markers: markers, response: response};
 }
 
