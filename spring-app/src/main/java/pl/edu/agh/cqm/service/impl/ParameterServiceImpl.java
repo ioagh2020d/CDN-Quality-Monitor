@@ -108,6 +108,11 @@ public class ParameterServiceImpl implements ParameterService {
     }
 
     @Override
+    public List<Cdn> getActiveCdns() {
+        return cdnRepository.findByActiveTrue();
+    }
+
+    @Override
     public List<CdnWithUrlsDTO> getActiveCdnsWithUrls() {
         return cdnRepository.findByActiveTrue().stream()
                 .map(cdn -> new CdnWithUrlsDTO(cdn.getName(), getActiveUrlAddresses(cdn)))
