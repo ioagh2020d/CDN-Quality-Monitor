@@ -52,20 +52,19 @@ public class PingServiceImpl implements PingService {
         }
     }
 
-    private RTTSample pingTCP(Url host) throws IOException {
+    private RTTSample pingTCP(Url url) throws IOException {
         DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance();
         DecimalFormatSymbols symbols = format.getDecimalFormatSymbols();
         char sep = symbols.getDecimalSeparator();
 
         String command = String.join(" ",
-                "nping --tcp --delay ", "0" + sep + "2", "-c", parameterService.getActiveTestIntensity() + "", host.getAddress());
+                "nping --tcp --delay ", "0" + sep + "2", "-c", parameterService.getActiveTestIntensity() + "", url.getAddress());
         logger.info("Starting active sampling with command \"" + command + "\"");
         BufferedReader inputStream = runSystemCommand(command);
-        // reading output stream of the command
         List<String> lines = inputStream.lines().collect(Collectors.toList());
 
-        double[] vals = new double[lines.size() - 3]; //new ArrayList<>();
-        double[] stds = new double[(lines.size() - 3) / 2]; //new ArrayList<>();
+        double[] vals = new double[lines.size() - 3];
+        double[] stds = new double[(lines.size() - 3) / 2];
         for (int i = 2; i < lines.size() - 3; i++) {
             String line = lines.get(i);
             double val = getValFromString(line.replaceAll("s", "qazwsx"), "((\\d+)(\\.)(\\d+))qazwsx");
@@ -85,7 +84,7 @@ public class PingServiceImpl implements PingService {
                 .standardDeviation((float) getStandardDeviation(stds))
                 .timestamp(Instant.now())
                 .type(TCP)
-                .url(host)
+                .url(url)
                 .build();
     }
 
@@ -103,13 +102,13 @@ public class PingServiceImpl implements PingService {
         return Math.sqrt(standardDeviation / n);
     }
 
-    private RTTSample pingICMP(Url host) throws IOException {
+    private RTTSample pingICMP(Url url) throws IOException {
         DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance();
         DecimalFormatSymbols symbols = format.getDecimalFormatSymbols();
         char sep = symbols.getDecimalSeparator();
 
         String command = String.join(" ",
-                "ping", "-c", parameterService.getActiveTestIntensity() + "", "-i 0" + sep + "2", host.getAddress());
+                "ping", "-c", parameterService.getActiveTestIntensity() + "", "-i 0" + sep + "2", url.getAddress());
         logger.info("Starting active sampling with command \"" + command + "\"");
         BufferedReader inputStream = runSystemCommand(command);
 
@@ -124,7 +123,7 @@ public class PingServiceImpl implements PingService {
                 .standardDeviation(getValFromString(lines.get(lines.size() - 1), "/((\\d+)(\\.)(\\d+)) ms"))
                 .timestamp(Instant.now())
                 .type(ICMP)
-                .url(host)
+                .url(url)
                 .build();
     }
 
