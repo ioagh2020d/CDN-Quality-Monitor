@@ -2,6 +2,7 @@ package pl.edu.agh.cqm.service;
 
 import pl.edu.agh.cqm.data.dto.CdnWithUrlsDTO;
 import pl.edu.agh.cqm.data.dto.ConfigSampleDTO;
+import pl.edu.agh.cqm.data.model.Cdn;
 import pl.edu.agh.cqm.data.model.Url;
 
 import java.time.Instant;
@@ -13,11 +14,10 @@ public interface ParameterService {
 
     void updateSampleParameters(int activeSamplingRate, int activeTestIntensity, int passiveSamplingRate);
 
-    List<String> getActiveUrlAddresses();  // TODO: delete (temporary method)
-
     List<Url> getActiveUrls();
-    List<Url> getActiveUrls(String cdn);
-    List<Long> getActiveUrlIds(String cdn);
+    List<Url> getActiveUrls(String cdnName);
+
+    List<Cdn> getActiveCdns();
     List<CdnWithUrlsDTO> getActiveCdnsWithUrls();
 
     int getActiveSamplingRate();

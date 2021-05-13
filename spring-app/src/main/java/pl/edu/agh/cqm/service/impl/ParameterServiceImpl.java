@@ -59,25 +59,20 @@ public class ParameterServiceImpl implements ParameterService {
 
         // set to active or add new cdns and urls
         for (CdnWithUrlsDTO cdnWithUrls : cdnsWithUrls) {
+            if (cdnWithUrls.getName().isBlank()) continue;
             // cdns
-            Cdn cdn = cdnRepository.findByNameEquals(cdnWithUrls.getName());
-            if (cdn == null) {
-                cdn = new Cdn(cdnWithUrls.getName());
-                cdnRepository.save(cdn);
-            } else {
-                cdn.setActive(true);
-                cdnRepository.save(cdn);
-            }
+            Cdn cdn = cdnRepository.findByNameEquals(cdnWithUrls.getName())
+                    .orElse(new Cdn(cdnWithUrls.getName()));
+            cdn.setActive(true);
+            cdnRepository.save(cdn);
 
             // urls
             for (String address : cdnWithUrls.getUrls()) {
-                Url url = urlRepository.findByCdnIdEqualsAndAddressEquals(cdn.getId(), address);
-                if (url == null) {
-                    urlRepository.save(new Url(cdn.getId(), address));
-                } else {
-                    url.setActive(true);
-                    urlRepository.save(url);
-                }
+                if (address.isBlank()) continue;
+                Url url = urlRepository.findByCdnAndAddressEquals(cdn, address)
+                        .orElse(new Url(cdn, address));
+                url.setActive(true);
+                urlRepository.save(url);
             }
         }
         logger.info("Updated the cdns and urls: " + cdnsWithUrls);
@@ -102,43 +97,25 @@ public class ParameterServiceImpl implements ParameterService {
         }
     }
 
-    // TODO: delete (temporary method)
-    @Override
-    public List<String> getActiveUrlAddresses() {
-        return urlRepository.findByActiveTrue().stream()
-                .map(Url::getAddress)
-                .collect(Collectors.toList());
-    }
-
     @Override
     public List<Url> getActiveUrls() {
         return urlRepository.findByActiveTrue();
     }
 
     @Override
-    public List<Url> getActiveUrls(String cdn) {
-        Long cdnId = getCdnId(cdn);
-        if (cdnId == null) {
-            return null;
-        } else {
-            return urlRepository.findByCdnIdEqualsAndActiveTrue(cdnId);
-        }
+    public List<Url> getActiveUrls(String cndName) {
+        return urlRepository.findByCdnAndActiveTrue(getCdn(cndName));
     }
 
     @Override
-    public List<Long> getActiveUrlIds(String cdn) {
-        List<Url> activeUrls = getActiveUrls(cdn);
-        if (activeUrls == null) {
-            return null;
-        } else {
-            return activeUrls.stream().map(Url::getId).collect(Collectors.toList());
-        }
+    public List<Cdn> getActiveCdns() {
+        return cdnRepository.findByActiveTrue();
     }
 
     @Override
     public List<CdnWithUrlsDTO> getActiveCdnsWithUrls() {
         return cdnRepository.findByActiveTrue().stream()
-                .map(cdn -> new CdnWithUrlsDTO(cdn.getName(), getActiveUrlAddresses(cdn.getId())))
+                .map(cdn -> new CdnWithUrlsDTO(cdn.getName(), getActiveUrlAddresses(cdn)))
                 .collect(Collectors.toList());
     }
 
@@ -168,17 +145,13 @@ public class ParameterServiceImpl implements ParameterService {
         return configs.stream().map(ConfigSample::toDTO).collect(Collectors.toList());
     }
 
-    private Long getCdnId(String cdnName) {
-        Cdn cdn = cdnRepository.findByNameEquals(cdnName);
-        if (cdn == null) {
-            return null;
-        } else {
-            return cdn.getId();
-        }
+    private Cdn getCdn(String cdnName) {
+        return cdnRepository.findByNameEquals(cdnName)
+                .orElseThrow(IllegalArgumentException::new);
     }
 
-    private List<String> getActiveUrlAddresses(long cdnId) {
-        return urlRepository.findByCdnIdEqualsAndActiveTrue(cdnId).stream()
+    private List<String> getActiveUrlAddresses(Cdn cdn) {
+        return urlRepository.findByCdnAndActiveTrue(cdn).stream()
                 .map(Url::getAddress)
                 .collect(Collectors.toList());
     }
