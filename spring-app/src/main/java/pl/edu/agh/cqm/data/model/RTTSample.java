@@ -15,7 +15,6 @@ import java.time.Instant;
 @Builder
 @AllArgsConstructor
 @Table(indexes = {
-    @Index(columnList = "address"),
     @Index(columnList = "timestamp")
 })
 public class RTTSample implements Sample {
@@ -42,8 +41,8 @@ public class RTTSample implements Sample {
     @Column(nullable = false, updatable = false)
     private float packetLoss;
 
-    @Column(nullable = false, updatable = false, length = 64)
-    private String address;
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    private Url url;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, updatable = false, length = 8)

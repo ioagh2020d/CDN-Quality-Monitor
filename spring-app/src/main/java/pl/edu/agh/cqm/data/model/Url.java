@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"cdnId", "address"}))
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"cdn_id", "address"}))
 @Data
 @NoArgsConstructor
 public class Url {
@@ -15,8 +15,8 @@ public class Url {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(nullable = false, updatable = false)
-    private long cdnId;
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    private Cdn cdn;
 
     @Column(nullable = false, updatable = false, length = 64)
     private String address;
@@ -24,8 +24,8 @@ public class Url {
     @Column(nullable = false)
     boolean active;
 
-    public Url(long cdnId, String address) {
-        this.cdnId = cdnId;
+    public Url(Cdn cdn, String address) {
+        this.cdn = cdn;
         this.address = address;
         this.active = true;
     }
