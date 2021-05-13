@@ -1,15 +1,17 @@
-import {getRTT, getDataPrepared} from "../DataGetter";
-import React from 'react';
+import {getRTTInd, getDataPrepared} from "../DataGetter";
+import React, { useEffect, useState } from 'react';
 import SingleChartGeneral from "./SingleChartGeneral";
 
 
 
 
-const SingleChartRTTInd = ({ cdn_name }) => {
+const SingleChartRTTInd = ({ cdnName }) => {
+    console.log(cdnName);
+    const [reloadToggler, setReloadToggler] = useState(false);
 
-    async function getDataCb(...args){
+    let getDataCb = async(...args) => {
 
-        const data = await getDataPrepared(getRTT, 'average', 'rtt', ...args, cdn_name);
+        const data = await getDataPrepared(getRTTInd, 'average', 'rtt', ...args, cdnName);
         const markers = data.response.parameterHistory.map(r => {
             const ts = new Date(r.timestamp);
             const legend = `asr ${r.activeSamplingRate} ati ${r.activeTestsIntensity}`;
@@ -24,9 +26,14 @@ const SingleChartRTTInd = ({ cdn_name }) => {
         data.markers = data.markers.concat(markers);
         return data;
     } 
+    // let getDataCb = null;
+    useEffect(() => {
+        setReloadToggler(!reloadToggler);
+    }, [cdnName]);
+
 
     return (
-        <SingleChartGeneral dataInit={[]} getDataCb={getDataCb} chartDesc={{leftAxisDesc: "ms"}}/>
+        <SingleChartGeneral dataInit={[]} getDataCb={getDataCb} reloadToggler={reloadToggler} chartDesc={{leftAxisDesc: "ms"}}/>
     );
 }
 

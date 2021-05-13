@@ -54,7 +54,7 @@ const granularityMarks = [
 const availableColors = ['red', 'green', 'blue', 'orange', 'purple'];
 
 
-const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */}) => {
+const SingleChartGeneral = ({dataInit, chartDesc, getDataCb, reloadToggler /* see data tab */}) => {
 
   const [data, setData] = useState(dataInit);
   const [markers, setMarkers] = useState([]);
@@ -157,7 +157,7 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
 
   useEffect(() => {
     updateData(startDateTime, endDateTime, granularityValue);
-  }, [startDateTime, endDateTime, granularityValue]);
+  }, [startDateTime, endDateTime, granularityValue, reloadToggler]);
 
   return (<div className="Chart">
     <div className="ChartDatePickers">

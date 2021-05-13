@@ -50,6 +50,7 @@ const ChartsIndividual = (cdns) => {
         return <MenuItem value={c}>{c}</MenuItem>
       });
       setAllCdnsItems(items);
+      setCDN(cdns[0]);// TODO handle no cdns
 
     }).catch(error => console.log(error))
   }, []
@@ -77,19 +78,19 @@ const ChartsIndividual = (cdns) => {
     <Grid item xs={12}> <Card className={classes.cardsG}>
 
       <Typography variant="h6">RTT</Typography>
-      <SingleChartRTTInd />
+      <SingleChartRTTInd cdnName={cdn}/>
       </Card></Grid>
 
       <Grid item xs={12}><Card className={classes.cardsG}>
 
       <Typography variant="h6">Throughput</Typography>
-      <SingleChartTputInd />
+      <SingleChartTputInd cdnName={cdn}/>
       </Card></Grid>
 
       <Grid item xs={12}><Card className={classes.cardsG}>
 
       <Typography variant="h6">PacketLoss</Typography>
-      <SingleChartPacketLossInd />      
+      <SingleChartPacketLossInd cdnName={cdn}/>      
       </Card></Grid>
       </Grid>
   )

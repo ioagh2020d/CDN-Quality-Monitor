@@ -1,15 +1,16 @@
-import {getDataPrepared, getRTT} from "../DataGetter";
-import React from 'react';
+import {getDataPrepared, getRTTInd} from "../DataGetter";
+import React, { useEffect, useState } from 'react';
 import SingleChartGeneral from "./SingleChartGeneral";
 
 
 
 
 
-const SingleChartPacketLossInd = ({ cdn_name }) => {
+const SingleChartPacketLossInd = ({ cdnName }) => {
+    const [reloadToggler, setReloadToggler] = useState(false);
     async function getDataCb(...args){
 
-        let data = await getDataPrepared(getRTT, 'packetLoss', 'packetLoss', ...args, cdn_name);
+        let data = await getDataPrepared(getRTTInd, 'packetLoss', 'packetLoss', ...args, cdnName);
         const markers = data.response.parameterHistory.map(r => {
             const ts = new Date(r.timestamp);
             const legend = `asr ${r.activeSamplingRate} ati ${r.activeTestsIntensity}`;
@@ -25,9 +26,11 @@ const SingleChartPacketLossInd = ({ cdn_name }) => {
         return data;
     
     } 
-    
+    useEffect(() => {
+        setReloadToggler(!reloadToggler);
+    }, [cdnName]);
     return (
-        <SingleChartGeneral dataInit={[]} getDataCb={getDataCb}  chartDesc={{leftAxisDesc: "%"}}/>
+        <SingleChartGeneral dataInit={[]} getDataCb={getDataCb} reloadToggler={reloadToggler} chartDesc={{leftAxisDesc: "%"}}/>
     );
 }
 
