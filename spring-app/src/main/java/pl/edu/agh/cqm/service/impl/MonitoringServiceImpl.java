@@ -42,6 +42,19 @@ public class MonitoringServiceImpl implements MonitoringService {
     }
 
     @Override
+    public Map<String, List<RTTSampleDTO>> getRTTSamples(String cdn, Instant startDate,
+                                                         Instant endDate, Long granularity) {
+        return parameterService.getActiveUrls(cdn).stream()
+                .map(url -> Pair.of(
+                        url.getAddress(),
+                        rttSampleRepository.findAllByTimestampBetweenAndUrl(startDate, endDate, url)))
+                .map(p -> Pair.of(
+                        p.getFirst(),
+                        groupRTT(p.getSecond(), granularity)))
+                .collect(Pair.toMap());
+    }
+
+    @Override
     public Map<String, List<ThroughputSampleDTO>> getThroughputSamples(Instant startDate, Instant endDate, Long granularity) {
         return parameterService.getActiveCdns().stream()
             .map(cdn -> Pair.of(cdn, throughputSampleRepository.findByCdnAndTimestampBetween(cdn, startDate, endDate)))
@@ -49,6 +62,19 @@ public class MonitoringServiceImpl implements MonitoringService {
                 p.getFirst().getName(),
                 groupThroughput(p.getSecond(), granularity)))
             .collect(Pair.toMap());
+    }
+
+    @Override
+    public Map<String, List<ThroughputSampleDTO>> getThroughputSamples(String cdn, Instant startDate,
+                                                                       Instant endDate, Long granularity) {
+        return parameterService.getActiveUrls(cdn).stream()
+                .map(url -> Pair.of(
+                        url.getAddress(),
+                        throughputSampleRepository.findAllByTimestampBetweenAndUrl(startDate, endDate, url)))
+                .map(p -> Pair.of(
+                        p.getFirst(),
+                        groupThroughput(p.getSecond(), granularity)))
+                .collect(Pair.toMap());
     }
 
     @Override

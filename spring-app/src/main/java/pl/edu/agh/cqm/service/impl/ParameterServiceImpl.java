@@ -13,6 +13,7 @@ import pl.edu.agh.cqm.data.model.Url;
 import pl.edu.agh.cqm.data.repository.CdnRepository;
 import pl.edu.agh.cqm.data.repository.ConfigSampleRepository;
 import pl.edu.agh.cqm.data.repository.UrlRepository;
+import pl.edu.agh.cqm.exception.NotFoundException;
 import pl.edu.agh.cqm.service.ParameterService;
 
 import javax.annotation.PostConstruct;
@@ -147,7 +148,7 @@ public class ParameterServiceImpl implements ParameterService {
 
     private Cdn getCdn(String cdnName) {
         return cdnRepository.findByNameEquals(cdnName)
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(NotFoundException::new);
     }
 
     private List<String> getActiveUrlAddresses(Cdn cdn) {
