@@ -36,14 +36,14 @@ const Settings = () => {
           reset({
             ...data,
             cdns: data["cdns"],
-            cdns1: data["cdns"][0].name,
-            cdns2: data["cdns"][1].name,
-            cdns3: data["cdns"][2].name,
-            cdns4: data["cdns"][3].name,
-            urls1: data["cdns"][0].urls.join(','),
-            urls2: data["cdns"][1].urls.join(','),
-            urls3: data["cdns"][2].urls.join(','),
-            urls4: data["cdns"][3].urls.join(','),
+            cdns1: data["cdns"][0]?.name,
+            cdns2: data["cdns"][1]?.name,
+            cdns3: data["cdns"][2]?.name,
+            cdns4: data["cdns"][3]?.name,
+            urls1: data["cdns"][0]?.urls?.join(','),
+            urls2: data["cdns"][1]?.urls?.join(','),
+            urls3: data["cdns"][2]?.urls?.join(','),
+            urls4: data["cdns"][3]?.urls?.join(','),
           })
         })
         .catch(error => console.log(error))
