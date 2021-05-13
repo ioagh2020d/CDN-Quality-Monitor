@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
 async function getAllCdns(){
   return fetch(process.env.REACT_APP_API_URL + "/api/parameters")
     .then(response => response.json())
-    .then(data => data['cdns'])
+    .then(data => data['cdns'].map(cdn => cdn.name))
     .then(d =>{
       console.log(d);
       return d;
