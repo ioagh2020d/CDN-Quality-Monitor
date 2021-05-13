@@ -1,7 +1,7 @@
 import {Card} from "@material-ui/core";
-import SingleChartRTT from "./SingleChartRTT";
-import SingleChartTput from "./SingleChartTput";
-import SingleChartPacketLoss from "./SingleChartPacketLoss";
+import SingleChartRTTInd from "./SingleChartRTTInd";
+import SingleChartTputInd from "./SingleChartTputInd";
+import SingleChartPacketLossInd from "./SingleChartPacketLossInd";
 import { Typography } from '@material-ui/core';
 import Select from '@material-ui/core/Select';
 import FormControl from '@material-ui/core/FormControl';
@@ -77,19 +77,19 @@ const ChartsIndividual = (cdns) => {
     <Grid item xs={12}> <Card className={classes.cardsG}>
 
       <Typography variant="h6">RTT</Typography>
-      <SingleChartRTT />
+      <SingleChartRTTInd />
       </Card></Grid>
 
       <Grid item xs={12}><Card className={classes.cardsG}>
 
       <Typography variant="h6">Throughput</Typography>
-      <SingleChartTput />
+      <SingleChartTputInd />
       </Card></Grid>
 
       <Grid item xs={12}><Card className={classes.cardsG}>
 
       <Typography variant="h6">PacketLoss</Typography>
-      <SingleChartPacketLoss />      
+      <SingleChartPacketLossInd />      
       </Card></Grid>
       </Grid>
   )
