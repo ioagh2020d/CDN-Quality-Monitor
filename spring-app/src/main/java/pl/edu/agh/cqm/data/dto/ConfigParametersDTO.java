@@ -16,7 +16,7 @@ import java.util.List;
 public class ConfigParametersDTO {
 
     @NotNull
-    private List<String> cdns;
+    private List<CdnWithUrlsDTO> cdns;
 
     @NotNull
     @Min(1)

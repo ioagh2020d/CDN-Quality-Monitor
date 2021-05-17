@@ -98,7 +98,15 @@ volumes:
       "packetLoss": [],
       "rtt": []
     }
-  }
+  },
+  "parameterHistory": [
+    {
+      "timestamp": "2021-04-02T23:04:11Z",
+      "activeSamplingRate": 2,
+      "activeTestsIntensity": 10,
+      "passiveSamplingRate": 5
+    }
+  ]
 }
 ```
 
@@ -139,7 +147,15 @@ volumes:
     "www.youtube.com": {
       "throughput": []
     }
-  }
+  },
+  "parameterHistory": [
+    {
+      "timestamp": "2021-04-02T23:04:11Z",
+      "activeSamplingRate": 2,
+      "activeTestsIntensity": 10,
+      "passiveSamplingRate": 5
+    }
+  ]
 }
 ```
 
@@ -205,7 +221,179 @@ volumes:
       "rtt": [],
       "throughput": []
     }
-  }
+  },
+  "parameterHistory": [
+    {
+      "timestamp": "2021-04-02T23:04:11Z",
+      "activeSamplingRate": 2,
+      "activeTestsIntensity": 10,
+      "passiveSamplingRate": 5
+    }
+  ]
+}
+```
+
+### GET `/api/samples/singleCdn/rtt`
+
+#### Query parameters:
+
+`cdn` : string - CDN name
+
+`startDate` : ISO8601 string - Start of the period for which samples will be returned
+
+`endDate` : ISO8601 string - End of the period for which samples will be returned
+
+
+#### Example response:
+
+```json
+{
+  "cdn": "Youtube",
+  "startDate": "2021-05-13T14:04:06Z",
+  "endDate": "2021-05-25T11:35:50Z",
+  "samples": {
+    "www.youtube.com": [
+      {
+        "timestamp": "2021-05-13T14:12:21.669Z",
+        "average": 7.262,
+        "min": 6.682,
+        "max": 7.853,
+        "standardDeviation": 0.0021593187,
+        "packetLoss": 0.0
+      }
+    ]
+  },
+  "deviations": {
+    "www.youtube.com": {
+      "packetLoss": [],
+      "rtt": []
+    }
+  },
+  "parameterHistory": [
+    {
+      "timestamp": "2021-05-13T14:11:19.474281Z",
+      "activeSamplingRate": 1,
+      "activeTestsIntensity": 5,
+      "passiveSamplingRate": 2
+    },
+    {
+      "timestamp": "2021-05-13T14:11:22.951142Z",
+      "activeSamplingRate": 2,
+      "activeTestsIntensity": 10,
+      "passiveSamplingRate": 1
+    }
+  ]
+}
+```
+
+
+### GET `/api/samples/singleCdn/throughput`
+
+#### Query parameters:
+
+`cdn` : string - CDN name
+
+`startDate` : ISO8601 string - Start of the period for which samples will be returned
+
+`endDate` : ISO8601 string - End of the period for which samples will be returned
+
+
+#### Example response:
+
+```json
+{
+  "cdn": "Youtube",
+  "startDate": "2021-05-13T14:04:06Z",
+  "endDate": "2021-05-25T11:35:50Z",
+  "samples": {
+    "www.youtube.com": [
+      {
+        "timestamp": "2021-05-13T14:14:23.449Z",
+        "throughput": 2656
+      }
+    ]
+  },
+  "deviations": {
+    "www.youtube.com": {
+      "throughput": []
+    }
+  },
+  "parameterHistory": [
+    {
+      "timestamp": "2021-05-13T14:11:19.474281Z",
+      "activeSamplingRate": 1,
+      "activeTestsIntensity": 5,
+      "passiveSamplingRate": 2
+    },
+    {
+      "timestamp": "2021-05-13T14:11:22.951142Z",
+      "activeSamplingRate": 2,
+      "activeTestsIntensity": 10,
+      "passiveSamplingRate": 1
+    }
+  ]
+}
+```
+
+### GET `/api/samples/singleCdn/all`
+
+#### Query parameters:
+
+`cdn` : string - CDN name
+
+`startDate` : ISO8601 string - Start of the period for which samples will be returned
+
+`endDate` : ISO8601 string - End of the period for which samples will be returned
+
+
+#### Example response:
+
+```json
+{
+  "cdn": "Youtube",
+  "startDate": "2021-05-13T14:04:06Z",
+  "endDate": "2021-05-25T11:35:50Z",
+  "rttSamples": {
+    "www.youtube.com": [
+      {
+        "timestamp": "2021-05-13T14:12:21.669Z",
+        "average": 7.262,
+        "min": 6.682,
+        "max": 7.853,
+        "standardDeviation": 0.0021593187,
+        "packetLoss": 0.0
+      }
+    ]
+  },
+  "throughputSamples": {
+    "www.youtube.com": [
+      {
+        "timestamp": "2021-05-13T14:14:23.449Z",
+        "throughput": 2656
+      }
+    ]
+  },
+  "deviations": {
+    "www.youtube.com": {
+      "rtt": [],
+      "packetLoss": [],
+      "throughput": []
+    }
+  },
+  "parameterHistory": [
+    {
+      "timestamp": "2021-05-13T14:11:19.474281Z",
+      "activeSamplingRate": 1,
+      "activeTestsIntensity": 5,
+      "passiveSamplingRate": 2
+    },
+    {
+      "timestamp": "2021-05-13T14:11:22.951142Z",
+      "activeSamplingRate": 2,
+      "activeTestsIntensity": 10,
+      "passiveSamplingRate": 1
+    }
+  ]
 }
 ```
 
@@ -213,7 +401,7 @@ volumes:
 
 #### Query parameters:
 
-`cdns` : List - CDNs
+`cdns` : List of objects with fields: "name" - cdn name, "urls" - cdn urls
 
 `activeSamplingRate` : integer - active sampling rate
 
@@ -228,8 +416,19 @@ volumes:
 ```json
 {
   "cdns": [
-    "www.youtube.com",
-    "www.facebook.com"
+    {
+      "name": "Youtube",
+      "urls": [
+        "www.youtube.com",
+        "www.yt.com"
+      ]
+    },
+    {
+      "name": "Facebook",
+      "urls": [
+        "www.fb.com"
+      ]
+    }
   ],
   "activeSamplingRate": 2,
   "activeTestIntensity": 10,

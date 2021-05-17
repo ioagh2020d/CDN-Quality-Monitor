@@ -51,7 +51,10 @@ const granularityMarks = [
   },
 ];
 
-const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */}) => {
+const availableColors = ['red', 'green', 'blue', 'orange', 'purple'];
+
+
+const SingleChartGeneral = ({dataInit, chartDesc, getDataCb, reloadToggler /* see data tab */}) => {
 
   const [data, setData] = useState(dataInit);
   const [markers, setMarkers] = useState([]);
@@ -72,9 +75,13 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
   function updateData(sd, ed, gr) {
     setDataLoaded(false);
     getDataCb(sd, ed, gr).then((d) => {
+
       d.data = d.data.map(cdn => {
         cdn.id = cdn.id+" ".repeat(granularityValues.findIndex((v) => v.valueOf() === granularityValue));
         return cdn;
+      }).map((d, id) => {
+        d.color = availableColors[Math.floor(id/2)];
+        return d;
       });
       setData(d.data);
       if (d.markers) {
@@ -109,9 +116,48 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
 
   }
 
+
+  const styleById = (key) =>{
+
+    if(key.includes(" deviation")){
+      return{
+        strokeDasharray: '1, 8',
+        strokeWidth: 4,
+        strokeLinejoin: 'round',
+        strokeLinecap: 'round',
+      };
+    }else{
+      return {
+        strokeWidth: 2
+      };
+    }
+  }
+  const CustomLine = ({ series, lineGenerator, xScale, yScale }) => {
+    return series.map(({ id, data, color }) =>{ 
+
+      return (
+
+        <path
+            key={id}
+            d={lineGenerator(
+                data.map(d => ({
+                    x: xScale(d.data.x),
+                    y: yScale(d.data.y),
+                })).map(d => {
+                  if(d.y == undefined) d.y = null;
+                  return d;
+                })
+            )}
+            fill="none"
+            stroke={color}
+            style={styleById(id)}
+        />
+    )})
+}
+
   useEffect(() => {
     updateData(startDateTime, endDateTime, granularityValue);
-  }, [startDateTime, endDateTime, granularityValue]);
+  }, [startDateTime, endDateTime, granularityValue, reloadToggler]);
 
   return (<div className="Chart">
     <div className="ChartDatePickers">
@@ -181,6 +227,7 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
       }}
       useMesh={true}
       enableSlices={false}
+      colors={{datum: 'color'}}
       markers={markers}
       legends={[
         {
@@ -207,8 +254,35 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb /* see data tab */})
           ]
         }
       ]}
-    />
 
+      enableSlices="x"
+
+      sliceTooltip={({ slice }) => {
+        return (
+            <div
+                style={{
+                    background: 'white',
+                    padding: '9px 12px',
+                    border: '1px solid #ccc',
+                }}
+            >
+                <div>x: {slice.id}</div>
+                {slice.points.map(point => (
+                    <div
+                        key={point.id}
+                        style={{
+                            color: point.serieColor,
+                            padding: '3px 0',
+                        }}
+                    >
+                        <strong>{point.serieId}</strong> [{point.data.yFormatted}]
+                    </div>
+                ))}
+            </div>
+        )
+    }}
+    layers={['grid', 'markers', 'areas', CustomLine, 'slices', 'points', 'axes', 'legends']}
+    />
 
     </div>
     </Fade>

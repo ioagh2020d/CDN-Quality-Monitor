@@ -8,6 +8,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
 import pl.edu.agh.cqm.data.model.ThroughputSample;
+import pl.edu.agh.cqm.data.model.Url;
 import pl.edu.agh.cqm.data.repository.ThroughputSampleRepository;
 import pl.edu.agh.cqm.service.ParameterService;
 import pl.edu.agh.cqm.service.ThroughputService;
@@ -32,9 +33,9 @@ public class ThroughputServiceImpl implements ThroughputService {
     private final String interfaceName;
     private String myIP;
     private PcapNetworkInterface nif;
-    private List<CDNsData> cdns;
+    private List<UrlData> urls;
 
-    public ThroughputServiceImpl(CqmConfiguration configuration,ParameterService parameterService, ThroughputSampleRepository dataRepository) throws PcapNativeException {
+    public ThroughputServiceImpl(CqmConfiguration configuration, ParameterService parameterService, ThroughputSampleRepository dataRepository) throws PcapNativeException {
         this.dataRepository = dataRepository;
         this.parameterService = parameterService;
         snapLen = configuration.getPcapMaxPacketLength();
@@ -59,23 +60,23 @@ public class ThroughputServiceImpl implements ThroughputService {
 
     public void doMeasurement() {
         measurementTime = 1000 * 60 * parameterService.getPassiveSamplingRate();
-        cdns = new ArrayList<>(parameterService.getCdns().size());
-        for (String cdn : parameterService.getCdns()) {
-            CDNsData cdnsData = new CDNsData();
-            cdnsData.name = cdn;
-            cdns.add(cdnsData);
+        urls = new ArrayList<>();
+        for (Url url : parameterService.getActiveUrls()) {
+            UrlData urlsData = new UrlData();
+            urlsData.url = url;
+            urls.add(urlsData);
         }
         logger.debug("throughput doMeasurement start");
         try {
-            this.measureThroughput(cdns, myIP);
+            this.measureThroughput(urls, myIP);
             logger.info("measurement done");
-            this.calcOutput(cdns);
-            cdns.forEach(c -> {
+            this.calcOutput(urls);
+            urls.forEach(c -> {
                 try {
                     ThroughputSample sample = new ThroughputSample();
                     sample.setThroughput((long) c.throughput);
                     sample.setTimestamp(Instant.now());
-                    sample.setAddress(c.name);
+                    sample.setUrl(c.url);
                     dataRepository.save(sample);
                 } catch (NullPointerException e) {
                     logger.warn("empty throughput session");
@@ -93,13 +94,12 @@ public class ThroughputServiceImpl implements ThroughputService {
     }
 
 
-
     private boolean parseDNS(DnsPacket dnsPacket) {
         if (!dnsPacket.getHeader().isResponse()) {
             return false;
         }
-        for (CDNsData cdn : cdns) {
-            if (!dnsPacket.getHeader().getQuestions().get(0).getQName().toString().contains(cdn.name)) {
+        for (UrlData urlData : urls) {
+            if (!dnsPacket.getHeader().getQuestions().get(0).getQName().toString().contains(urlData.url.getAddress())) {
                 continue;
             }
             List<DnsResourceRecord> dnsRecords = dnsPacket
@@ -113,18 +113,18 @@ public class ThroughputServiceImpl implements ThroughputService {
             }
             dnsRecords.stream()
                     .map(r -> ((DnsRDataA) r.getRData()).getAddress().getHostAddress())
-                    .forEach(cdn::tryAdd);
-            logger.debug("found dns response for cdn {} : {} : {}", cdn.name, dnsPacket.getHeader().getQuestions().get(0).getQName().toString(), cdn.ips.get(0));
+                    .forEach(urlData::tryAdd);
+            logger.debug("found dns response for url {} : {} : {}", urlData.url.getAddress(), dnsPacket.getHeader().getQuestions().get(0).getQName().toString(), urlData.ips.get(0));
             return true;
 
         }
         return false;
     }
 
-    private void measureThroughput(List<CDNsData> cdns, String myAddr) throws PcapNativeException, NotOpenException {
+    private void measureThroughput(List<UrlData> cdns, String myAddr) throws PcapNativeException, NotOpenException {
 
         List<String> ips;
-        Map<String, CDNsData> ipMap = new HashMap<>();
+        Map<String, UrlData> ipMap = new HashMap<>();
 
 
         PcapHandle handle = nif.openLive(snapLen, mode, timeout);
@@ -150,7 +150,7 @@ public class ThroughputServiceImpl implements ThroughputService {
 
             }
 
-            for (CDNsData c : cdns) {
+            for (UrlData c : cdns) {
                 c.ips.forEach(ip -> ipMap.put(ip, c));
             }
             logger.debug("filter: {}", filterBuilder.toString());
@@ -178,30 +178,30 @@ public class ThroughputServiceImpl implements ThroughputService {
                     }
                     continue;
                 }
-                CDNsData cdn = ipMap.get(ipv4packet.getHeader().getSrcAddr().getHostAddress());
-                if (cdn == null) {
-                    cdn = ipMap.get(ipv4packet.getHeader().getDstAddr().getHostAddress());
+                UrlData urlData = ipMap.get(ipv4packet.getHeader().getSrcAddr().getHostAddress());
+                if (urlData == null) {
+                    urlData = ipMap.get(ipv4packet.getHeader().getDstAddr().getHostAddress());
 
-                    if (cdn != null) {
+                    if (urlData != null) {
 
-                        if (cdn.lastACKFlag) {
-                            if (System.currentTimeMillis() - cdn.lastACKTime >= sessionBreakTime) {
-                                cdn.currentSession = new LinkedList<>();
-                                cdn.sessions.add(cdn.currentSession);
-                                logger.debug("new session for {}", cdn.name);
-                                cdn.lastACKFlag = false;
+                        if (urlData.lastACKFlag) {
+                            if (System.currentTimeMillis() - urlData.lastACKTime >= sessionBreakTime) {
+                                urlData.currentSession = new LinkedList<>();
+                                urlData.sessions.add(urlData.currentSession);
+                                logger.debug("new session for {}", urlData.url.getAddress());
+                                urlData.lastACKFlag = false;
 
                             }
                         } else if (tcpPacket.getHeader().getAck() && ipv4packet.getHeader().getSrcAddr().getHostAddress().equals(myAddr)) {
-                            cdn.lastACKFlag = true;
-                            cdn.lastACKTime = System.currentTimeMillis();
+                            urlData.lastACKFlag = true;
+                            urlData.lastACKTime = System.currentTimeMillis();
                         }
                     }
                     continue;
                 }
-                cdn.currentSession.add(Pair.of(handle.getTimestamp(), packet.length()));
+                urlData.currentSession.add(Pair.of(handle.getTimestamp(), packet.length()));
                 //            logger.debug(ipv4packet.getHeader().getSrcAddr().getHostAddress());
-                cdn.lastACKFlag = false;
+                urlData.lastACKFlag = false;
             }
         }
         handle.close();
@@ -209,9 +209,9 @@ public class ThroughputServiceImpl implements ThroughputService {
     }
 
 
-    private void calcOutput(List<CDNsData> cdns) {
+    private void calcOutput(List<UrlData> cdns) {
 
-        for (CDNsData c : cdns) {
+        for (UrlData c : cdns) {
             double timeSum = 0;
             double byteSum = 0;
             for (List<Pair<Timestamp, Integer>> s : c.sessions) {
@@ -229,14 +229,14 @@ public class ThroughputServiceImpl implements ThroughputService {
             } else {
                 c.throughput = byteSum * 8 / timeSum;
             }
-            logger.info("CDN: name: {} ; time sum: {} ; bit sum: {}; throughput: {}; sessions {}", c.name, timeSum, byteSum * 8, c.throughput, c.sessions.size());
+            logger.info("URL: address: {} ; time sum: {} ; bit sum: {}; throughput: {}; sessions {}", c.url.getAddress(), timeSum, byteSum * 8, c.throughput, c.sessions.size());
         }
 
 
     }
 
-    private static class CDNsData {
-        public String name;
+    private static class UrlData {
+        public Url url;
         public List<List<Pair<Timestamp, Integer>>> sessions;
         public List<String> ips;
         public Set<String> ipsSet;
@@ -245,7 +245,7 @@ public class ThroughputServiceImpl implements ThroughputService {
         public long lastACKTime = 0;
         public double throughput;
 
-        CDNsData() {
+        UrlData() {
             ips = new LinkedList<>();
             sessions = new LinkedList<>();
             currentSession = new LinkedList<>();

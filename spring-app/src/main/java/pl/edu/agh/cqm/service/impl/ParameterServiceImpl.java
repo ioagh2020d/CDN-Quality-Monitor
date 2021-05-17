@@ -5,11 +5,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import pl.edu.agh.cqm.data.dto.CdnWithUrlsDTO;
 import pl.edu.agh.cqm.data.dto.ConfigSampleDTO;
-import pl.edu.agh.cqm.data.model.ConfigCdn;
+import pl.edu.agh.cqm.data.model.Cdn;
 import pl.edu.agh.cqm.data.model.ConfigSample;
-import pl.edu.agh.cqm.data.repository.ConfigCdnRepository;
+import pl.edu.agh.cqm.data.model.Url;
+import pl.edu.agh.cqm.data.repository.CdnRepository;
 import pl.edu.agh.cqm.data.repository.ConfigSampleRepository;
+import pl.edu.agh.cqm.data.repository.UrlRepository;
+import pl.edu.agh.cqm.exception.NotFoundException;
 import pl.edu.agh.cqm.service.ParameterService;
 
 import javax.annotation.PostConstruct;
@@ -22,7 +26,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ParameterServiceImpl implements ParameterService {
 
-    private final ConfigCdnRepository configCdnRepository;
+    private final CdnRepository cdnRepository;
+    private final UrlRepository urlRepository;
     private final ConfigSampleRepository configSampleRepository;
     private final Logger logger = LogManager.getLogger(ParameterService.class);
 
@@ -40,17 +45,42 @@ public class ParameterServiceImpl implements ParameterService {
 
     @Override
     @Transactional
-    public void updateCdns(List<String> cdns) {
-        configCdnRepository.deleteAll();
-        for (String cdn : cdns) {
-            configCdnRepository.save(new ConfigCdn(0, cdn));
+    public void updateCdnsWithUrls(List<CdnWithUrlsDTO> cdnsWithUrls) {
+        // set all cdns to unactive
+        for (Cdn cdn : cdnRepository.findAll()) {
+            cdn.setActive(false);
+            cdnRepository.save(cdn);
         }
-        logger.info("Updated the cdns: " + cdns);
+
+        // set all urls to unactive
+        for (Url url : urlRepository.findAll()) {
+            url.setActive(false);
+            urlRepository.save(url);
+        }
+
+        // set to active or add new cdns and urls
+        for (CdnWithUrlsDTO cdnWithUrls : cdnsWithUrls) {
+            if (cdnWithUrls.getName().isBlank()) continue;
+            // cdns
+            Cdn cdn = cdnRepository.findByNameEquals(cdnWithUrls.getName())
+                    .orElse(new Cdn(cdnWithUrls.getName()));
+            cdn.setActive(true);
+            cdnRepository.save(cdn);
+
+            // urls
+            for (String address : cdnWithUrls.getUrls()) {
+                if (address.isBlank()) continue;
+                Url url = urlRepository.findByCdnAndAddressEquals(cdn, address)
+                        .orElse(new Url(cdn, address));
+                url.setActive(true);
+                urlRepository.save(url);
+            }
+        }
+        logger.info("Updated the cdns and urls: " + cdnsWithUrls);
     }
 
     @Override
     public void updateSampleParameters(int activeSamplingRate, int activeTestIntensity, int passiveSamplingRate) {
-
         if (activeSamplingRate == getActiveSamplingRate()
                 && activeTestIntensity == getActiveTestIntensity()
                 && passiveSamplingRate == getPassiveSamplingRate()) {
@@ -69,8 +99,25 @@ public class ParameterServiceImpl implements ParameterService {
     }
 
     @Override
-    public List<String> getCdns() {
-        return configCdnRepository.findAll().stream().map(x -> x.getCdn()).collect(Collectors.toList());
+    public List<Url> getActiveUrls() {
+        return urlRepository.findByActiveTrue();
+    }
+
+    @Override
+    public List<Url> getActiveUrls(String cndName) {
+        return urlRepository.findByCdnAndActiveTrue(getCdn(cndName));
+    }
+
+    @Override
+    public List<Cdn> getActiveCdns() {
+        return cdnRepository.findByActiveTrue();
+    }
+
+    @Override
+    public List<CdnWithUrlsDTO> getActiveCdnsWithUrls() {
+        return cdnRepository.findByActiveTrue().stream()
+                .map(cdn -> new CdnWithUrlsDTO(cdn.getName(), getActiveUrlAddresses(cdn)))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -99,17 +146,28 @@ public class ParameterServiceImpl implements ParameterService {
         return configs.stream().map(ConfigSample::toDTO).collect(Collectors.toList());
     }
 
+    private Cdn getCdn(String cdnName) {
+        return cdnRepository.findByNameEquals(cdnName)
+                .orElseThrow(NotFoundException::new);
+    }
+
+    private List<String> getActiveUrlAddresses(Cdn cdn) {
+        return urlRepository.findByCdnAndActiveTrue(cdn).stream()
+                .map(Url::getAddress)
+                .collect(Collectors.toList());
+    }
+
     @PostConstruct
     private void initConfigCdnsRepository() {
-        if (configCdnRepository.count() == 0) {
+        if (cdnRepository.count() == 0) {
             for (String cdn : cdns) {
-                configCdnRepository.save(new ConfigCdn(0, cdn));
+                cdnRepository.save(new Cdn(cdn));
             }
         }
     }
 
     @PostConstruct
-    private void initConfigSampleDirectory() {
+    private void initConfigSampleRepository() {
         if (configSampleRepository.count() == 0) {
             configSampleRepository.save(ConfigSample.builder()
                     .timestamp(Instant.now())

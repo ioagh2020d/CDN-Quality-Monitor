@@ -14,7 +14,11 @@ import {useHistory} from "react-router-dom"
 
 const useStyles = makeStyles(theme => ({
   flexGap: {
-    gap: theme.spacing(3)
+    gap: theme.spacing(3),
+  },
+  urlField: {
+    display: "flex",
+    flexGrow: 1
   }
 }))
 
@@ -28,9 +32,18 @@ const Settings = () => {
       fetch(process.env.REACT_APP_API_URL + "/api/parameters")
         .then(response => response.json())
         .then(data => {
+          console.log(data)
           reset({
             ...data,
-            cdns: data["cdns"].join(','),
+            cdns: data["cdns"],
+            cdns1: data["cdns"][0]?.name,
+            cdns2: data["cdns"][1]?.name,
+            cdns3: data["cdns"][2]?.name,
+            cdns4: data["cdns"][3]?.name,
+            urls1: data["cdns"][0]?.urls?.join(','),
+            urls2: data["cdns"][1]?.urls?.join(','),
+            urls3: data["cdns"][2]?.urls?.join(','),
+            urls4: data["cdns"][3]?.urls?.join(','),
           })
         })
         .catch(error => console.log(error))
@@ -38,10 +51,19 @@ const Settings = () => {
   )
 
   const onSubmit = (data) => {
+    var cdns = [
+      {name: data.cdns1.toString(), urls: data.urls1.split(',')},
+      {name: data.cdns2.toString(), urls: data.urls2.split(',')},
+      {name: data.cdns3.toString(), urls: data.urls3.split(',')},
+      {name: data.cdns4.toString(), urls: data.urls4.split(',')}
+    ]
     data = {
-      ...data,
-      cdns: data.cdns.split(',')
+      activeSamplingRate: data.activeSamplingRate,
+      activeTestIntensity: data.activeTestIntensity,
+      passiveSamplingRate: data.passiveSamplingRate,
+      cdns: cdns,
     }
+    console.log(data)
     fetch(process.env.REACT_APP_API_URL + "/api/parameters", {
       "method": "PUT",
       headers: {"Content-Type": "application/json"},
@@ -53,7 +75,14 @@ const Settings = () => {
   const {ref: activeSamplingRateRef, ...activeSamplingRateParams} = register("activeSamplingRate")
   const {ref: activeTestIntensityRef, ...activeTestIntensityParams} = register("activeTestIntensity")
   const {ref: passiveSamplingRateRef, ...passiveSamplingRateParams} = register("passiveSamplingRate")
-  const {ref: cdnsRef, ...cdnsParams} = register("cdns")
+  const {ref: cdnsRef1, ...cdnsParams1} = register("cdns1")
+  const {ref: cdnsRef2, ...cdnsParams2} = register("cdns2")
+  const {ref: cdnsRef3, ...cdnsParams3} = register("cdns3")
+  const {ref: cdnsRef4, ...cdnsParams4} = register("cdns4")
+  const {ref: urlsRef1, ...urlsParams1} = register("urls1")
+  const {ref: urlsRef2, ...urlsParams2} = register("urls2")
+  const {ref: urlsRef3, ...urlsParams3} = register("urls3")
+  const {ref: urlsRef4, ...urlsParams4} = register("urls4")
 
   return (
     <Card>
@@ -64,10 +93,53 @@ const Settings = () => {
             <Divider/>
           </Box>
           <Box display={"flex"} flexDirection={"column"}>
-            <TextField
-              label="CDN domains (coma separated)"
-              inputRef={cdnsRef} {...cdnsParams}
-              InputLabelProps={{shrink: true}}/>
+            <Box>
+              <Typography variant={"h6"}>CDN domains</Typography>
+              <Box display={"flex"} className={classes.flexGap} mt={1}>
+                <TextField
+                  label="First CDN name"
+                  inputRef={cdnsRef1} {...cdnsParams1}
+                  InputLabelProps={{shrink: true}}/>
+                <TextField
+                  className={classes.urlField}
+                  label="First CDN urls (coma separated)"
+                  inputRef={urlsRef1} {...urlsParams1}
+                  InputLabelProps={{shrink: true}}/>
+              </Box>
+              <Box display={"flex"} className={classes.flexGap} mt={1}>
+                <TextField
+                  label="Second CDN name"
+                  inputRef={cdnsRef2} {...cdnsParams2}
+                  InputLabelProps={{shrink: true}}/>
+                <TextField
+                  className={classes.urlField}
+                  label="Second CDN urls (coma separated)"
+                  inputRef={urlsRef2} {...urlsParams2}
+                  InputLabelProps={{shrink: true}}/>
+              </Box>
+              <Box display={"flex"} className={classes.flexGap} mt={1}>
+                <TextField
+                  label="Third CDN name"
+                  inputRef={cdnsRef3} {...cdnsParams3}
+                  InputLabelProps={{shrink: true}}/>
+                <TextField
+                  className={classes.urlField}
+                  label="Third CDN urls (coma separated)"
+                  inputRef={urlsRef3} {...urlsParams3}
+                  InputLabelProps={{shrink: true}}/>
+              </Box>
+              <Box display={"flex"} className={classes.flexGap} mt={1}>
+                <TextField
+                  label="Fourth CDN name"
+                  inputRef={cdnsRef4} {...cdnsParams4}
+                  InputLabelProps={{shrink: true}}/>
+                <TextField
+                  className={classes.urlField}
+                  label="Fourth CDN urls (coma separated)"
+                  inputRef={urlsRef4} {...urlsParams4}
+                  InputLabelProps={{shrink: true}}/>
+              </Box>
+            </Box>
             <Box mt={3}>
               <Typography variant={"h6"}>Active Tests</Typography>
               <Box display={"flex"} className={classes.flexGap} mt={1}>
