@@ -254,6 +254,7 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb, reloadToggler /* se
           ]
         }
       ]}
+
       enableSlices="x"
 
       sliceTooltip={({ slice }) => {
@@ -282,6 +283,7 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb, reloadToggler /* se
     }}
     layers={['grid', 'markers', 'areas', CustomLine, 'slices', 'points', 'axes', 'legends']}
     />
+
     </div>
     </Fade>
     </div>
