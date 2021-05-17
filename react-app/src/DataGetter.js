@@ -1,6 +1,8 @@
 const apiURL = process.env.REACT_APP_API_URL;
 const rttEndpoint = "/api/samples/rtt"
+const rttEndpointInd = "/api/samples/singleCdn/rtt"
 const throughputEndpoint = "/api/samples/throughput"
+const throughputEndpointInd = "/api/samples/singleCdn/throughput"
 
 
 
@@ -27,8 +29,33 @@ async function getThroughput(startDate, endDate, granularity){
   
 }
 
-async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, ed, granularity){
-    const response = await getDataJson(sd, ed, granularity);
+async function getRTTInd(cdn, startDate, endDate, granularity){
+    return fetch(apiURL + rttEndpointInd + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&cdn=${cdn}`)
+    .then(response => {
+        if(response.status !== 200){
+            throw new Error(response.status)
+        }      
+        return response.json();
+    });   
+}
+
+
+async function getThroughputInd(cdn, startDate, endDate, granularity){
+
+    return fetch(apiURL + throughputEndpointInd + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&cdn=${cdn}`)
+    .then(response => {
+        if(response.status !== 200){
+            throw new Error(response.status)
+        }      
+        return response.json()
+    });
+  
+}
+
+async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, ed, granularity, cdn){
+    let response;
+    if(cdn) response = await getDataJson(cdn, sd, ed, granularity);
+    else response = await getDataJson(sd, ed, granularity);
     const datasets = [];
     const markers = [];
 
@@ -114,4 +141,4 @@ async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, e
 
 
 
-export {getRTT, getThroughput, getDataPrepared};
+export {getRTT, getRTTInd, getThroughput, getThroughputInd, getDataPrepared};
