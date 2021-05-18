@@ -7,6 +7,7 @@ import org.pcap4j.packet.*;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
+import pl.edu.agh.cqm.data.dto.CdnWithUrlsDTO;
 import pl.edu.agh.cqm.data.model.ThroughputSample;
 import pl.edu.agh.cqm.data.model.Url;
 import pl.edu.agh.cqm.data.repository.ThroughputSampleRepository;
@@ -33,9 +34,12 @@ public class ThroughputServiceImpl implements ThroughputService {
     private final String interfaceName;
     private String myIP;
     private PcapNetworkInterface nif;
-    private List<UrlData> urls;
+    private List<URLData> urlsData;
+    private Set<String> monitoredIPs;
+    private List<String> cdns;
 
     public ThroughputServiceImpl(CqmConfiguration configuration, ParameterService parameterService, ThroughputSampleRepository dataRepository) throws PcapNativeException {
+        logger.debug("DEBUG ENABLED");
         this.dataRepository = dataRepository;
         this.parameterService = parameterService;
         snapLen = configuration.getPcapMaxPacketLength();
@@ -59,24 +63,30 @@ public class ThroughputServiceImpl implements ThroughputService {
     }
 
     public void doMeasurement() {
+        monitoredIPs = new HashSet<>();
         measurementTime = 1000 * 60 * parameterService.getPassiveSamplingRate();
-        urls = new ArrayList<>();
-        for (Url url : parameterService.getActiveUrls()) {
-            UrlData urlsData = new UrlData();
-            urlsData.url = url;
-            urls.add(urlsData);
+        cdns = parameterService.getActiveCdnsWithUrls().stream().map(c -> c.getName()).collect(Collectors.toList());
+        urlsData = new LinkedList<>();
+        for (CdnWithUrlsDTO cdn : parameterService.getActiveCdnsWithUrls()) {
+            for(String urlName : cdn.getUrls()){
+                URLData urlData = new URLData();
+                urlData.name = urlName;
+                urlData.cdn = cdn.getName();
+                urlsData.add(urlData);
+            }
+
         }
-        logger.debug("throughput doMeasurement start");
+        logger.debug("throughput doMeasurement start..");
         try {
-            this.measureThroughput(urls, myIP);
+            this.measureThroughput(urlsData);
             logger.info("measurement done");
-            this.calcOutput(urls);
-            urls.forEach(c -> {
+            this.calcOutput(urlsData);
+            urlsData.forEach(c -> {
                 try {
                     ThroughputSample sample = new ThroughputSample();
                     sample.setThroughput((long) c.throughput);
                     sample.setTimestamp(Instant.now());
-                    sample.setUrl(c.url);
+                    parameterService.addNewUrl(c.cdn, c.name);
                     dataRepository.save(sample);
                 } catch (NullPointerException e) {
                     logger.warn("empty throughput session");
@@ -98,33 +108,58 @@ public class ThroughputServiceImpl implements ThroughputService {
         if (!dnsPacket.getHeader().isResponse()) {
             return false;
         }
-        for (UrlData urlData : urls) {
-            if (!dnsPacket.getHeader().getQuestions().get(0).getQName().toString().contains(urlData.url.getAddress())) {
-                continue;
-            }
-            List<DnsResourceRecord> dnsRecords = dnsPacket
-                    .getHeader()
-                    .getAnswers()
-                    .stream()
-                    .filter(r -> r.getDataType().valueAsString().equals("1"))
-                    .collect(Collectors.toList());
-            if (dnsRecords.size() == 0) {
-                return false;
-            }
-            dnsRecords.stream()
-                    .map(r -> ((DnsRDataA) r.getRData()).getAddress().getHostAddress())
-                    .forEach(urlData::tryAdd);
-            logger.debug("found dns response for url {} : {} : {}", urlData.url.getAddress(), dnsPacket.getHeader().getQuestions().get(0).getQName().toString(), urlData.ips.get(0));
-            return true;
+        for (String cdn : cdns) {
+
+                if (!dnsPacket.getHeader().getQuestions().get(0).getQName().toString().contains(cdn)) {
+                    continue;
+                }
+                List<DnsResourceRecord> dnsRecords = new ArrayList<>(dnsPacket
+                        .getHeader()
+                        .getAnswers());
+                if (dnsRecords.size() == 0) {
+                    return false;
+                }
+                List<DnsRDataA> dnsARecords = dnsRecords.stream()
+                        .filter(r -> r.getDataType().valueAsString().equals("1"))
+                        .map(r -> ((DnsRDataA) r.getRData())).collect(Collectors.toList());
+
+                if(dnsARecords.size() == 0){
+                    logger.debug("DNS A RECORDS 0");
+                    return false;
+                }
+//                Optional<DnsRDataCName> dnsCNAME = dnsRecords.stream()
+//                        .filter(r -> r.getDataType().valueAsString().equals("5"))
+//                        .map(r -> ((DnsRDataCName) r.getRData()))
+//                        .findAny();
+
+                for (DnsRDataA record : dnsARecords) {
+                    if(monitoredIPs.contains(record.getAddress().getHostAddress())) return false;
+
+                    URLData urlData = new URLData();
+                    urlData.ip = record.getAddress().getHostAddress();
+                    urlData.cdn = cdn;
+//                    if(dnsCNAME.isEmpty()){
+//                        urlData.name = cdn;
+//                    }else{
+//                        urlData.name = dnsCNAME.get().getCName().getName();
+//                    }
+                    urlsData.add(urlData);
+                    monitoredIPs.add(urlData.ip);
+                    logger.debug("found dns response cdn:{};  query:{};  ip:{}; url:{};", cdn, dnsPacket.getHeader().getQuestions().get(0).getQName().toString(), urlData.ip, urlData.name);
+                    break;
+                }
+
+                return true;
 
         }
+
         return false;
     }
 
-    private void measureThroughput(List<UrlData> cdns, String myAddr) throws PcapNativeException, NotOpenException {
+    private void measureThroughput(List<URLData> urls) throws PcapNativeException, NotOpenException {
 
         List<String> ips;
-        Map<String, UrlData> ipMap = new HashMap<>();
+        Map<String, URLData> ipMap = new HashMap<>();
 
 
         PcapHandle handle = nif.openLive(snapLen, mode, timeout);
@@ -136,12 +171,12 @@ public class ThroughputServiceImpl implements ThroughputService {
         logger.debug("starttime:{} stoptime:{}", startTime, stopTime);
         while (System.currentTimeMillis() < stopTime) {
             filterChangedFlag = false;
-            ips = cdns.stream().flatMap(c -> c.ips.stream()).collect(Collectors.toList());
+            ips = urlsData.stream().map(u -> u.ip).collect(Collectors.toList());
             StringBuilder filterBuilder = new StringBuilder();
             filterBuilder.append("dst ");
-            filterBuilder.append(myAddr);
+            filterBuilder.append(myIP);
             filterBuilder.append(" or src ");
-            filterBuilder.append(myAddr);
+            filterBuilder.append(myIP);
 
 
             for (String ip : ips) {
@@ -150,9 +185,8 @@ public class ThroughputServiceImpl implements ThroughputService {
 
             }
 
-            for (UrlData c : cdns) {
-                c.ips.forEach(ip -> ipMap.put(ip, c));
-            }
+            urls.forEach(d -> ipMap.put(d.ip, d));
+
             logger.debug("filter: {}", filterBuilder.toString());
 
             handle.setFilter(filterBuilder.toString(), BpfProgram.BpfCompileMode.OPTIMIZE);
@@ -178,30 +212,30 @@ public class ThroughputServiceImpl implements ThroughputService {
                     }
                     continue;
                 }
-                UrlData urlData = ipMap.get(ipv4packet.getHeader().getSrcAddr().getHostAddress());
-                if (urlData == null) {
-                    urlData = ipMap.get(ipv4packet.getHeader().getDstAddr().getHostAddress());
+                URLData url = ipMap.get(ipv4packet.getHeader().getSrcAddr().getHostAddress());
+                if (url == null) {
+                    url = ipMap.get(ipv4packet.getHeader().getDstAddr().getHostAddress());
 
-                    if (urlData != null) {
+                    if (url != null) {
 
-                        if (urlData.lastACKFlag) {
-                            if (System.currentTimeMillis() - urlData.lastACKTime >= sessionBreakTime) {
-                                urlData.currentSession = new LinkedList<>();
-                                urlData.sessions.add(urlData.currentSession);
-                                logger.debug("new session for {}", urlData.url.getAddress());
-                                urlData.lastACKFlag = false;
+                        if (url.lastACKFlag) {
+                            if (System.currentTimeMillis() - url.lastACKTime >= sessionBreakTime) {
+                                url.currentSession = new LinkedList<>();
+                                url.sessions.add(url.currentSession);
+                                logger.debug("new session for {}", url.name);
+                                url.lastACKFlag = false;
 
                             }
-                        } else if (tcpPacket.getHeader().getAck() && ipv4packet.getHeader().getSrcAddr().getHostAddress().equals(myAddr)) {
-                            urlData.lastACKFlag = true;
-                            urlData.lastACKTime = System.currentTimeMillis();
+                        } else if (tcpPacket.getHeader().getAck() && ipv4packet.getHeader().getSrcAddr().getHostAddress().equals(myIP)) {
+                            url.lastACKFlag = true;
+                            url.lastACKTime = System.currentTimeMillis();
                         }
                     }
                     continue;
                 }
-                urlData.currentSession.add(Pair.of(handle.getTimestamp(), packet.length()));
+                url.currentSession.add(Pair.of(handle.getTimestamp(), packet.length()));
                 //            logger.debug(ipv4packet.getHeader().getSrcAddr().getHostAddress());
-                urlData.lastACKFlag = false;
+                url.lastACKFlag = false;
             }
         }
         handle.close();
@@ -209,12 +243,12 @@ public class ThroughputServiceImpl implements ThroughputService {
     }
 
 
-    private void calcOutput(List<UrlData> cdns) {
+    private void calcOutput(List<URLData> urls) {
 
-        for (UrlData c : cdns) {
+        for (URLData u : urls) {
             double timeSum = 0;
             double byteSum = 0;
-            for (List<Pair<Timestamp, Integer>> s : c.sessions) {
+            for (List<Pair<Timestamp, Integer>> s : u.sessions) {
                 if (s.size() <= 1) continue;
                 double timeDelta = s.get(s.size() - 1).getFirst().getTime() - s.get(0).getFirst().getTime();
                 timeSum += timeDelta / 1000.0;
@@ -225,41 +259,34 @@ public class ThroughputServiceImpl implements ThroughputService {
 
             }
             if (timeSum == 0) {
-                c.throughput = 0;
+                u.throughput = 0;
             } else {
-                c.throughput = byteSum * 8 / timeSum;
+                u.throughput = byteSum * 8 / timeSum;
             }
-            logger.info("URL: address: {} ; time sum: {} ; bit sum: {}; throughput: {}; sessions {}", c.url.getAddress(), timeSum, byteSum * 8, c.throughput, c.sessions.size());
+            logger.info("URL: name: {}; ip: {}; time sum: {}; bit sum: {}; throughput: {} b/s; sessions {}", u.name, u.ip, timeSum, byteSum * 8, u.throughput, u.sessions.size());
         }
 
 
     }
 
-    private static class UrlData {
-        public Url url;
+    private static class URLData {
+        public String name = "";
         public List<List<Pair<Timestamp, Integer>>> sessions;
-        public List<String> ips;
-        public Set<String> ipsSet;
+        public String ip;
+        //        public Set<String> ipsSet;
         public List<Pair<Timestamp, Integer>> currentSession;
         public boolean lastACKFlag = false;
         public long lastACKTime = 0;
         public double throughput;
+        public String cdn;
 
-        UrlData() {
-            ips = new LinkedList<>();
+        URLData() {
+//            ips = new LinkedList<>();
             sessions = new LinkedList<>();
             currentSession = new LinkedList<>();
             sessions.add(currentSession);
-            ipsSet = new HashSet<>();
+//            ipsSet = new HashSet<>();
         }
 
-        public boolean tryAdd(String ip) {
-            if (ipsSet.contains(ip)) {
-                return false;
-            }
-            ipsSet.add(ip);
-            ips.add(ip);
-            return true;
-        }
     }
 }
