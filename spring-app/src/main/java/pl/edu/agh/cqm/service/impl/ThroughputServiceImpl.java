@@ -11,9 +11,12 @@ import pl.edu.agh.cqm.data.dto.CdnWithUrlsDTO;
 import pl.edu.agh.cqm.data.model.ThroughputSample;
 import pl.edu.agh.cqm.data.model.Url;
 import pl.edu.agh.cqm.data.repository.ThroughputSampleRepository;
+import pl.edu.agh.cqm.data.repository.UrlRepository;
 import pl.edu.agh.cqm.service.ParameterService;
 import pl.edu.agh.cqm.service.ThroughputService;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
@@ -29,6 +32,7 @@ public class ThroughputServiceImpl implements ThroughputService {
     private final int snapLen;
     private final int timeout;
     private final ParameterService parameterService;
+    private final UrlRepository urlRepository;
     private int measurementTime;
     private final int sessionBreakTime;
     private final String interfaceName;
@@ -38,15 +42,15 @@ public class ThroughputServiceImpl implements ThroughputService {
     private Set<String> monitoredIPs;
     private List<String> cdns;
 
-    public ThroughputServiceImpl(CqmConfiguration configuration, ParameterService parameterService, ThroughputSampleRepository dataRepository) throws PcapNativeException {
+    public ThroughputServiceImpl(CqmConfiguration configuration, ParameterService parameterService, ThroughputSampleRepository dataRepository, UrlRepository urlRepository) throws PcapNativeException {
         logger.debug("DEBUG ENABLED");
         this.dataRepository = dataRepository;
         this.parameterService = parameterService;
         snapLen = configuration.getPcapMaxPacketLength();
         timeout = configuration.getPcapTimeout();
         sessionBreakTime = configuration.getPcapSessionBreak();
+        this.urlRepository = urlRepository;
         interfaceName = configuration.getInterfaceName();
-
         getNIF();
 
     }
@@ -66,6 +70,7 @@ public class ThroughputServiceImpl implements ThroughputService {
         monitoredIPs = new HashSet<>();
         measurementTime = 1000 * 60 * parameterService.getPassiveSamplingRate();
         cdns = parameterService.getActiveCdnsWithUrls().stream().map(c -> c.getName()).collect(Collectors.toList());
+
         urlsData = new LinkedList<>();
         for (CdnWithUrlsDTO cdn : parameterService.getActiveCdnsWithUrls()) {
             for(String urlName : cdn.getUrls()){
@@ -82,16 +87,37 @@ public class ThroughputServiceImpl implements ThroughputService {
             logger.info("measurement done");
             this.calcOutput(urlsData);
             urlsData.forEach(c -> {
+                logger.debug("foreach cdn:url:ip {}:{}:{}", c.cdn, c.name, c.ip);
+
                 try {
                     ThroughputSample sample = new ThroughputSample();
                     sample.setThroughput((long) c.throughput);
                     sample.setTimestamp(Instant.now());
-                    parameterService.addNewUrl(c.cdn, c.name);
+                    if(c.name.equals("")){
+                        InetAddress ia = InetAddress.getByName(c.ip);
+                        c.name = ia.getCanonicalHostName();
+                        if(c.name.equals("")){
+                            return;
+                        }
+                    }
+                    Optional<Url> url = parameterService.getURL(c.cdn, c.name);
+
+                    if(url.isEmpty()){
+                        logger.debug("trying add cdn:url:ip {}:{}:{}", c.cdn, c.name, c.ip);
+                        parameterService.addNewUrl(c.cdn, c.name);
+                        url = parameterService.getURL(c.cdn, c.name);
+
+
+                    }
+
+                    sample.setUrl(url.get());
                     dataRepository.save(sample);
                 } catch (NullPointerException e) {
                     logger.warn("empty throughput session");
                 } catch (IndexOutOfBoundsException e) {
                     logger.warn("empty throughput session (index)");
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
                 }
 
             });
@@ -107,6 +133,32 @@ public class ThroughputServiceImpl implements ThroughputService {
     private boolean parseDNS(DnsPacket dnsPacket) {
         if (!dnsPacket.getHeader().isResponse()) {
             return false;
+        }
+        for(URLData url: urlsData){
+            if (!dnsPacket.getHeader().getQuestions().get(0).getQName().toString().equals(url.name)) {
+                continue;
+            }
+
+            List<DnsResourceRecord> dnsRecords = new ArrayList<>(dnsPacket
+                    .getHeader()
+                    .getAnswers());
+            List<DnsRDataA> dnsARecords = dnsRecords.stream()
+                    .filter(r -> r.getDataType().valueAsString().equals("1"))
+                    .map(r -> ((DnsRDataA) r.getRData())).collect(Collectors.toList());
+            if(dnsARecords.size() == 0){
+                return false;
+            }
+            String ip = dnsARecords.get(0).getAddress().getHostAddress();
+            if(monitoredIPs.contains(ip)){
+                //logger.warn("this shouldn't happen; IP already in hashset. {}:{}:{}", url.cdn, url.name, ip);
+                return false;
+            }
+            monitoredIPs.add(url.ip);
+            url.ip = dnsARecords.get(0).getAddress().getHostAddress();
+
+            logger.debug("found URL dns response cdn:{};  query:{};  ip:{}; url:{};", url.cdn, dnsPacket.getHeader().getQuestions().get(0).getQName().toString(), url.ip, url.name);
+
+            return true;
         }
         for (String cdn : cdns) {
 
@@ -127,31 +179,21 @@ public class ThroughputServiceImpl implements ThroughputService {
                     logger.debug("DNS A RECORDS 0");
                     return false;
                 }
-//                Optional<DnsRDataCName> dnsCNAME = dnsRecords.stream()
-//                        .filter(r -> r.getDataType().valueAsString().equals("5"))
-//                        .map(r -> ((DnsRDataCName) r.getRData()))
-//                        .findAny();
-
                 for (DnsRDataA record : dnsARecords) {
                     if(monitoredIPs.contains(record.getAddress().getHostAddress())) return false;
 
                     URLData urlData = new URLData();
                     urlData.ip = record.getAddress().getHostAddress();
                     urlData.cdn = cdn;
-//                    if(dnsCNAME.isEmpty()){
-//                        urlData.name = cdn;
-//                    }else{
-//                        urlData.name = dnsCNAME.get().getCName().getName();
-//                    }
+
                     urlsData.add(urlData);
                     monitoredIPs.add(urlData.ip);
-                    logger.debug("found dns response cdn:{};  query:{};  ip:{}; url:{};", cdn, dnsPacket.getHeader().getQuestions().get(0).getQName().toString(), urlData.ip, urlData.name);
+                    logger.debug("found CDN dns response cdn:{};  query:{};  ip:{}; url:{};", cdn, dnsPacket.getHeader().getQuestions().get(0).getQName().toString(), urlData.ip, urlData.name);
                     break;
                 }
-
                 return true;
-
         }
+
 
         return false;
     }
@@ -171,7 +213,7 @@ public class ThroughputServiceImpl implements ThroughputService {
         logger.debug("starttime:{} stoptime:{}", startTime, stopTime);
         while (System.currentTimeMillis() < stopTime) {
             filterChangedFlag = false;
-            ips = urlsData.stream().map(u -> u.ip).collect(Collectors.toList());
+            ips = urlsData.stream().filter(u -> u.ip != null).map(u -> u.ip).collect(Collectors.toList());
             StringBuilder filterBuilder = new StringBuilder();
             filterBuilder.append("dst ");
             filterBuilder.append(myIP);

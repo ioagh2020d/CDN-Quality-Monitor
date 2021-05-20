@@ -20,6 +20,7 @@ import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -144,6 +145,20 @@ public class ParameterServiceImpl implements ParameterService {
         }
 
         return configs.stream().map(ConfigSample::toDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public void addNewUrl(String cdnName, String urlName){
+        Optional<Cdn> cdn = cdnRepository.findByNameEquals(cdnName);
+        Url url = new Url(cdn.get(), urlName);
+        urlRepository.save(url);
+    }
+
+    @Override
+    public Optional<Url> getURL(String cdnName, String urlName) {
+        Optional<Cdn> cdn = cdnRepository.findByNameEquals(cdnName);
+        Optional<Url> url = urlRepository.findByCdnAndAddressEquals(cdn.get(), urlName);
+        return url;
     }
 
     private Cdn getCdn(String cdnName) {
