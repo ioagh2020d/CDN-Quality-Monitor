@@ -9,6 +9,7 @@ import pl.edu.agh.cqm.configuration.CqmConfiguration;
 import pl.edu.agh.cqm.data.model.RTTSample;
 import pl.edu.agh.cqm.data.model.Url;
 import pl.edu.agh.cqm.data.repository.RTTSampleRepository;
+import pl.edu.agh.cqm.service.MonitorService;
 import pl.edu.agh.cqm.service.ParameterService;
 import pl.edu.agh.cqm.service.PingService;
 
@@ -34,6 +35,7 @@ public class PingServiceImpl implements PingService {
     private final RTTSampleRepository rttSampleRepository;
     private final CqmConfiguration cqmConfiguration;
     private final ParameterService parameterService;
+    private final MonitorService monitorService;
     private final Logger logger = LogManager.getLogger(PingServiceImpl.class);
 
     @Override
@@ -85,6 +87,7 @@ public class PingServiceImpl implements PingService {
                 .timestamp(Instant.now())
                 .type(TCP)
                 .url(url)
+                .monitor(monitorService.getLocalMonitor())
                 .build();
     }
 
@@ -124,6 +127,7 @@ public class PingServiceImpl implements PingService {
                 .timestamp(Instant.now())
                 .type(ICMP)
                 .url(url)
+                .monitor(monitorService.getLocalMonitor())
                 .build();
     }
 

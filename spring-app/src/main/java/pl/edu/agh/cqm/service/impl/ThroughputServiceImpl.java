@@ -10,6 +10,7 @@ import pl.edu.agh.cqm.configuration.CqmConfiguration;
 import pl.edu.agh.cqm.data.model.ThroughputSample;
 import pl.edu.agh.cqm.data.model.Url;
 import pl.edu.agh.cqm.data.repository.ThroughputSampleRepository;
+import pl.edu.agh.cqm.service.MonitorService;
 import pl.edu.agh.cqm.service.ParameterService;
 import pl.edu.agh.cqm.service.ThroughputService;
 
@@ -28,6 +29,7 @@ public class ThroughputServiceImpl implements ThroughputService {
     private final int snapLen;
     private final int timeout;
     private final ParameterService parameterService;
+    private final MonitorService monitorService;
     private int measurementTime;
     private final int sessionBreakTime;
     private final String interfaceName;
@@ -35,9 +37,13 @@ public class ThroughputServiceImpl implements ThroughputService {
     private PcapNetworkInterface nif;
     private List<UrlData> urls;
 
-    public ThroughputServiceImpl(CqmConfiguration configuration, ParameterService parameterService, ThroughputSampleRepository dataRepository) throws PcapNativeException {
+    public ThroughputServiceImpl(CqmConfiguration configuration,
+                                 ParameterService parameterService,
+                                 ThroughputSampleRepository dataRepository,
+                                 MonitorService monitorService) throws PcapNativeException {
         this.dataRepository = dataRepository;
         this.parameterService = parameterService;
+        this.monitorService = monitorService;
         snapLen = configuration.getPcapMaxPacketLength();
         timeout = configuration.getPcapTimeout();
         sessionBreakTime = configuration.getPcapSessionBreak();
@@ -73,10 +79,12 @@ public class ThroughputServiceImpl implements ThroughputService {
             this.calcOutput(urls);
             urls.forEach(c -> {
                 try {
-                    ThroughputSample sample = new ThroughputSample();
-                    sample.setThroughput((long) c.throughput);
-                    sample.setTimestamp(Instant.now());
-                    sample.setUrl(c.url);
+                    ThroughputSample sample = ThroughputSample.builder()
+                        .throughput((long) c.throughput)
+                        .timestamp(Instant.now())
+                        .url(c.url)
+                        .monitor(monitorService.getLocalMonitor())
+                        .build();
                     dataRepository.save(sample);
                 } catch (NullPointerException e) {
                     logger.warn("empty throughput session");
