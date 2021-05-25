@@ -1,5 +1,7 @@
 package pl.edu.agh.cqm.data.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -7,7 +9,9 @@ import javax.persistence.*;
 import java.time.Instant;
 
 @Data
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(indexes = {
     @Index(columnList = "timestamp")
@@ -26,4 +30,7 @@ public class ThroughputSample implements Sample {
 
     @Column(nullable = false, updatable = false)
     private long throughput;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    private Monitor monitor;
 }
