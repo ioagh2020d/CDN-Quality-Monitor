@@ -4,8 +4,10 @@ import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.cqm.data.dto.MonitorsDTO;
 import pl.edu.agh.cqm.data.dto.MonitorsResponseDTO;
+import pl.edu.agh.cqm.data.repository.MonitorRepository;
+import pl.edu.agh.cqm.service.MonitorService;
 
-import java.util.List;
+import javax.validation.Valid;
 
 @CrossOrigin
 @RestController
@@ -13,19 +15,17 @@ import java.util.List;
 @AllArgsConstructor
 public class MonitorController {
 
-//    @PutMapping
-//    public void put(
-//            @Valid @RequestBody MonitorsDTO monitorsDTO
-//    ) {
-//    }
+    private final MonitorService monitorService;
+
+    @PutMapping
+    public void put(@Valid @RequestBody MonitorsDTO monitorsDTO) {
+
+    }
 
     @GetMapping
     public MonitorsResponseDTO get() {
         return MonitorsResponseDTO.builder()
-                .monitors(List.of(
-                        MonitorsDTO.builder().id(1).address("1.1.1.1").build(),
-                        MonitorsDTO.builder().id(2).address("2.2.2.2").build()
-                ))
+                .monitors(monitorService.getActiveMonitors())
                 .build();
     }
 }
