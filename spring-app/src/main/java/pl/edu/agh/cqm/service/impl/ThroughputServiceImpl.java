@@ -32,7 +32,6 @@ public class ThroughputServiceImpl implements ThroughputService {
     private final int snapLen;
     private final int timeout;
     private final ParameterService parameterService;
-    private final UrlRepository urlRepository;
     private int measurementTime;
     private final int sessionBreakTime;
     private final String interfaceName;
@@ -49,7 +48,6 @@ public class ThroughputServiceImpl implements ThroughputService {
         snapLen = configuration.getPcapMaxPacketLength();
         timeout = configuration.getPcapTimeout();
         sessionBreakTime = configuration.getPcapSessionBreak();
-        this.urlRepository = urlRepository;
         interfaceName = configuration.getInterfaceName();
         getNIF();
 
@@ -87,7 +85,11 @@ public class ThroughputServiceImpl implements ThroughputService {
             logger.info("measurement done");
             this.calcOutput(urlsData);
             urlsData.forEach(c -> {
-                logger.debug("foreach cdn:url:ip {}:{}:{}", c.cdn, c.name, c.ip);
+                logger.debug("foreach cdn:url:ip:tput {}:{}:{}:{}", c.cdn, c.name, c.ip, c.throughput);
+
+                if(c.ip == null){
+                    return;
+                }
 
                 try {
                     ThroughputSample sample = new ThroughputSample();
@@ -103,13 +105,13 @@ public class ThroughputServiceImpl implements ThroughputService {
                     Optional<Url> url = parameterService.getURL(c.cdn, c.name);
 
                     if(url.isEmpty()){
-                        logger.debug("trying add cdn:url:ip {}:{}:{}", c.cdn, c.name, c.ip);
+                        logger.debug("adding new URL cdn:url:ip {}:{}:{}", c.cdn, c.name, c.ip);
                         parameterService.addNewUrl(c.cdn, c.name);
                         url = parameterService.getURL(c.cdn, c.name);
 
 
                     }
-
+                    logger.debug("add sample cdn:url:ip:tput {}:{}:{}:{}", c.cdn, c.name, c.ip, c.throughput);
                     sample.setUrl(url.get());
                     dataRepository.save(sample);
                 } catch (NullPointerException e) {
@@ -150,7 +152,6 @@ public class ThroughputServiceImpl implements ThroughputService {
             }
             String ip = dnsARecords.get(0).getAddress().getHostAddress();
             if(monitoredIPs.contains(ip)){
-                //logger.warn("this shouldn't happen; IP already in hashset. {}:{}:{}", url.cdn, url.name, ip);
                 return false;
             }
             monitoredIPs.add(url.ip);
@@ -189,7 +190,6 @@ public class ThroughputServiceImpl implements ThroughputService {
                     urlsData.add(urlData);
                     monitoredIPs.add(urlData.ip);
                     logger.debug("found CDN dns response cdn:{};  query:{};  ip:{}; url:{};", cdn, dnsPacket.getHeader().getQuestions().get(0).getQName().toString(), urlData.ip, urlData.name);
-                    break;
                 }
                 return true;
         }
@@ -227,8 +227,7 @@ public class ThroughputServiceImpl implements ThroughputService {
 
             }
 
-            urls.forEach(d -> ipMap.put(d.ip, d));
-
+            urls.stream().filter(d -> d.ip != null).forEach(d -> ipMap.put(d.ip, d));
             logger.debug("filter: {}", filterBuilder.toString());
 
             handle.setFilter(filterBuilder.toString(), BpfProgram.BpfCompileMode.OPTIMIZE);
@@ -276,7 +275,7 @@ public class ThroughputServiceImpl implements ThroughputService {
                     continue;
                 }
                 url.currentSession.add(Pair.of(handle.getTimestamp(), packet.length()));
-                //            logger.debug(ipv4packet.getHeader().getSrcAddr().getHostAddress());
+//                logger.debug("packet {}:{}", url.cdn, url.ip);
                 url.lastACKFlag = false;
             }
         }
@@ -303,9 +302,9 @@ public class ThroughputServiceImpl implements ThroughputService {
             if (timeSum == 0) {
                 u.throughput = 0;
             } else {
-                u.throughput = byteSum * 8 / timeSum;
+                u.throughput = byteSum * 8 / timeSum / 1000.0;
             }
-            logger.info("URL: name: {}; ip: {}; time sum: {}; bit sum: {}; throughput: {} b/s; sessions {}", u.name, u.ip, timeSum, byteSum * 8, u.throughput, u.sessions.size());
+            logger.info("URL: name: {}; ip: {}; time sum: {}; bit sum: {}; throughput: {} kb/s; sessions {}", u.name, u.ip, timeSum, byteSum * 8, u.throughput, u.sessions.size());
         }
 
 

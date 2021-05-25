@@ -156,8 +156,8 @@ public class ParameterServiceImpl implements ParameterService {
 
     @Override
     public Optional<Url> getURL(String cdnName, String urlName) {
-        Optional<Cdn> cdn = cdnRepository.findByNameEquals(cdnName);
-        Optional<Url> url = urlRepository.findByCdnAndAddressEquals(cdn.get(), urlName);
+        Cdn cdn = this.getCdn(cdnName);
+        Optional<Url> url = urlRepository.findByCdnAndAddressEquals(cdn, urlName);
         return url;
     }
 
