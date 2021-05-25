@@ -30,7 +30,6 @@ async function getAllCdns(){
     .then(response => response.json())
     .then(data => data['cdns'].map(cdn => cdn.name))
     .then(d =>{
-      console.log(d);
       return d;
     })
 }
@@ -52,9 +51,8 @@ const ChartsIndividual = (cdns) => {
       setAllCdnsItems(items);
       setCDN(cdns[0]);// TODO handle no cdns
 
-    }).catch(error => console.log(error))
-  }, []
-  )
+    }).catch(error => console.warn(error))
+  }, [])
   const handleChange = (event) => {
     setCDN(event.target.value);
   };
