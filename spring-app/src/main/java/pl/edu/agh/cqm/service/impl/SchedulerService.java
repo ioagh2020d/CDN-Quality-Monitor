@@ -1,6 +1,7 @@
 package pl.edu.agh.cqm.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,7 @@ import pl.edu.agh.cqm.service.ThroughputService;
 @Service
 @Configuration
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "cqm.is_local")
 public class SchedulerService {
     private final PingService pingService;
     private final ThroughputService throughputService;
@@ -19,7 +21,7 @@ public class SchedulerService {
     private int schedulePingCounter = 0;
 
     @Scheduled(fixedDelay = 1)
-    public void scheduledThroughput(){
+    public void scheduledThroughput() {
         throughputService.doMeasurement();
     }
 

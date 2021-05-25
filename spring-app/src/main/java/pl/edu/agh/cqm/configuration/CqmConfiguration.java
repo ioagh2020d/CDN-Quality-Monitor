@@ -13,6 +13,9 @@ public class CqmConfiguration {
         TCP, ICMP;
     }
 
+    @Value("${cqm.is_local}")
+    private boolean isLocal;
+
     @Value("${cqm.active.tests_type}")
     private ActiveTestType activeTestsType;
 
