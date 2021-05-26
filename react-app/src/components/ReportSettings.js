@@ -96,7 +96,7 @@ const ReportSettings = () => {
     getAllCdns().then(cdns => {
       let items = cdns.map(cdn => {
         return <Controller
-          name={cdn.name.replace('.', '_')}
+          name={cdn.name.replaceAll('.', '_')}
           key={cdn.name}
           control={control}
           defaultValue={false}
@@ -126,11 +126,10 @@ const ReportSettings = () => {
     if (data.packetLoss) {
       exportData.packetLoss = await getDataPrepared(getRTT, 'packetLoss', 'packetLoss', ...commonToQueries).catch(error => console.warn(error));
     }
-    const reportComponenet = generatePDFComponent(exportData, data);
+    const reportComponent = generatePDFComponent(exportData, data);
 
-    const blob = pdf(reportComponenet).toBlob().then(b => {
+    const blob = pdf(reportComponent).toBlob().then(b => {
       const fileDownloadUrl = URL.createObjectURL(b);
-      let ref;
       let a = document.createElement('a');
       a.href = fileDownloadUrl;
       a.download = "Report.pdf"

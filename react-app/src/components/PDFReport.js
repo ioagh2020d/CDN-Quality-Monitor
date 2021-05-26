@@ -62,7 +62,7 @@ function calcMedian(values){
     return a-b;
   });
 
-  var half = Math.floor(values.length / 2);
+  const half = Math.floor(values.length / 2);
 
   if (values.length % 2)
     return values[half];
@@ -73,7 +73,7 @@ function calcMedian(values){
 function generateStatsSection(data, formData, unit){
   data = mergeDeviations(data);
   data = data.filter(d => {
-    return formData[d.id.replace('.','_')] == true
+    return formData[d.id.replaceAll('.','_')] === true
   })
 
   const elements = []
@@ -84,7 +84,7 @@ function generateStatsSection(data, formData, unit){
     const minV = Math.min(...values);
     const avgV = (values.reduce((a, b) => a + b, 0) / values.length)
     const medianV = calcMedian(values);
-    const dataCorrect = values.length > 0 ? true : false;
+    const dataCorrect = values.length > 0;
     elements.push(<View style={styles.cdnSection} key={cdn.id}>
         <Text style={styles.cdnHeader}>{cdn.id}</Text>
         {dataCorrect && <Text style={styles.statsValue}> max: {maxV} {unit}</Text>}
