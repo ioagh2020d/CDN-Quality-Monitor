@@ -5,7 +5,7 @@ import SingleChartPacketLossInd from "./SingleChartPacketLossInd";
 import {Typography} from '@material-ui/core';
 import Select from '@material-ui/core/Select';
 import FormControl from '@material-ui/core/FormControl';
-import {useState, useEffect} from "react";
+import React, {useState, useEffect} from "react";
 import {makeStyles} from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -22,9 +22,8 @@ const useStyles = makeStyles((theme) => ({
   cardsG: {
     textAlign: 'center',
     paddingTop: '1em'
-  }
+  },
 }));
-
 
 async function getAllCdns() {
   return fetch(process.env.REACT_APP_API_URL + "/api/parameters")
@@ -72,8 +71,10 @@ const ChartsIndividual = (monitors, cdns) => {
       }).catch(error => console.log(error))
     }, []
   )
-  const handleChange = (event) => {
+  const handleChangeCDN = (event) => {
     setCDN(event.target.value);
+  };
+  const handleChangeMonitor = (event) => {
     setMonitor(event.target.value);
   };
   return (
@@ -81,24 +82,26 @@ const ChartsIndividual = (monitors, cdns) => {
       <Grid item xs={12}>
         <Card className={classes.cardsG} style={{textAlign: 'left', padding: '1em'}}>
           <FormControl className={classes.formControl}>
-            <InputLabel id="demo-simple-select-label">Monitor</InputLabel>
-            <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              value={monitor}
-              onChange={handleChange}
-            >
-              {allMonitorsItems}
-            </Select>
-            <InputLabel id="demo-simple-select-label">CDN</InputLabel>
-            <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              value={cdn}
-              onChange={handleChange}
-            >
-              {allCdnsItems}
-            </Select>
+              <InputLabel id="demo-simple-select-label">Monitor</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={monitor}
+                onChange={handleChangeMonitor}
+              >
+                {allMonitorsItems}
+              </Select>
+          </FormControl>
+          <FormControl className={classes.formControl}>
+              <InputLabel id="demo-simple-select-label">CDN</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={cdn}
+                onChange={handleChangeCDN}
+              >
+                {allCdnsItems}
+              </Select>
           </FormControl>
         </Card></Grid>
       <Grid item xs={12}> <Card className={classes.cardsG}>
