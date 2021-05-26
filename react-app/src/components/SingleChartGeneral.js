@@ -51,7 +51,47 @@ const granularityMarks = [
   },
 ];
 
-const availableColors = ['red', 'green', 'blue', 'orange', 'purple'];
+const availableColors = [
+  "#FF0000",
+  "#00FFFF",
+  "#0000FF",
+  "#0000A0",
+  "#ADD8E6",
+  "#FFFF00",
+  "#00FF00",
+  "#FF00FF",
+  "#FFA500",
+  "#A52A2A",
+  "#008000",
+  "#808000",
+  "#9932cc",
+  "#8b0000",
+  "#e9967a",
+  "#9400d3",
+  "#ff00ff",
+  "#ffd700",
+  "#008000",
+  "#4b0082",
+  "#f0e68c",
+  "#add8e6",
+  "#e0ffff",
+  "#90ee90",
+  "#d3d3d3",
+  "#ffb6c1",
+  "#ffffe0",
+  "#00ff00",
+  "#ff00ff",
+  "#800000",
+  "#808000",
+  "#ffa500",
+  "#ffc0cb",
+  "#800080",
+  "#800080",
+  "#ff0000",
+  "#c0c0c0",
+  "#ffffff",
+  "#ffff00"
+]
 
 
 const SingleChartGeneral = ({dataInit, chartDesc, getDataCb, reloadToggler /* see data tab */}) => {
