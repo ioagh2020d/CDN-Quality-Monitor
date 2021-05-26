@@ -7,6 +7,7 @@ import pl.edu.agh.cqm.data.model.Url;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 public interface ParameterService {
 
@@ -25,6 +26,10 @@ public interface ParameterService {
     int getPassiveSamplingRate();
 
     List<ConfigSampleDTO> getParameterHistory(Instant startDate, Instant endDate);
+
+    void addNewUrl(String cdn, String url);
+
+    Optional<Url> getURL(String cdnName, String urlName);
 
     Cdn getOrCreateCdn(String name);
 
