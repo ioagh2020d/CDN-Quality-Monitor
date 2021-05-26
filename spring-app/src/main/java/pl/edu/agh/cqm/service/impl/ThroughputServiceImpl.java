@@ -116,7 +116,7 @@ public class ThroughputServiceImpl implements ThroughputService {
                     ThroughputSample sample = ThroughputSample.builder()
                         .throughput((long) c.throughput)
                         .timestamp(Instant.now())
-                        .url(c.url)
+                        .url(url.get())
                         .monitor(monitorService.getLocalMonitor())
                         .build();
 

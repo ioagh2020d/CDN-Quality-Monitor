@@ -22,7 +22,7 @@ public class MonitorServiceImpl implements MonitorService {
 
     @PostConstruct
     private void init() {
-        if (monitorRepository.getLocalMonitor().isEmpty()) {
+        if (monitorRepository.getMonitorByName(MonitorRepository.LOCAL_MONITOR_NAME).isEmpty()) {
             monitorRepository.save(Monitor.builder()
                 .name(MonitorRepository.LOCAL_MONITOR_NAME)
                 .build());
