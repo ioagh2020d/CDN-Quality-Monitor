@@ -11,8 +11,10 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @Builder
 @AllArgsConstructor
-public class MonitorsDTO {
+public class MonitorDTO {
+    @NotNull
+    private Long id;
 
     @NotNull
-    private String address;
+    private String name;
 }

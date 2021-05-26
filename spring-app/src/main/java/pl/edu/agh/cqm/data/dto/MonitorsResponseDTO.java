@@ -15,5 +15,5 @@ import java.util.List;
 public class MonitorsResponseDTO {
 
     @NotNull
-    private List<MonitorsDTO> monitors;
+    private List<MonitorDTO> monitors;
 }
