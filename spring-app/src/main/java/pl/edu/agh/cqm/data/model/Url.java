@@ -29,4 +29,10 @@ public class Url {
         this.address = address;
         this.active = true;
     }
+
+    public Url(Cdn cdn, String address, boolean active) {
+        this.cdn = cdn;
+        this.address = address;
+        this.active = active;
+    }
 }

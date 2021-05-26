@@ -1,5 +1,6 @@
 package pl.edu.agh.cqm.data.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -23,5 +24,10 @@ public class Cdn {
     public Cdn(String name) {
         this.name = name;
         this.active = true;
+    }
+
+    public Cdn(String name, boolean active) {
+        this.name = name;
+        this.active = active;
     }
 }
