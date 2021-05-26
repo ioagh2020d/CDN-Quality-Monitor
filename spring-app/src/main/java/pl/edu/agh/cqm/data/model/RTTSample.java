@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
+import pl.edu.agh.cqm.data.dto.RTTSampleDTO;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -15,7 +16,7 @@ import java.time.Instant;
 @Builder
 @AllArgsConstructor
 @Table(indexes = {
-    @Index(columnList = "timestamp")
+        @Index(columnList = "timestamp")
 })
 public class RTTSample implements Sample {
 
@@ -50,4 +51,16 @@ public class RTTSample implements Sample {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Monitor monitor;
+
+    public RTTSampleDTO toDTO() {
+        return RTTSampleDTO.builder()
+                .timestamp(timestamp)
+                .average(average)
+                .min(min)
+                .max(max)
+                .standardDeviation(standardDeviation)
+                .packetLoss(packetLoss)
+                .type(type)
+                .build();
+    }
 }

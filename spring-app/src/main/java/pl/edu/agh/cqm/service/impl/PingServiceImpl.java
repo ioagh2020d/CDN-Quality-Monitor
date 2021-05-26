@@ -1,11 +1,14 @@
 package pl.edu.agh.cqm.service.impl;
 
+import kong.unirest.Unirest;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
+import pl.edu.agh.cqm.data.dto.SubmitSamplesDTO;
+import pl.edu.agh.cqm.data.dto.SubmittedSampleWrapperDTO;
 import pl.edu.agh.cqm.data.model.RTTSample;
 import pl.edu.agh.cqm.data.model.Url;
 import pl.edu.agh.cqm.data.repository.RTTSampleRepository;
@@ -43,11 +46,24 @@ public class PingServiceImpl implements PingService {
         for (Url url : parameterService.getActiveUrls()) {
             try {
                 CqmConfiguration.ActiveTestType type = cqmConfiguration.getActiveTestsType();
+                RTTSample sample;
                 switch (type) {
-                    case ICMP -> rttSampleRepository.save(pingICMP(url));
-                    case TCP -> rttSampleRepository.save(pingTCP(url));
+                    case ICMP -> sample = pingICMP(url);
+                    case TCP -> sample = pingTCP(url);
                     default -> throw new IllegalStateException("Unexpected value: " + type);
                 }
+                rttSampleRepository.save(sample);
+
+                // send the sample to the central server
+                Unirest.post(cqmConfiguration.getCentralServer() + "/api/remotes/rtt")
+                        .header("Content-Type", "application/json")
+                        .body(new SubmitSamplesDTO<>(List.of(
+                                new SubmittedSampleWrapperDTO<>(
+                                        sample.toDTO(),
+                                        url.getCdn().getName(),
+                                        url.getAddress())
+                        )))
+                        .asJson();
             } catch (IOException e) {
                 logger.error(e.getMessage());
             }

@@ -1,5 +1,6 @@
 package pl.edu.agh.cqm.service.impl;
 
+import kong.unirest.Unirest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.core.*;
@@ -8,6 +9,8 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
 import pl.edu.agh.cqm.data.dto.CdnWithUrlsDTO;
+import pl.edu.agh.cqm.data.dto.SubmitSamplesDTO;
+import pl.edu.agh.cqm.data.dto.SubmittedSampleWrapperDTO;
 import pl.edu.agh.cqm.data.model.ThroughputSample;
 import pl.edu.agh.cqm.data.model.Url;
 import pl.edu.agh.cqm.data.repository.ThroughputSampleRepository;
@@ -36,6 +39,7 @@ public class ThroughputServiceImpl implements ThroughputService {
     private int measurementTime;
     private final int sessionBreakTime;
     private final String interfaceName;
+    private final String centralServer;
     private String myIP;
     private PcapNetworkInterface nif;
     private List<URLData> urlsData;
@@ -53,6 +57,7 @@ public class ThroughputServiceImpl implements ThroughputService {
         timeout = configuration.getPcapTimeout();
         sessionBreakTime = configuration.getPcapSessionBreak();
         interfaceName = configuration.getInterfaceName();
+        centralServer = configuration.getCentralServer();
         getNIF();
 
     }
@@ -122,6 +127,17 @@ public class ThroughputServiceImpl implements ThroughputService {
 
                     logger.debug("add sample cdn:url:ip:tput {}:{}:{}:{}", c.cdn, c.name, c.ip, c.throughput);
                     dataRepository.save(sample);
+
+                    // send the sample to the central server
+                    Unirest.post(centralServer + "/api/remotes/throughput")
+                            .header("Content-Type", "application/json")
+                            .body(new SubmitSamplesDTO<>(List.of(
+                                    new SubmittedSampleWrapperDTO<>(
+                                            sample.toDTO(),
+                                            url.get().getCdn().getName(),
+                                            url.get().getAddress())
+                            )))
+                            .asJson();
                 } catch (NullPointerException e) {
                     logger.warn("empty throughput session");
                 } catch (IndexOutOfBoundsException e) {

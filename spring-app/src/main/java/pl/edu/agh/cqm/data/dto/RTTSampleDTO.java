@@ -1,11 +1,13 @@
 package pl.edu.agh.cqm.data.dto;
 
+import com.google.gson.annotations.JsonAdapter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import pl.edu.agh.cqm.configuration.CqmConfiguration;
+import pl.edu.agh.cqm.data.serializers.RTTSampleDTOSerializer;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -15,6 +17,7 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @SuperBuilder
+@JsonAdapter(RTTSampleDTOSerializer.class)
 public class RTTSampleDTO extends SampleDTO {
 
     @NotNull
