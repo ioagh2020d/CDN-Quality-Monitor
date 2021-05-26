@@ -25,4 +25,10 @@ public interface ParameterService {
     int getPassiveSamplingRate();
 
     List<ConfigSampleDTO> getParameterHistory(Instant startDate, Instant endDate);
+
+    Cdn getOrCreateCdn(String name);
+
+    Url getOrCreateUrl(Cdn cdn, String url);
+
+    Url getOrCreateUrl(String cdnName, String url);
 }
