@@ -2,6 +2,8 @@ package pl.edu.agh.cqm.service.impl;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import pl.edu.agh.cqm.data.dto.MonitorDTO;
+import pl.edu.agh.cqm.data.model.Monitor;
 import pl.edu.agh.cqm.data.dto.RTTSampleDTO;
 import pl.edu.agh.cqm.data.dto.SubmitSamplesDTO;
 import pl.edu.agh.cqm.data.dto.ThroughputSampleDTO;
@@ -13,6 +15,8 @@ import pl.edu.agh.cqm.service.MonitorService;
 import pl.edu.agh.cqm.service.ParameterService;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 @Service
@@ -32,6 +36,13 @@ public class MonitorServiceImpl implements MonitorService {
         return monitorRepository.getMonitorByName(MonitorRepository.LOCAL_MONITOR_NAME)
             .orElseThrow(() -> new IllegalStateException("Local monitor not present"));
     }
+
+    @Override
+    public List<MonitorDTO> getActiveMonitors() {
+        return monitorRepository.findAll()
+                .stream()
+                .map(Monitor::toDTO)
+                .collect(Collectors.toList());
 
     @Transactional
     @Override

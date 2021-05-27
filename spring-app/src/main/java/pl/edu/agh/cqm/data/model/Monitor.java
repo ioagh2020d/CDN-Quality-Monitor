@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import pl.edu.agh.cqm.data.dto.MonitorDTO;
 
 import javax.persistence.*;
 
@@ -20,4 +21,11 @@ public class Monitor {
 
     @Column(nullable = false, updatable = false, length = 64)
     private String name;
+
+    public MonitorDTO toDTO() {
+        return MonitorDTO.builder()
+                .name(name)
+                .id(id)
+                .build();
+    }
 }
