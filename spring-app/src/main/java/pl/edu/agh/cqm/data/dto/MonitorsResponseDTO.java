@@ -15,5 +15,8 @@ import java.util.List;
 public class MonitorsResponseDTO {
 
     @NotNull
+    Boolean isLocal;
+
+    @NotNull
     private List<MonitorDTO> monitors;
 }

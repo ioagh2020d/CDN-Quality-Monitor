@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface MonitorService {
 
+    boolean isLocal();
     Monitor getLocalMonitor();
 
     List<MonitorDTO> getActiveMonitors();
