@@ -15,7 +15,7 @@ public class Url {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     private Cdn cdn;
 
     @Column(nullable = false, updatable = false, length = 64)
@@ -28,5 +28,11 @@ public class Url {
         this.cdn = cdn;
         this.address = address;
         this.active = true;
+    }
+
+    public Url(Cdn cdn, String address, boolean active) {
+        this.cdn = cdn;
+        this.address = address;
+        this.active = active;
     }
 }

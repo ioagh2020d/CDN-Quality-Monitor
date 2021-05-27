@@ -6,8 +6,8 @@ const throughputEndpointInd = "/api/samples/singleCdn/throughput"
 
 
 
-async function getRTT(startDate, endDate, granularity){
-    return fetch(apiURL + rttEndpoint + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}`)
+async function getRTT(startDate, endDate, granularity, monitorIP){
+    return fetch(apiURL + rttEndpoint + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&monitor=${monitorIP}`)
     .then(response => {
         if(response.status !== 200){
             throw new Error(response.status)
@@ -17,9 +17,9 @@ async function getRTT(startDate, endDate, granularity){
 }
 
 
-async function getThroughput(startDate, endDate, granularity){
+async function getThroughput(startDate, endDate, granularity, monitorIP){
 
-    return fetch(apiURL + throughputEndpoint + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}`)
+    return fetch(apiURL + throughputEndpoint + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&monitor=${monitorIP}`)
     .then(response => {
         if(response.status !== 200){
             throw new Error(response.status)
@@ -29,8 +29,8 @@ async function getThroughput(startDate, endDate, granularity){
   
 }
 
-async function getRTTInd(cdn, startDate, endDate, granularity){
-    return fetch(apiURL + rttEndpointInd + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&cdn=${cdn}`)
+async function getRTTInd(cdn, startDate, endDate, granularity, monitorIP){
+    return fetch(apiURL + rttEndpointInd + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&cdn=${cdn}&monitor=${monitorIP}`)
     .then(response => {
         if(response.status !== 200){
             throw new Error(response.status)
@@ -40,9 +40,9 @@ async function getRTTInd(cdn, startDate, endDate, granularity){
 }
 
 
-async function getThroughputInd(cdn, startDate, endDate, granularity){
+async function getThroughputInd(cdn, startDate, endDate, granularity, monitorIP){
 
-    return fetch(apiURL + throughputEndpointInd + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&cdn=${cdn}`)
+    return fetch(apiURL + throughputEndpointInd + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&cdn=${cdn}&monitor=${monitorIP}`)
     .then(response => {
         if(response.status !== 200){
             throw new Error(response.status)

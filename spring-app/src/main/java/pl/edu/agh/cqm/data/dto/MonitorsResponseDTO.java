@@ -1,19 +1,19 @@
 package pl.edu.agh.cqm.data.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 import javax.validation.constraints.NotNull;
-import java.time.Instant;
+import java.util.List;
 
-@NoArgsConstructor
-@AllArgsConstructor
 @Data
-@SuperBuilder
-public abstract class SampleDTO {
+@NoArgsConstructor
+@Builder
+@AllArgsConstructor
+public class MonitorsResponseDTO {
 
     @NotNull
-    private Instant timestamp;
+    private List<MonitorDTO> monitors;
 }
