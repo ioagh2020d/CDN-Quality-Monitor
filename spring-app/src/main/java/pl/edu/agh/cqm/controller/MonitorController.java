@@ -2,6 +2,10 @@ package pl.edu.agh.cqm.controller;
 
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import pl.edu.agh.cqm.data.dto.MonitorsDTO;
+import pl.edu.agh.cqm.data.dto.MonitorsResponseDTO;
+
+import java.util.List;
 import pl.edu.agh.cqm.data.dto.MonitorsResponseDTO;
 import pl.edu.agh.cqm.service.MonitorService;
 

@@ -28,12 +28,11 @@ const useStyles = makeStyles((theme) => ({
 async function getAllAvailableMonitors() {
   return fetch(process.env.REACT_APP_API_URL + "/api/monitors")
     .then(response => response.json())
-    .then(data => data['monitors'].map(monitor => monitor.address))
+    .then(data => data['monitors'].map(monitor => monitor.name))
     .then(a => {
-      const choices = ["LOCAL", "ALL", "COMPARE"];
-      a.map(m => choices.push(m));
-      console.log(choices);
-      return choices;
+      a.push("all", "compare")
+      console.log(a);
+      return a;
     })
 }
 

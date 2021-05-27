@@ -43,6 +43,7 @@ public class MonitorServiceImpl implements MonitorService {
                 .stream()
                 .map(Monitor::toDTO)
                 .collect(Collectors.toList());
+    }
 
     @Transactional
     @Override

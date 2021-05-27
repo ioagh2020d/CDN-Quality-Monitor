@@ -1,15 +1,15 @@
-import { Card } from "@material-ui/core";
+import {Card} from "@material-ui/core";
 import SingleChartRTTInd from "./SingleChartRTTInd";
 import SingleChartTputInd from "./SingleChartTputInd";
 import SingleChartPacketLossInd from "./SingleChartPacketLossInd";
 import {Typography} from '@material-ui/core';
 import Select from '@material-ui/core/Select';
 import FormControl from '@material-ui/core/FormControl';
-import {useState, useEffect} from "react";
+import React, {useState, useEffect} from "react";
 import {makeStyles} from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
-import { Grid } from '@material-ui/core';
+import {Grid} from '@material-ui/core';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles((theme) => ({
@@ -23,9 +23,8 @@ const useStyles = makeStyles((theme) => ({
   cardsG: {
     textAlign: 'center',
     paddingTop: '1em'
-  }
+  },
 }));
-
 
 async function getAllCdns() {
   return fetch(process.env.REACT_APP_API_URL + "/api/parameters")
@@ -39,12 +38,11 @@ async function getAllCdns() {
 async function getAllAvailableMonitors() {
   return fetch(process.env.REACT_APP_API_URL + "/api/monitors")
     .then(response => response.json())
-    .then(data => data['monitors'].map(monitor => monitor.address))
+    .then(data => data['monitors'].map(monitor => monitor.name))
     .then(a => {
-      const choices = ["LOCAL", "ALL", "COMPARE"];
-      a.map(m => choices.push(m));
-      console.log(choices);
-      return choices;
+      a.push("all", "compare")
+      console.log(a);
+      return a;
     })
 }
 
@@ -52,28 +50,36 @@ const ChartsIndividual = (monitors, cdns) => {
   const classes = useStyles();
   const [cdn, setCDN] = useState("");
   const [allCdnsItems, setAllCdnsItems] = useState([]);
+  const [cdnsLoaded, setCdnsLoaded] = useState(false);
   const [monitor, setMonitor] = useState("");
   const [allMonitorsItems, setAllMonitorsItems] = useState([]);
+
+  useEffect(() =>{
+    if(cdn != "") setCdnsLoaded(true);
+  }, [cdn]);
 
   useEffect(() => {
       getAllCdns().then(cdns => {
         let items = cdns.map(c => {
-          return <MenuItem value={c}>{c}</MenuItem>
+          return <MenuItem key={c} value={c}>{c}</MenuItem>
         });
         setAllCdnsItems(items);
         setCDN(cdns[0]);// TODO handle no cdns
       }).catch(error => console.log(error));
       getAllAvailableMonitors().then(monitors => {
         let items = monitors.map(m => {
-          return <MenuItem value={m}>{m}</MenuItem>
+          return <MenuItem key={m} value={m}>{m}</MenuItem>
         });
         setAllMonitorsItems(items);
         setMonitor(monitors[0]);// TODO handle no monitors
       }).catch(error => console.log(error))
     }, []
   )
-  const handleChange = (event) => {
+  const handleChangeCDN = (event) => {
     setCDN(event.target.value);
+    setMonitor(event.target.value);
+  };
+  const handleChangeMonitor = (event) => {
     setMonitor(event.target.value);
   };
   return (
@@ -86,40 +92,47 @@ const ChartsIndividual = (monitors, cdns) => {
               labelId="demo-simple-select-label"
               id="demo-simple-select"
               value={monitor}
-              onChange={handleChange}
+              onChange={handleChangeMonitor}
             >
               {allMonitorsItems}
             </Select>
+          </FormControl>
+          <FormControl className={classes.formControl}>
             <InputLabel id="demo-simple-select-label">CDN</InputLabel>
             <Select
               labelId="demo-simple-select-label"
               id="demo-simple-select"
               value={cdn}
-              onChange={handleChange}
+              onChange={handleChangeCDN}
             >
               {allCdnsItems}
             </Select>
           </FormControl>
+          {!cdnsLoaded && <CircularProgress size={44}/>}
         </Card></Grid>
-      <Grid item xs={12}> <Card className={classes.cardsG}>
+      {cdnsLoaded && <Grid item xs={12}>
+        <Card className={classes.cardsG}>
 
-        <Typography variant="h6">RTT</Typography>
-        <SingleChartRTTInd cdnName={cdn} monitorIP={monitor}/>
-      </Card></Grid>
+          <Typography variant="h6">RTT</Typography>
+          <SingleChartRTTInd cdnName={cdn} monitorIP={monitor}/>
+        </Card></Grid>}
 
-      <Grid item xs={12}><Card className={classes.cardsG}>
 
-        <Typography variant="h6">Throughput</Typography>
-        <SingleChartTputInd cdnName={cdn} monitorIP={monitor}/>
-      </Card></Grid>
+      {cdnsLoaded && <Grid item xs={12}>
+        <Card className={classes.cardsG}>
 
-      <Grid item xs={12}><Card className={classes.cardsG}>
+          <Typography variant="h6">Throughput</Typography>
+          <SingleChartTputInd cdnName={cdn} monitorIP={monitor}/>
+        </Card></Grid>}
 
-        <Typography variant="h6">PacketLoss</Typography>
-        <SingleChartPacketLossInd cdnName={cdn} monitorIP={monitor}/>
-      </Card></Grid>
-    </Grid>
-  )
+      {cdnsLoaded && <Grid item xs={12}>
+        <Card className={classes.cardsG}>
+
+          <Typography variant="h6">PacketLoss</Typography>
+          <SingleChartPacketLossInd cdnName={cdn} monitorIP={monitor}/>
+        </Card></Grid>}
+      </Grid>
+        )
 }
 
 export default ChartsIndividual
