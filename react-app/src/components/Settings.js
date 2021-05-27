@@ -32,7 +32,6 @@ const Settings = () => {
       fetch(process.env.REACT_APP_API_URL + "/api/parameters")
         .then(response => response.json())
         .then(data => {
-          console.log(data)
           reset({
             ...data,
             cdns: data["cdns"],
@@ -63,13 +62,12 @@ const Settings = () => {
       passiveSamplingRate: data.passiveSamplingRate,
       cdns: cdns,
     }
-    console.log(data)
     fetch(process.env.REACT_APP_API_URL + "/api/parameters", {
       "method": "PUT",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(data)
     }).then(() => history.push(""))
-      .catch(error => console.log(error))
+      .catch(error => console.warn(error))
   };
 
   const {ref: activeSamplingRateRef, ...activeSamplingRateParams} = register("activeSamplingRate")

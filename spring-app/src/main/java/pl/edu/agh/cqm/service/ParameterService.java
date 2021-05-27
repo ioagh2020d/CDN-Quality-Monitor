@@ -30,4 +30,10 @@ public interface ParameterService {
     void addNewUrl(String cdn, String url);
 
     Optional<Url> getURL(String cdnName, String urlName);
+
+    Cdn getOrCreateCdn(String name);
+
+    Url getOrCreateUrl(Cdn cdn, String url);
+
+    Url getOrCreateUrl(String cdnName, String url);
 }

@@ -444,3 +444,46 @@ volumes:
   ]
 }
 ```
+
+### POST `/api/remotes/rtt`
+
+#### Example request:
+
+```json
+{
+  "samples":[
+    {
+      "cdnName": "facebook",
+      "url": "www.facebook.com",
+      "sample": {
+        "timestamp": "2021-04-22T12:45:04.927+00:00",
+        "throughput": 1000
+      }
+    }
+  ]
+}
+```
+
+### POST `/api/remotes/throughput`
+
+#### Example request:
+
+```json
+{
+  "samples":[
+    {
+      "cdnName":"www.facebook.com",
+      "url":"testUrl",
+      "sample": {
+        "timestamp":"2021-04-22T12:45:04.927+00:00",
+        "average":10,
+        "min":10,
+        "max":10,
+        "packetLoss":1,
+        "standardDeviation":0.1,
+        "type": "TCP"
+      }
+    }
+  ]
+}
+```
