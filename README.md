@@ -1,6 +1,5 @@
 # CQM
 
-
 # Installation
 
 ### In memory H2 database
@@ -30,13 +29,13 @@ services:
     image: hubertus248/cqm
     network_mode: host
     environment:
-#      - CQM_DDL_AUTO=create #uncomment for first run and database initialization
+      #      - CQM_DDL_AUTO=create #uncomment for first run and database initialization
       - CQM_JDBC_STRING=jdbc:postgresql://localhost/postgres
       - CQM_DB_USER=postgres
       - CQM_DB_PASS=secret_password #replace with a new random password
       - CQM_INTERFACE=ens33
       - CQM_PORT=8080
-  
+
   postgres:
     image: postgres
     network_mode: host
@@ -44,13 +43,12 @@ services:
       - postgres-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=secret_password #replace with a new random password
-      
+
 volumes:
   postgres-data:
 ```
 
 # API
-
 
 ### GET `/api/samples/rtt`
 
@@ -59,7 +57,6 @@ volumes:
 `startDate` : ISO8601 string - Start of the period for which samples will be returned
 
 `endDate` : ISO8601 string - End of the period for which samples will be returned
-
 
 #### Example response:
 
@@ -110,7 +107,6 @@ volumes:
 }
 ```
 
-
 ### GET `/api/samples/throughput`
 
 #### Query parameters:
@@ -118,7 +114,6 @@ volumes:
 `startDate` : ISO8601 string - Start of the period for which samples will be returned
 
 `endDate` : ISO8601 string - End of the period for which samples will be returned
-
 
 #### Example response:
 
@@ -166,7 +161,6 @@ volumes:
 `startDate` : ISO8601 string - Start of the period for which samples will be returned
 
 `endDate` : ISO8601 string - End of the period for which samples will be returned
-
 
 #### Example response:
 
@@ -243,7 +237,6 @@ volumes:
 
 `endDate` : ISO8601 string - End of the period for which samples will be returned
 
-
 #### Example response:
 
 ```json
@@ -286,7 +279,6 @@ volumes:
 }
 ```
 
-
 ### GET `/api/samples/singleCdn/throughput`
 
 #### Query parameters:
@@ -296,7 +288,6 @@ volumes:
 `startDate` : ISO8601 string - Start of the period for which samples will be returned
 
 `endDate` : ISO8601 string - End of the period for which samples will be returned
-
 
 #### Example response:
 
@@ -344,7 +335,6 @@ volumes:
 `startDate` : ISO8601 string - Start of the period for which samples will be returned
 
 `endDate` : ISO8601 string - End of the period for which samples will be returned
-
 
 #### Example response:
 
@@ -433,6 +423,25 @@ volumes:
   "activeSamplingRate": 2,
   "activeTestIntensity": 10,
   "passiveSamplingRate": 5
+}
+```
+
+### GET `/api/monitors`
+
+#### Example response:
+
+```json
+{
+  "monitors": [
+    {
+      "id": 1,
+      "name": "1.2.3.4"
+    },
+    {
+      "id": 2,
+      "name": "5.6.7.8"
+    }
+  ]
 }
 ```
 
