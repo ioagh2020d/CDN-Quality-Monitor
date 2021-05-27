@@ -1,12 +1,13 @@
-package pl.edu.agh.cqm.data;
+package pl.edu.agh.cqm.data.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import pl.edu.agh.cqm.data.dto.SampleDTO;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 @Data
+@AllArgsConstructor
 public class SubmittedSampleWrapperDTO<T extends SampleDTO> {
 
     @NotNull

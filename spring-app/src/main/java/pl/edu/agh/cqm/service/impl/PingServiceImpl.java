@@ -9,6 +9,7 @@ import pl.edu.agh.cqm.configuration.CqmConfiguration;
 import pl.edu.agh.cqm.data.model.RTTSample;
 import pl.edu.agh.cqm.data.model.Url;
 import pl.edu.agh.cqm.data.repository.RTTSampleRepository;
+import pl.edu.agh.cqm.service.CentralApiService;
 import pl.edu.agh.cqm.service.MonitorService;
 import pl.edu.agh.cqm.service.ParameterService;
 import pl.edu.agh.cqm.service.PingService;
@@ -36,6 +37,7 @@ public class PingServiceImpl implements PingService {
     private final CqmConfiguration cqmConfiguration;
     private final ParameterService parameterService;
     private final MonitorService monitorService;
+    private final CentralApiService centralApiService;
     private final Logger logger = LogManager.getLogger(PingServiceImpl.class);
 
     @Override
@@ -43,11 +45,14 @@ public class PingServiceImpl implements PingService {
         for (Url url : parameterService.getActiveUrls()) {
             try {
                 CqmConfiguration.ActiveTestType type = cqmConfiguration.getActiveTestsType();
+                RTTSample sample;
                 switch (type) {
-                    case ICMP -> rttSampleRepository.save(pingICMP(url));
-                    case TCP -> rttSampleRepository.save(pingTCP(url));
+                    case ICMP -> sample = pingICMP(url);
+                    case TCP -> sample = pingTCP(url);
                     default -> throw new IllegalStateException("Unexpected value: " + type);
                 }
+                rttSampleRepository.save(sample);
+                centralApiService.sendSample(sample);
             } catch (IOException e) {
                 logger.error(e.getMessage());
             }

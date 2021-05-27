@@ -13,6 +13,9 @@ public class CqmConfiguration {
         TCP, ICMP;
     }
 
+    @Value("${cqm.central_server}")
+    private String centralServer;
+
     @Value("${cqm.active.tests_type}")
     private ActiveTestType activeTestsType;
 

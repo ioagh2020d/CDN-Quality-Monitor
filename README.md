@@ -389,7 +389,7 @@ volumes:
 
 ### PUT `/api/parameters`
 
-#### Query parameters:
+#### Body (JSON keys):
 
 `cdns` : List of objects with fields: "name" - cdn name, "urls" - cdn urls
 
@@ -453,11 +453,16 @@ volumes:
 {
   "samples":[
     {
-      "cdnName": "facebook",
-      "url": "www.facebook.com",
+      "cdnName":"www.facebook.com",
+      "url":"testUrl",
       "sample": {
-        "timestamp": "2021-04-22T12:45:04.927+00:00",
-        "throughput": 1000
+        "timestamp":"2021-04-22T12:45:04.927+00:00",
+        "average":10,
+        "min":10,
+        "max":10,
+        "packetLoss":1,
+        "standardDeviation":0.1,
+        "type": "TCP"
       }
     }
   ]
@@ -472,16 +477,11 @@ volumes:
 {
   "samples":[
     {
-      "cdnName":"www.facebook.com",
-      "url":"testUrl",
+      "cdnName": "facebook",
+      "url": "www.facebook.com",
       "sample": {
-        "timestamp":"2021-04-22T12:45:04.927+00:00",
-        "average":10,
-        "min":10,
-        "max":10,
-        "packetLoss":1,
-        "standardDeviation":0.1,
-        "type": "TCP"
+        "timestamp": "2021-04-22T12:45:04.927+00:00",
+        "throughput": 1000
       }
     }
   ]
