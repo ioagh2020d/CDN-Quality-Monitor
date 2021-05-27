@@ -1,22 +1,17 @@
 import {
   Box,
   Button,
-  Card, Divider,
-  InputAdornment,
+  Card,
   makeStyles,
-  TextField,
-  Typography
 } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import generatePDFComponent from "./PDFReport";
-import { pdf } from '@react-pdf/renderer';
+
 import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import FormLabel from '@material-ui/core/FormLabel';
 import DateFnsUtils from '@date-io/date-fns';
-import { getRTT, getThroughput, getDataPrepared } from "../DataGetter";
 import { MuiPickersUtilsProvider, DateTimePicker } from '@material-ui/pickers';
 import Slider from '@material-ui/core/Slider';
 
@@ -68,19 +63,11 @@ const useStyles = makeStyles(theme => ({
 
 }))
 
-async function getAllCdns() {
-  return fetch(process.env.REACT_APP_API_URL + "/api/parameters")
-    .then(response => response.json())
-    .then(data => data['cdns'])
-    .then(d => {
-      return d;
-    })
-}
 
-const ReportSettings = () => {
+const ReportSettings = ({getAllEntities, generatePDF, label}) => {
   const classes = useStyles()
-  const [allCdnsItems, setAllCdnsItems] = useState([]);
-  const [cdnLoading, setCdnLoading] = useState(true);
+  const [allEntities, setAllEntities] = useState([]);
+  const [entitiesLoading, setEntitesLoading] = useState(true);
   const { handleSubmit, control, reset } = useForm({
     defaultValues: {
       'startDate': new Date(Date.now() - (1000 * 3600 * 5)),
@@ -93,54 +80,27 @@ const ReportSettings = () => {
 
 
   useEffect(() => {
-    getAllCdns().then(cdns => {
-      let items = cdns.map(cdn => {
+    getAllEntities().then(entities => {
+      let items = entities.map(entity => {
         return <Controller
-          name={cdn.name.replaceAll('.', '_')}
-          key={cdn.name}
+          name={entity.name.replaceAll('.', '^')}
+          key={entity.name}
           control={control}
           defaultValue={false}
-          render={({ field }) => <FormControlLabel control={<Checkbox {...field} />} label={cdn.name} />}
+          render={({ field }) => <FormControlLabel control={<Checkbox {...field} />} label={entity.name} />}
         />
       });
-      setAllCdnsItems(items);
-      setCdnLoading(false);
+      setAllEntities(items);
+      setEntitesLoading(false);
 
     }).catch(error => console.warn(error))
-  }, [])
+  }, [getAllEntities, generatePDF])
 
 
 
   const onSubmit = async (data) => {
-    let commonToQueries = [
-      data.startDate, data.endDate, data.granularity
-    ]
-    const exportData = {}
-
-    if (data.rtt) {
-      exportData.rtt = await getDataPrepared(getRTT, 'average', 'rtt', ...commonToQueries).catch(error => console.warn(error));
-    }
-    if (data.throughput) {
-      exportData.throughput = await getDataPrepared(getThroughput, 'throughput', 'throughput', ...commonToQueries).catch(error => console.warn(error));
-    }
-    if (data.packetLoss) {
-      exportData.packetLoss = await getDataPrepared(getRTT, 'packetLoss', 'packetLoss', ...commonToQueries).catch(error => console.warn(error));
-    }
-    const reportComponent = generatePDFComponent(exportData, data);
-
-    const blob = pdf(reportComponent).toBlob().then(b => {
-      const fileDownloadUrl = URL.createObjectURL(b);
-      let a = document.createElement('a');
-      a.href = fileDownloadUrl;
-      a.download = "Report.pdf"
-      a.click();
-      setTimeout(() => {
-        window.URL.revokeObjectURL(fileDownloadUrl);
-      }, 0)
-
-    });
-
-  };
+    generatePDF(data);
+  }
 
 
   return (
@@ -166,10 +126,10 @@ const ReportSettings = () => {
             </MuiPickersUtilsProvider>
           </Box>
           <Box m={2} display='flex' flexDirection='column'>
-            <FormLabel component="legend" style={{ marginBottom: '1rem' }}>CDNs:</FormLabel>
-            {!cdnLoading &&
-              allCdnsItems}
-            {cdnLoading && <Box p={2}><CircularProgress size={64} /></Box>}
+            <FormLabel component="legend" style={{ marginBottom: '1rem' }}>{label}:</FormLabel>
+            {!entitiesLoading &&
+              allEntities}
+            {entitiesLoading && <Box p={2}><CircularProgress size={64} /></Box>}
           </Box>
           <Box m={2}>
             <FormLabel component="legend">Parameters</FormLabel>
