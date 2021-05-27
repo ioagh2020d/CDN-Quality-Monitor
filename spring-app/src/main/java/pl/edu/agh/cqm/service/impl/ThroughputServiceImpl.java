@@ -310,9 +310,9 @@ public class ThroughputServiceImpl implements ThroughputService {
             if (timeSum == 0) {
                 u.throughput = 0;
             } else {
-                u.throughput = byteSum * 8 / timeSum / 1000.0;
+                u.throughput = byteSum * 8 / timeSum;
             }
-            logger.info("URL: name: {}; ip: {}; time sum: {}; bit sum: {}; throughput: {} kb/s; sessions {}", u.name, u.ip, timeSum, byteSum * 8, u.throughput, u.sessions.size());
+            logger.info("URL: name: {}; ip: {}; time sum: {}; bit sum: {}; throughput: {} kb/s; sessions {}", u.name, u.ip, timeSum, byteSum * 8, u.throughput/1000.0, u.sessions.size());
         }
 
 
