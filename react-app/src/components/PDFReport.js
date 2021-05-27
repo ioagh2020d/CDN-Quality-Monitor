@@ -72,11 +72,16 @@ function calcMedian(values){
 
 function generateStatsSection(data, formData, unit){
   data = mergeDeviations(data);
+  console.log(data);
+  console.log(formData);
+
   data = data.filter(d => {
-    return formData[d.id.replaceAll('.','_')] === true
+    return formData[d.id.replaceAll('.','^')] === true
   })
 
   const elements = []
+
+
 
   for(const cdn of data){
     const values = cdn.data.map(a => a.y);
@@ -103,7 +108,7 @@ const PDFReport = ({data, formData}) => {
   let RTTelements = [];
   let TpuElements = [];
   let PacketLossElements = [];
-  
+
   if(data.rtt) RTTelements = generateStatsSection(data.rtt.data, formData, 'ms');
   if(data.throughput) TpuElements = generateStatsSection(data.throughput.data, formData, 'kb/s');
   if(data.packetLoss) PacketLossElements = generateStatsSection(data.packetLoss.data, formData, '%');
