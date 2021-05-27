@@ -6,7 +6,6 @@ import SingleChartGeneral from "./SingleChartGeneral";
 
 
 const SingleChartRTTInd = ({ cdnName }) => {
-    console.log(cdnName);
     const [reloadToggler, setReloadToggler] = useState(false);
 
     let getDataCb = async(...args) => {

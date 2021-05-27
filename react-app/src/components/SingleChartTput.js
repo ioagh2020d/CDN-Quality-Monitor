@@ -20,7 +20,6 @@ async function getDataCb(...args){
     })
     
     data.markers = data.markers.concat(markers);
-    console.log(data.markers);
     return data;
 } 
 

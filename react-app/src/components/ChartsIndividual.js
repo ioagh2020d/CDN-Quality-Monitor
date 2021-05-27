@@ -1,4 +1,4 @@
-import {Card} from "@material-ui/core";
+import { Card } from "@material-ui/core";
 import SingleChartRTTInd from "./SingleChartRTTInd";
 import SingleChartTputInd from "./SingleChartTputInd";
 import SingleChartPacketLossInd from "./SingleChartPacketLossInd";
@@ -9,7 +9,8 @@ import { useState, useEffect } from "react";
 import { makeStyles } from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
-import {Grid} from '@material-ui/core';
+import { Grid } from '@material-ui/core';
+import CircularProgress from '@material-ui/core/CircularProgress';
 const useStyles = makeStyles((theme) => ({
   formControl: {
     margin: theme.spacing(1),
@@ -25,12 +26,11 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-async function getAllCdns(){
+async function getAllCdns() {
   return fetch(process.env.REACT_APP_API_URL + "/api/parameters")
     .then(response => response.json())
     .then(data => data['cdns'].map(cdn => cdn.name))
-    .then(d =>{
-      console.log(d);
+    .then(d => {
       return d;
     })
 }
@@ -40,59 +40,65 @@ const ChartsIndividual = (cdns) => {
   const classes = useStyles();
   const [cdn, setCDN] = useState("");
   const [allCdnsItems, setAllCdnsItems] = useState([]);
+  const [cdnsLoaded, setCdnsLoaded] = useState(false);
 
-
+  useEffect(() =>{
+    if(cdn != "") setCdnsLoaded(true);
+  }, [cdn]);
 
 
   useEffect(() => {
-    getAllCdns().then( cdns => {
+    getAllCdns().then(cdns => {
       let items = cdns.map(c => {
-        return <MenuItem value={c}>{c}</MenuItem>
+        return <MenuItem key={c} value={c}>{c}</MenuItem>
       });
       setAllCdnsItems(items);
       setCDN(cdns[0]);// TODO handle no cdns
 
-    }).catch(error => console.log(error))
-  }, []
-  )
+    }).catch(error => console.warn(error))
+  }, [])
   const handleChange = (event) => {
     setCDN(event.target.value);
   };
   return (
     <Grid container spacing={2}>
       <Grid item xs={12}>
-    <Card className={classes.cardsG} style={{textAlign: 'left', padding: '1em'}}>
-        <FormControl className={classes.formControl}>
-        <InputLabel id="demo-simple-select-label">CDN</InputLabel>
-        <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          value={cdn}
-          onChange={handleChange}
+        <Card className={classes.cardsG} style={{ textAlign: 'left', padding: '1em' }}>
+          <FormControl className={classes.formControl}>
+            <InputLabel id="demo-simple-select-label">CDN</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={cdn}
+              onChange={handleChange}
 
-        >
-          {allCdnsItems}
-        </Select>
-        </FormControl>
-    </Card></Grid>
-    <Grid item xs={12}> <Card className={classes.cardsG}>
+            >
+              {allCdnsItems}
+            </Select>
+          </FormControl>
+          {!cdnsLoaded && <CircularProgress size={44} />}
+        </Card></Grid>
+      {cdnsLoaded && <Grid item xs={12}>
+        <Card className={classes.cardsG}>
 
-      <Typography variant="h6">RTT</Typography>
-      <SingleChartRTTInd cdnName={cdn}/>
-      </Card></Grid>
+          <Typography variant="h6">RTT</Typography>
+          <SingleChartRTTInd cdnName={cdn} />
+        </Card></Grid>}
 
-      <Grid item xs={12}><Card className={classes.cardsG}>
+      {cdnsLoaded && <Grid item xs={12}>
+        <Card className={classes.cardsG}>
 
-      <Typography variant="h6">Throughput</Typography>
-      <SingleChartTputInd cdnName={cdn}/>
-      </Card></Grid>
+          <Typography variant="h6">Throughput</Typography>
+          <SingleChartTputInd cdnName={cdn} />
+        </Card></Grid>}
 
-      <Grid item xs={12}><Card className={classes.cardsG}>
+      {cdnsLoaded && <Grid item xs={12}>
+        <Card className={classes.cardsG}>
 
-      <Typography variant="h6">PacketLoss</Typography>
-      <SingleChartPacketLossInd cdnName={cdn}/>      
-      </Card></Grid>
-      </Grid>
+          <Typography variant="h6">PacketLoss</Typography>
+          <SingleChartPacketLossInd cdnName={cdn} />
+        </Card></Grid>}
+    </Grid>
   )
 }
 
