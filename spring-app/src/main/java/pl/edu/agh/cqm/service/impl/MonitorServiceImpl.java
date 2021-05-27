@@ -2,6 +2,7 @@ package pl.edu.agh.cqm.service.impl;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import pl.edu.agh.cqm.configuration.CqmConfiguration;
 import pl.edu.agh.cqm.data.dto.MonitorDTO;
 import pl.edu.agh.cqm.data.model.Monitor;
 import pl.edu.agh.cqm.data.dto.RTTSampleDTO;
@@ -24,12 +25,15 @@ import javax.transaction.Transactional;
 public class MonitorServiceImpl implements MonitorService {
 
     private final MonitorRepository monitorRepository;
-
     private final ParameterService parameterService;
-
     private final RTTSampleRepository rttSampleRepository;
-
     private final ThroughputSampleRepository throughputSampleRepository;
+    private final CqmConfiguration cqmConfiguration;
+
+    @Override
+    public boolean isLocal() {
+        return cqmConfiguration.isLocal();
+    }
 
     @Override
     public Monitor getLocalMonitor() {
@@ -92,10 +96,12 @@ public class MonitorServiceImpl implements MonitorService {
 
     @PostConstruct
     private void init() {
-        if (monitorRepository.getMonitorByName(MonitorRepository.LOCAL_MONITOR_NAME).isEmpty()) {
-            monitorRepository.save(Monitor.builder()
-                .name(MonitorRepository.LOCAL_MONITOR_NAME)
-                .build());
+        if (cqmConfiguration.isLocal()) {
+            if (monitorRepository.getMonitorByName(MonitorRepository.LOCAL_MONITOR_NAME).isEmpty()) {
+                monitorRepository.save(Monitor.builder()
+                    .name(MonitorRepository.LOCAL_MONITOR_NAME)
+                    .build());
+            }
         }
     }
 }

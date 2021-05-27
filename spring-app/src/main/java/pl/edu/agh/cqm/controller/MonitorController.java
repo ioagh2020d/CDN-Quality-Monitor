@@ -1,11 +1,10 @@
 package pl.edu.agh.cqm.controller;
 
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-import pl.edu.agh.cqm.data.dto.MonitorsDTO;
-import pl.edu.agh.cqm.data.dto.MonitorsResponseDTO;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import pl.edu.agh.cqm.data.dto.MonitorsResponseDTO;
 import pl.edu.agh.cqm.service.MonitorService;
 
@@ -20,6 +19,7 @@ public class MonitorController {
     @GetMapping
     public MonitorsResponseDTO get() {
         return MonitorsResponseDTO.builder()
+                .isLocal(monitorService.isLocal())
                 .monitors(monitorService.getActiveMonitors())
                 .build();
     }
