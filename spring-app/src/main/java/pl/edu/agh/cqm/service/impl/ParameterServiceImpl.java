@@ -20,6 +20,7 @@ import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -63,7 +64,7 @@ public class ParameterServiceImpl implements ParameterService {
             if (cdnWithUrls.getName().isBlank()) continue;
             // cdns
             Cdn cdn = cdnRepository.findByNameEquals(cdnWithUrls.getName())
-                    .orElse(new Cdn(cdnWithUrls.getName()));
+                .orElse(new Cdn(cdnWithUrls.getName()));
             cdn.setActive(true);
             cdnRepository.save(cdn);
 
@@ -71,7 +72,7 @@ public class ParameterServiceImpl implements ParameterService {
             for (String address : cdnWithUrls.getUrls()) {
                 if (address.isBlank()) continue;
                 Url url = urlRepository.findByCdnAndAddressEquals(cdn, address)
-                        .orElse(new Url(cdn, address));
+                    .orElse(new Url(cdn, address));
                 url.setActive(true);
                 urlRepository.save(url);
             }
@@ -82,16 +83,16 @@ public class ParameterServiceImpl implements ParameterService {
     @Override
     public void updateSampleParameters(int activeSamplingRate, int activeTestIntensity, int passiveSamplingRate) {
         if (activeSamplingRate == getActiveSamplingRate()
-                && activeTestIntensity == getActiveTestIntensity()
-                && passiveSamplingRate == getPassiveSamplingRate()) {
+            && activeTestIntensity == getActiveTestIntensity()
+            && passiveSamplingRate == getPassiveSamplingRate()) {
             logger.info("None of the sample parameters were updated");
         } else {
             ConfigSample configSample = ConfigSample.builder()
-                    .timestamp(Instant.now())
-                    .activeSamplingRate(activeSamplingRate)
-                    .activeTestIntensity(activeTestIntensity)
-                    .passiveSamplingRate(passiveSamplingRate)
-                    .build();
+                .timestamp(Instant.now())
+                .activeSamplingRate(activeSamplingRate)
+                .activeTestIntensity(activeTestIntensity)
+                .passiveSamplingRate(passiveSamplingRate)
+                .build();
 
             configSampleRepository.save(configSample);
             logger.info("Updated the sample parameters: " + configSample);
@@ -116,8 +117,8 @@ public class ParameterServiceImpl implements ParameterService {
     @Override
     public List<CdnWithUrlsDTO> getActiveCdnsWithUrls() {
         return cdnRepository.findByActiveTrue().stream()
-                .map(cdn -> new CdnWithUrlsDTO(cdn.getName(), getActiveUrlAddresses(cdn)))
-                .collect(Collectors.toList());
+            .map(cdn -> new CdnWithUrlsDTO(cdn.getName(), getActiveUrlAddresses(cdn)))
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -146,15 +147,57 @@ public class ParameterServiceImpl implements ParameterService {
         return configs.stream().map(ConfigSample::toDTO).collect(Collectors.toList());
     }
 
+    @Override
+    public void addNewUrl(String cdnName, String urlName){
+        Optional<Cdn> cdn = cdnRepository.findByNameEquals(cdnName);
+        Url url = new Url(cdn.get(), urlName);
+        urlRepository.save(url);
+    }
+
+    @Override
+    public Optional<Url> getURL(String cdnName, String urlName) {
+        Cdn cdn = this.getCdn(cdnName);
+        Optional<Url> url = urlRepository.findByCdnAndAddressEquals(cdn, urlName);
+        return url;
+    }
+
+    @Transactional
+    @Override
+    public Cdn getOrCreateCdn(String name) {
+        return cdnRepository.findByNameEquals(name)
+            .orElseGet(() -> {
+                var newCdn = new Cdn(name, false);
+                cdnRepository.save(newCdn);
+                return newCdn;
+            });
+    }
+
+    @Transactional
+    @Override
+    public Url getOrCreateUrl(Cdn cdn, String url) {
+        return urlRepository.findByCdnAndAddressEquals(cdn, url)
+            .orElseGet(() -> {
+                var newUrl = new Url(cdn, url, cdn.isActive());
+                urlRepository.save(newUrl);
+                return newUrl;
+            });
+    }
+
+    @Transactional
+    @Override
+    public Url getOrCreateUrl(String cdnName, String url) {
+        return getOrCreateUrl(getOrCreateCdn(cdnName), url);
+    }
+
     private Cdn getCdn(String cdnName) {
         return cdnRepository.findByNameEquals(cdnName)
-                .orElseThrow(NotFoundException::new);
+            .orElseThrow(NotFoundException::new);
     }
 
     private List<String> getActiveUrlAddresses(Cdn cdn) {
         return urlRepository.findByCdnAndActiveTrue(cdn).stream()
-                .map(Url::getAddress)
-                .collect(Collectors.toList());
+            .map(Url::getAddress)
+            .collect(Collectors.toList());
     }
 
     @PostConstruct
@@ -170,11 +213,11 @@ public class ParameterServiceImpl implements ParameterService {
     private void initConfigSampleRepository() {
         if (configSampleRepository.count() == 0) {
             configSampleRepository.save(ConfigSample.builder()
-                    .timestamp(Instant.now())
-                    .activeSamplingRate(activeSamplingRate)
-                    .activeTestIntensity(activeTestsIntensity)
-                    .passiveSamplingRate(passiveSamplingRate)
-                    .build());
+                .timestamp(Instant.now())
+                .activeSamplingRate(activeSamplingRate)
+                .activeTestIntensity(activeTestsIntensity)
+                .passiveSamplingRate(passiveSamplingRate)
+                .build());
         }
     }
 

@@ -4,16 +4,19 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import pl.edu.agh.cqm.data.SubmittedSampleWrapperDTO;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
+@Builder
 @Data
 @NoArgsConstructor
-@Builder
 @AllArgsConstructor
-public class MonitorsResponseDTO {
+public class SubmitSamplesDTO<T extends SampleDTO> {
 
     @NotNull
-    private List<MonitorDTO> monitors;
+    @NotEmpty
+    private List<SubmittedSampleWrapperDTO<T>> samples;
 }

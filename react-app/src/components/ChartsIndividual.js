@@ -1,4 +1,4 @@
-import {Card} from "@material-ui/core";
+import { Card } from "@material-ui/core";
 import SingleChartRTTInd from "./SingleChartRTTInd";
 import SingleChartTputInd from "./SingleChartTputInd";
 import SingleChartPacketLossInd from "./SingleChartPacketLossInd";
@@ -6,10 +6,12 @@ import {Typography} from '@material-ui/core';
 import Select from '@material-ui/core/Select';
 import FormControl from '@material-ui/core/FormControl';
 import React, {useState, useEffect} from "react";
+import {useState, useEffect} from "react";
 import {makeStyles} from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
-import {Grid} from '@material-ui/core';
+import { Grid } from '@material-ui/core';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles((theme) => ({
   formControl: {
@@ -30,7 +32,6 @@ async function getAllCdns() {
     .then(response => response.json())
     .then(data => data['cdns'].map(cdn => cdn.name))
     .then(d => {
-      console.log(d);
       return d;
     })
 }
@@ -72,6 +73,7 @@ const ChartsIndividual = (monitors, cdns) => {
   )
   const handleChangeCDN = (event) => {
     setCDN(event.target.value);
+    setMonitor(event.target.value);
   };
   const handleChangeMonitor = (event) => {
     setMonitor(event.target.value);

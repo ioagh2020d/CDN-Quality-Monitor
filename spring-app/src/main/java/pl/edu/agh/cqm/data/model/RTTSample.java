@@ -47,4 +47,7 @@ public class RTTSample implements Sample {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, updatable = false, length = 8)
     private CqmConfiguration.ActiveTestType type;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    private Monitor monitor;
 }

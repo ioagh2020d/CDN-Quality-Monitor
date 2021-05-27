@@ -6,14 +6,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
 @Builder
 @AllArgsConstructor
-public class MonitorsResponseDTO {
+public class MonitorDTO {
+    @NotNull
+    private Long id;
 
     @NotNull
-    private List<MonitorDTO> monitors;
+    private String name;
 }
