@@ -30,7 +30,7 @@ async function getAllAvailableMonitors() {
     .then(response => response.json())
     .then(data => data['monitors'].map(monitor => monitor.name))
     .then(a => {
-      a.push("all", "compare")
+      a.push("all")
       console.log(a);
       return a;
     })
@@ -44,14 +44,14 @@ const Charts = (monitors) => {
   useEffect(() => {
       getAllAvailableMonitors().then(monitors => {
         let items = monitors.map(m => {
-          return <MenuItem value={m}>{m}</MenuItem>
+          return <MenuItem key={m} value={m}>{m}</MenuItem>
         });
         setAllMonitorsItems(items);
-        setMonitor(monitors[0]);// TODO handle no monitors
+        setMonitor(monitors[0]);
       }).catch(error => console.log(error))
     }, []
   )
-  const handleChange = (event) => {
+  const handleChangeMonitor = (event) => {
     setMonitor(event.target.value);
   };
 
@@ -65,7 +65,7 @@ const Charts = (monitors) => {
               labelId="demo-simple-select-label"
               id="demo-simple-select"
               value={monitor}
-              onChange={handleChange}
+              onChange={handleChangeMonitor}
             >
               {allMonitorsItems}
             </Select>

@@ -40,7 +40,7 @@ async function getAllAvailableMonitors() {
     .then(response => response.json())
     .then(data => data['monitors'].map(monitor => monitor.name))
     .then(a => {
-      a.push("all", "compare")
+      a.push("all")
       console.log(a);
       return a;
     })
@@ -71,13 +71,12 @@ const ChartsIndividual = (monitors, cdns) => {
           return <MenuItem key={m} value={m}>{m}</MenuItem>
         });
         setAllMonitorsItems(items);
-        setMonitor(monitors[0]);// TODO handle no monitors
+        setMonitor(monitors[0]);
       }).catch(error => console.log(error))
     }, []
   )
   const handleChangeCDN = (event) => {
     setCDN(event.target.value);
-    setMonitor(event.target.value);
   };
   const handleChangeMonitor = (event) => {
     setMonitor(event.target.value);

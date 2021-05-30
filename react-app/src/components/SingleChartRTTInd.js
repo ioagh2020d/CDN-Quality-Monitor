@@ -9,7 +9,7 @@ const SingleChartRTTInd = ({cdnName, monitorIP}) => {
 
   let getDataCb = async (...args) => {
 
-    const data = await getDataPrepared(getRTTInd, 'average', 'rtt', ...args, cdnName, monitorIP);
+    const data = await getDataPrepared(getRTTInd, 'average', 'rtt', ...args, monitorIP, cdnName);
     const markers = data.response.parameterHistory.map(r => {
       const ts = new Date(r.timestamp);
       const legend = `asr ${r.activeSamplingRate} ati ${r.activeTestsIntensity}`;

@@ -8,7 +8,7 @@ const SingleChartPacketLossInd = ({cdnName, monitorIP}) => {
 
   async function getDataCb(...args) {
 
-    let data = await getDataPrepared(getRTTInd, 'packetLoss', 'packetLoss', ...args, cdnName, monitorIP);
+    let data = await getDataPrepared(getRTTInd, 'packetLoss', 'packetLoss', ...args, monitorIP, cdnName);
     const markers = data.response.parameterHistory.map(r => {
       const ts = new Date(r.timestamp);
       const legend = `asr ${r.activeSamplingRate} ati ${r.activeTestsIntensity}`;
