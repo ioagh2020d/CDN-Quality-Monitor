@@ -1,12 +1,14 @@
 const apiURL = process.env.REACT_APP_API_URL;
 const rttEndpoint = "/api/samples/rtt"
 const rttEndpointInd = "/api/samples/singleCdn/rtt"
+const rttEndpointComp = "/api/samples/comparison/rtt"
 const throughputEndpoint = "/api/samples/throughput"
 const throughputEndpointInd = "/api/samples/singleCdn/throughput"
+const throughputEndpointComp = "/api/samples/comparison/throughput"
 
 
 
-async function getRTT(startDate, endDate, granularity, monitorIP){
+async function getRTT(monitorIP, startDate, endDate, granularity){
     return fetch(apiURL + rttEndpoint + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&monitor=${monitorIP}`)
     .then(response => {
         if(response.status !== 200){
@@ -17,7 +19,7 @@ async function getRTT(startDate, endDate, granularity, monitorIP){
 }
 
 
-async function getThroughput(startDate, endDate, granularity, monitorIP){
+async function getThroughput(monitorIP, startDate, endDate, granularity){
 
     return fetch(apiURL + throughputEndpoint + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&monitor=${monitorIP}`)
     .then(response => {
@@ -29,36 +31,62 @@ async function getThroughput(startDate, endDate, granularity, monitorIP){
   
 }
 
-async function getRTTInd(cdn, startDate, endDate, granularity, monitorIP){
+
+async function getRTTInd(monitorIP, cdn, startDate, endDate, granularity){
     return fetch(apiURL + rttEndpointInd + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&cdn=${cdn}&monitor=${monitorIP}`)
-    .then(response => {
-        if(response.status !== 200){
-            throw new Error(response.status)
-        }      
-        return response.json();
-    });   
+      .then(response => {
+          if(response.status !== 200){
+              throw new Error(response.status)
+          }
+          return response.json();
+      });
 }
 
 
-async function getThroughputInd(cdn, startDate, endDate, granularity, monitorIP){
+async function getThroughputInd(monitorIP, cdn, startDate, endDate, granularity){
 
     return fetch(apiURL + throughputEndpointInd + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&cdn=${cdn}&monitor=${monitorIP}`)
-    .then(response => {
-        if(response.status !== 200){
-            throw new Error(response.status)
-        }      
-        return response.json()
-    });
-  
+      .then(response => {
+          if(response.status !== 200){
+              throw new Error(response.status)
+          }
+          return response.json()
+      });
+
 }
 
-async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, ed, granularity, cdn){
+
+async function getRTTComp(cdn, startDate, endDate, granularity){
+    return fetch(apiURL + rttEndpointComp + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&cdn=${cdn}`)
+      .then(response => {
+          if(response.status !== 200){
+              throw new Error(response.status)
+          }
+          return response.json();
+      });
+}
+
+
+async function getThroughputComp(cdn, startDate, endDate, granularity){
+
+    return fetch(apiURL + throughputEndpointComp + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&cdn=${cdn}`)
+      .then(response => {
+          if(response.status !== 200){
+              throw new Error(response.status)
+          }
+          return response.json()
+      });
+
+}
+
+async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, ed, granularity, monitorIP, cdn){
     let response;
-    if(cdn) response = await getDataJson(cdn, sd, ed, granularity);
-    else response = await getDataJson(sd, ed, granularity);
+    if(cdn && monitorIP) response = await getDataJson(monitorIP, cdn, sd, ed, granularity);
+    else if(cdn && !monitorIP) response = await getDataJson(cdn, sd, ed, granularity);
+    else response = await getDataJson(monitorIP, sd, ed, granularity);
     const datasets = [];
     const markers = [];
-
+    // TODO include monitorIP in below code if needed
 
     // TODO filter out markers by date 
     response.parameterHistory = response.parameterHistory.filter( o => {
@@ -141,4 +169,4 @@ async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, e
 
 
 
-export {getRTT, getRTTInd, getThroughput, getThroughputInd, getDataPrepared};
+export {getRTT, getRTTInd, getRTTComp, getThroughput, getThroughputComp, getThroughputInd, getDataPrepared};

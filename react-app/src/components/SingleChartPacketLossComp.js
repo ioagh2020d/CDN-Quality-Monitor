@@ -1,17 +1,17 @@
-import {getThroughputInd, getDataPrepared} from "../DataGetter";
+import {getDataPrepared, getRTTComp} from "../DataGetter";
 import React, {useEffect, useState} from 'react';
 import SingleChartGeneral from "./SingleChartGeneral";
 
 
-const SingleChartTputInd = ({cdnName, monitorIP}) => {
+const SingleChartPacketLossComp = ({cdnName}) => {
   const [reloadToggler, setReloadToggler] = useState(false);
 
   async function getDataCb(...args) {
 
-    const data = await getDataPrepared(getThroughputInd, 'throughput', 'throughput', ...args, monitorIP, cdnName);
+    let data = await getDataPrepared(getRTTComp, 'packetLoss', 'packetLoss', ...args, null, cdnName);
     const markers = data.response.parameterHistory.map(r => {
       const ts = new Date(r.timestamp);
-      const legend = `psr ${r.passiveSamplingRate}`;
+      const legend = `asr ${r.activeSamplingRate} ati ${r.activeTestsIntensity}`;
       return {
         axis: 'x',
         value: ts,
@@ -26,12 +26,11 @@ const SingleChartTputInd = ({cdnName, monitorIP}) => {
 
   useEffect(() => {
     setReloadToggler(!reloadToggler);
-  }, [monitorIP, cdnName]);
+  }, [cdnName]);
   return (
     <SingleChartGeneral dataInit={[]} getDataCb={getDataCb} reloadToggler={reloadToggler}
-                        chartDesc={{leftAxisDesc: "kb/s"}}/>
+                        chartDesc={{leftAxisDesc: "%"}}/>
   );
-
 }
 
-export default SingleChartTputInd;
+export default SingleChartPacketLossComp;
