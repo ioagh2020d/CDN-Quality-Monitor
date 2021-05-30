@@ -4,6 +4,7 @@ import Settings from "./Settings";
 import {Route, Switch} from "react-router-dom"
 import Charts from "./Charts";
 import ChartsIndividual from "./ChartsIndividual";
+import ChartsComparison from "./ChartsComparison";
 import ReportSettings from "./ReportSettings";
 
 const Main = () => {
@@ -18,9 +19,12 @@ const Main = () => {
             </Route>
             <Route path={"/reportSettings"}>
               <ReportSettings/>
-            </Route>            
+            </Route>
             <Route path={"/individualCDN"}>
               <ChartsIndividual/>
+            </Route>
+            <Route path={"/comparisonMonitors"}>
+              <ChartsComparison/>
             </Route>
             <Route path={""}>
               <Charts/>
