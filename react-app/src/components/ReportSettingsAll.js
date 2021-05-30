@@ -1,9 +1,11 @@
-import ReportSettings from './ReportSettings'
+import {ReportSettings, generateCSV, downloadStrFile} from './ReportSettings'
 import React from "react";
 import generatePDFComponent from "./PDFReport";
 import { pdf } from '@react-pdf/renderer';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { getRTT, getThroughput, getDataPrepared } from "../DataGetter";
+
+
 
 const generatePDF =  async  (data) =>{
   let commonToQueries = [
@@ -20,19 +22,30 @@ const generatePDF =  async  (data) =>{
   if (data.packetLoss) {
     exportData.packetLoss = await getDataPrepared(getRTT, 'packetLoss', 'packetLoss', ...commonToQueries).catch(error => console.warn(error));
   }
-  const reportComponent = generatePDFComponent(exportData, data);
-
-  const blob = pdf(reportComponent).toBlob().then(b => {
-    const fileDownloadUrl = URL.createObjectURL(b);
-    let a = document.createElement('a');
-    a.href = fileDownloadUrl;
-    a.download = "Report.pdf"
-    a.click();
-    setTimeout(() => {
-      window.URL.revokeObjectURL(fileDownloadUrl);
-    }, 0)
-
-  });
+  if(data.reportType === "PDF"){
+    const reportComponent = generatePDFComponent(exportData, data);
+    const blob = pdf(reportComponent).toBlob().then(b => {
+      const fileDownloadUrl = URL.createObjectURL(b);
+      let a = document.createElement('a');
+      a.href = fileDownloadUrl;
+      a.download = "Report.pdf"
+      a.click();
+      setTimeout(() => {
+        window.URL.revokeObjectURL(fileDownloadUrl);
+      }, 0)
+  
+    });
+  }else{
+    if(exportData.rtt){
+      downloadStrFile(generateCSV(exportData.rtt, data, "RTT [ms]"), "ReportRTT.csv");
+    }
+    if(exportData.throughput){
+      downloadStrFile(generateCSV(exportData.throughput, data, "Throughput [kbps]"), "ReportThroughput.csv");
+    }
+    if(exportData.packetLoss){
+      downloadStrFile(generateCSV(exportData.packetLoss, data, "packetloss [%]"), "ReportPacketLoss.csv");
+    }
+  }
 
 };
 
