@@ -1,10 +1,8 @@
 const apiURL = process.env.REACT_APP_API_URL;
 const rttEndpoint = "/api/samples/rtt"
 const rttEndpointInd = "/api/samples/singleCdn/rtt"
-const rttEndpointComp = "/api/samples/comparison/rtt"
 const throughputEndpoint = "/api/samples/throughput"
 const throughputEndpointInd = "/api/samples/singleCdn/throughput"
-const throughputEndpointComp = "/api/samples/comparison/throughput"
 
 
 
@@ -31,58 +29,32 @@ async function getThroughput(monitorIP, startDate, endDate, granularity){
   
 }
 
-
 async function getRTTInd(monitorIP, cdn, startDate, endDate, granularity){
     return fetch(apiURL + rttEndpointInd + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&cdn=${cdn}&monitor=${monitorIP}`)
-      .then(response => {
-          if(response.status !== 200){
-              throw new Error(response.status)
-          }
-          return response.json();
-      });
+    .then(response => {
+        if(response.status !== 200){
+            throw new Error(response.status)
+        }      
+        return response.json();
+    });   
 }
 
 
 async function getThroughputInd(monitorIP, cdn, startDate, endDate, granularity){
 
     return fetch(apiURL + throughputEndpointInd + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&cdn=${cdn}&monitor=${monitorIP}`)
-      .then(response => {
-          if(response.status !== 200){
-              throw new Error(response.status)
-          }
-          return response.json()
-      });
-
+    .then(response => {
+        if(response.status !== 200){
+            throw new Error(response.status)
+        }      
+        return response.json()
+    });
+  
 }
 
-
-async function getRTTComp(cdn, startDate, endDate, granularity){
-    return fetch(apiURL + rttEndpointComp + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&cdn=${cdn}`)
-      .then(response => {
-          if(response.status !== 200){
-              throw new Error(response.status)
-          }
-          return response.json();
-      });
-}
-
-
-async function getThroughputComp(cdn, startDate, endDate, granularity){
-
-    return fetch(apiURL + throughputEndpointComp + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&cdn=${cdn}`)
-      .then(response => {
-          if(response.status !== 200){
-              throw new Error(response.status)
-          }
-          return response.json()
-      });
-
-}
-
-async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, ed, granularity, monitorIP, cdn){
+async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, ed, granularity, monitorIP, cdn){ //TODO get monitorIP as input
     let response;
-    if(cdn && monitorIP) response = await getDataJson(monitorIP, cdn, sd, ed, granularity);
-    else if(cdn && !monitorIP) response = await getDataJson(cdn, sd, ed, granularity);
+    if(cdn) response = await getDataJson(monitorIP, cdn, sd, ed, granularity);
     else response = await getDataJson(monitorIP, sd, ed, granularity);
     const datasets = [];
     const markers = [];
@@ -169,4 +141,4 @@ async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, e
 
 
 
-export {getRTT, getRTTInd, getRTTComp, getThroughput, getThroughputComp, getThroughputInd, getDataPrepared};
+export {getRTT, getRTTInd, getThroughput, getThroughputInd, getDataPrepared};
