@@ -34,7 +34,7 @@ public class SingleCdnMonitoringController {
     public SingleCdnSingleParameterResponseDTO<RTTSampleDTO> getRTT(
             @Valid SingleCdnSampleSearchDTO searchDTO
     ) {
-        Map<String, List<RTTSampleDTO>> rttSamples = monitoringService.getRTTSamples(searchDTO.getCdn(),
+        Map<String, List<RTTSampleDTO>> rttSamples = monitoringService.getRTTSamplesSingleCdn(searchDTO.getCdn(),
                 searchDTO.getStartDate(), searchDTO.getEndDate(), searchDTO.getGranularity());
         if (rttSamples.values().stream().allMatch(List::isEmpty)) {
             throw new BadRequestException();
@@ -54,7 +54,7 @@ public class SingleCdnMonitoringController {
     public SingleCdnSingleParameterResponseDTO<ThroughputSampleDTO> getThroughput(
             @Valid SingleCdnSampleSearchDTO searchDTO
     ) {
-        Map<String, List<ThroughputSampleDTO>> throughputSamples = monitoringService.getThroughputSamples(
+        Map<String, List<ThroughputSampleDTO>> throughputSamples = monitoringService.getThroughputSamplesSingleCdn(
                 searchDTO.getCdn(), searchDTO.getStartDate(), searchDTO.getEndDate(), searchDTO.getGranularity());
         if (throughputSamples.values().stream().allMatch(List::isEmpty)) {
             throw new BadRequestException();
@@ -80,9 +80,9 @@ public class SingleCdnMonitoringController {
         Long granularity = searchDTO.getGranularity();
 
         Map<String, List<RTTSampleDTO>> rttSamples =
-                monitoringService.getRTTSamples(cdn, startDate, endDate, granularity);
+                monitoringService.getRTTSamplesSingleCdn(cdn, startDate, endDate, granularity);
         Map<String, List<ThroughputSampleDTO>> throughputSamples =
-                monitoringService.getThroughputSamples(cdn, startDate, endDate, granularity);
+                monitoringService.getThroughputSamplesSingleCdn(cdn, startDate, endDate, granularity);
 
         if (rttSamples.values().stream().allMatch(List::isEmpty)
                 && throughputSamples.values().stream().allMatch(List::isEmpty)) {

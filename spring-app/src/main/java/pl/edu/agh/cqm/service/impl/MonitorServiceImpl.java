@@ -12,6 +12,7 @@ import pl.edu.agh.cqm.data.model.*;
 import pl.edu.agh.cqm.data.repository.MonitorRepository;
 import pl.edu.agh.cqm.data.repository.RTTSampleRepository;
 import pl.edu.agh.cqm.data.repository.ThroughputSampleRepository;
+import pl.edu.agh.cqm.exception.NotFoundException;
 import pl.edu.agh.cqm.service.MonitorService;
 import pl.edu.agh.cqm.service.ParameterService;
 
@@ -39,6 +40,12 @@ public class MonitorServiceImpl implements MonitorService {
     public Monitor getLocalMonitor() {
         return monitorRepository.getMonitorByName(MonitorRepository.LOCAL_MONITOR_NAME)
             .orElseThrow(() -> new IllegalStateException("Local monitor not present"));
+    }
+
+    @Override
+    public Monitor getMonitor(String monitor) {
+        return monitorRepository.getMonitorByName(monitor)
+                .orElseThrow(NotFoundException::new);
     }
 
     @Override
