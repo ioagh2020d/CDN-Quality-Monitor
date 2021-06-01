@@ -66,7 +66,6 @@ async function getRTTComp(cdn, startDate, endDate, granularity){
       });
 }
 
-
 async function getThroughputComp(cdn, startDate, endDate, granularity){
 
     return fetch(apiURL + throughputEndpointComp + `?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&granularity=${granularity*60*1000}&cdn=${cdn}`)
