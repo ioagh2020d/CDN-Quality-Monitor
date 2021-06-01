@@ -8,7 +8,7 @@ const SingleChartTputInd = ({cdnName, monitorIP}) => {
 
   async function getDataCb(...args) {
 
-    const data = await getDataPrepared(getThroughputInd, 'throughput', 'throughput', ...args, cdnName, monitorIP);
+    const data = await getDataPrepared(getThroughputInd, 'throughput', 'throughput', ...args, monitorIP, cdnName);
     const markers = data.response.parameterHistory.map(r => {
       const ts = new Date(r.timestamp);
       const legend = `psr ${r.passiveSamplingRate}`;
