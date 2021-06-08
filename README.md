@@ -58,6 +58,10 @@ volumes:
 
 `endDate` : ISO8601 string - End of the period for which samples will be returned
 
+`granularity` : Granularity of the samples in minutes
+
+`monitor` : Optional, name of the monitor
+
 #### Example response:
 
 ```json
@@ -115,6 +119,10 @@ volumes:
 
 `endDate` : ISO8601 string - End of the period for which samples will be returned
 
+`granularity` : Granularity of the samples in minutes
+
+`monitor` : Optional, name of the monitor
+
 #### Example response:
 
 ```json
@@ -161,6 +169,10 @@ volumes:
 `startDate` : ISO8601 string - Start of the period for which samples will be returned
 
 `endDate` : ISO8601 string - End of the period for which samples will be returned
+
+`granularity` : Granularity of the samples in minutes
+
+`monitor` : Optional, name of the monitor
 
 #### Example response:
 

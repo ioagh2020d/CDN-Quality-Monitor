@@ -19,4 +19,6 @@ public class SampleSearchDTO {
     private Instant endDate;
 
     private Long granularity = MonitoringService.DEFAULT_GRANULARITY;
+
+    private String monitor;
 }

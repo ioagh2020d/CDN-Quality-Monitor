@@ -13,6 +13,8 @@ public interface MonitorService {
     boolean isLocal();
     Monitor getLocalMonitor();
 
+    Monitor getMonitor(String monitor);
+
     List<MonitorDTO> getActiveMonitors();
     void submitRTTSamples(SubmitSamplesDTO<RTTSampleDTO> samplesDTO, String address);
 

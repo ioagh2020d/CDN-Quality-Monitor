@@ -10,6 +10,7 @@ import pl.edu.agh.cqm.data.model.Sample;
 import pl.edu.agh.cqm.data.model.ThroughputSample;
 import pl.edu.agh.cqm.data.repository.RTTSampleRepository;
 import pl.edu.agh.cqm.data.repository.ThroughputSampleRepository;
+import pl.edu.agh.cqm.service.MonitorService;
 import pl.edu.agh.cqm.service.MonitoringService;
 import pl.edu.agh.cqm.service.ParameterService;
 
@@ -30,11 +31,17 @@ public class MonitoringServiceImpl implements MonitoringService {
     private final RTTSampleRepository rttSampleRepository;
     private final ThroughputSampleRepository throughputSampleRepository;
     private final ParameterService parameterService;
+    private final MonitorService monitorService;
 
     @Override
-    public Map<String, List<RTTSampleDTO>> getRTTSamples(Instant startDate, Instant endDate, Long granularity) {
+    public Map<String, List<RTTSampleDTO>> getRTTSamples(Instant startDate, Instant endDate, Long granularity,
+                                                         String monitor) {
         return parameterService.getActiveCdns().stream()
-            .map(cdn -> Pair.of(cdn, rttSampleRepository.findByCdnAndTimestampBetween(cdn, startDate, endDate)))
+            .map(cdn -> Pair.of(
+                    cdn,
+                    rttSampleRepository.findByCdnAndTimestampBetween(cdn, startDate, endDate).stream()
+                            .filter(sample -> monitor == null || sample.getMonitor().getName().equals(monitor))
+                            .collect(Collectors.toList())))
             .map(p -> Pair.of(
                 p.getFirst().getName(),
                 groupRTT(p.getSecond(), granularity)))
@@ -42,8 +49,8 @@ public class MonitoringServiceImpl implements MonitoringService {
     }
 
     @Override
-    public Map<String, List<RTTSampleDTO>> getRTTSamples(String cdn, Instant startDate,
-                                                         Instant endDate, Long granularity) {
+    public Map<String, List<RTTSampleDTO>> getRTTSamplesSingleCdn(String cdn, Instant startDate,
+                                                                  Instant endDate, Long granularity) {
         return parameterService.getActiveUrls(cdn).stream()
                 .map(url -> Pair.of(
                         url.getAddress(),
@@ -55,9 +62,14 @@ public class MonitoringServiceImpl implements MonitoringService {
     }
 
     @Override
-    public Map<String, List<ThroughputSampleDTO>> getThroughputSamples(Instant startDate, Instant endDate, Long granularity) {
+    public Map<String, List<ThroughputSampleDTO>> getThroughputSamples(Instant startDate, Instant endDate,
+                                                                       Long granularity, String monitor) {
         return parameterService.getActiveCdns().stream()
-            .map(cdn -> Pair.of(cdn, throughputSampleRepository.findByCdnAndTimestampBetween(cdn, startDate, endDate)))
+            .map(cdn -> Pair.of(
+                    cdn,
+                    throughputSampleRepository.findByCdnAndTimestampBetween(cdn, startDate, endDate).stream()
+                            .filter(sample -> monitor == null || sample.getMonitor().getName().equals(monitor))
+                            .collect(Collectors.toList())))
             .map(p -> Pair.of(
                 p.getFirst().getName(),
                 groupThroughput(p.getSecond(), granularity)))
@@ -65,8 +77,8 @@ public class MonitoringServiceImpl implements MonitoringService {
     }
 
     @Override
-    public Map<String, List<ThroughputSampleDTO>> getThroughputSamples(String cdn, Instant startDate,
-                                                                       Instant endDate, Long granularity) {
+    public Map<String, List<ThroughputSampleDTO>> getThroughputSamplesSingleCdn(String cdn, Instant startDate,
+                                                                                Instant endDate, Long granularity) {
         return parameterService.getActiveUrls(cdn).stream()
                 .map(url -> Pair.of(
                         url.getAddress(),
@@ -78,13 +90,23 @@ public class MonitoringServiceImpl implements MonitoringService {
     }
 
     @Override
-    public boolean checkRttSamplesExist(Instant startDate, Instant endDate) {
-        return rttSampleRepository.existsByTimestampBetween(startDate, endDate);
+    public boolean checkRttSamplesExist(Instant startDate, Instant endDate, String monitor) {
+        if (monitor == null) {
+            return rttSampleRepository.existsByTimestampBetween(startDate, endDate);
+        } else {
+            return rttSampleRepository.existsByTimestampBetweenAndMonitor(startDate, endDate,
+                    monitorService.getMonitor(monitor));
+        }
     }
 
     @Override
-    public boolean checkThroughputSamplesExist(Instant startDate, Instant endDate) {
-        return throughputSampleRepository.existsByTimestampBetween(startDate, endDate);
+    public boolean checkThroughputSamplesExist(Instant startDate, Instant endDate, String monitor) {
+        if (monitor == null) {
+            return throughputSampleRepository.existsByTimestampBetween(startDate, endDate);
+        } else {
+            return throughputSampleRepository.existsByTimestampBetweenAndMonitor(startDate, endDate,
+                    monitorService.getMonitor(monitor));
+        }
     }
 
     private List<ThroughputSampleDTO> groupThroughput(List<ThroughputSample> samples, long granularity) {
