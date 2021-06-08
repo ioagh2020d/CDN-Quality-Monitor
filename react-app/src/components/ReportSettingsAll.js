@@ -37,13 +37,13 @@ const generatePDF =  async  (data) =>{
     });
   }else{
     if(exportData.rtt){
-      downloadStrFile(generateCSV(exportData.rtt, data, "RTT [ms]"), "ReportRTT.csv");
+      downloadStrFile(generateCSV(exportData.rtt, data, "CDN", "RTT [ms]"), "ReportRTT.csv");
     }
     if(exportData.throughput){
-      downloadStrFile(generateCSV(exportData.throughput, data, "Throughput [kbps]"), "ReportThroughput.csv");
+      downloadStrFile(generateCSV(exportData.throughput, data, "CDN", "Throughput [kbps]"), "ReportThroughput.csv");
     }
     if(exportData.packetLoss){
-      downloadStrFile(generateCSV(exportData.packetLoss, data, "packetloss [%]"), "ReportPacketLoss.csv");
+      downloadStrFile(generateCSV(exportData.packetLoss, data, "CDN", "packetloss [%]"), "ReportPacketLoss.csv");
     }
   }
 

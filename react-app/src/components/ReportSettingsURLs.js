@@ -58,13 +58,13 @@ const generatePDF =  async  (cdn, data) =>{
     });
   }else{
     if(exportData.rtt){
-      downloadStrFile(generateCSV(exportData.rtt, data, "RTT [ms]"), "ReportRTT.csv");
+      downloadStrFile(generateCSV(exportData.rtt, data, "URL", "RTT [ms]"), "ReportRTT.csv");
     }
     if(exportData.throughput){
-      downloadStrFile(generateCSV(exportData.throughput, data, "Throughput [kbps]"), "ReportThroughput.csv");
+      downloadStrFile(generateCSV(exportData.throughput, data, "URL", "Throughput [kbps]"), "ReportThroughput.csv");
     }
     if(exportData.packetLoss){
-      downloadStrFile(generateCSV(exportData.packetLoss, data, "packetloss [%]"), "ReportPacketLoss.csv");
+      downloadStrFile(generateCSV(exportData.packetLoss, data, "URL", "packetloss [%]"), "ReportPacketLoss.csv");
     }
   }
 };
@@ -94,6 +94,7 @@ const ReportSettingsURLs = () => {
   const classes = useStyles();
   const [cdn, setCDN] = useState("");
   const [allCdnsItems, setAllCdnsItems] = useState([]);
+  const [cdnsLoaded, setCdnsLoaded] = useState(false);
 
 
   const [getAllFunc, setGetAllFunc] = useState(() => () => getAllUrls(""));
@@ -105,6 +106,7 @@ const ReportSettingsURLs = () => {
         return <MenuItem key={c} value={c}>{c}</MenuItem>
       });
       setAllCdnsItems(items);
+      setCdnsLoaded(true)
       setCDN(cdns[0]);// TODO handle no cdns
     }).catch(error => console.log(error));
 
@@ -132,8 +134,10 @@ const handleChange = (event) => {
           onChange={handleChange}
         >
           {allCdnsItems}
+          
         </Select>
       </FormControl>
+      {!cdnsLoaded && <CircularProgress size={44} />}
     </Card></Grid>
   <Grid item xs={12}>
     <ReportSettings generatePDF={generatePDFFunc} getAllEntities={getAllFunc} label="URLs"/>

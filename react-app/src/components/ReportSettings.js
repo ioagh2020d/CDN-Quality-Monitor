@@ -31,8 +31,8 @@ function mergeDeviations(data){
 }
 
 
-const generateCSV = (measuredData, formData, valueLabel) => {
-  const columns = ["CDN", "TIMESTAMP", valueLabel];
+const generateCSV = (measuredData, formData, entityTypeLabel, valueLabel) => {
+  const columns = [entityTypeLabel, "TIMESTAMP", valueLabel];
   let mergedData = mergeDeviations(measuredData.data)
   mergedData = mergedData.filter(d => {
     return formData[d.id.replaceAll('.','^')] === true
