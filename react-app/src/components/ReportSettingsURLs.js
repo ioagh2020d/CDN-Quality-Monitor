@@ -1,4 +1,4 @@
-import ReportSettings from './ReportSettings'
+import {ReportSettings, generateCSV, downloadStrFile} from './ReportSettings'
 import React, { useEffect, useState } from "react";
 import generatePDFComponent from "./PDFReport";
 import { pdf } from '@react-pdf/renderer';
@@ -10,6 +10,7 @@ import {makeStyles} from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import { Grid } from '@material-ui/core';
+
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 
@@ -43,19 +44,29 @@ const generatePDF =  async  (cdn, data) =>{
     exportData.packetLoss = await getDataPrepared(getRTTInd, 'packetLoss', 'packetLoss', ...commonToQueries).catch(error => console.warn(error));
   }
   const reportComponent = generatePDFComponent(exportData, data);
+    if(data.reportType === "PDF"){
+    const blob = pdf(reportComponent).toBlob().then(b => {
+      const fileDownloadUrl = URL.createObjectURL(b);
+      let a = document.createElement('a');
+      a.href = fileDownloadUrl;
+      a.download = "Report.pdf"
+      a.click();
+      setTimeout(() => {
+        window.URL.revokeObjectURL(fileDownloadUrl);
+      }, 0)
 
-  const blob = pdf(reportComponent).toBlob().then(b => {
-    const fileDownloadUrl = URL.createObjectURL(b);
-    let a = document.createElement('a');
-    a.href = fileDownloadUrl;
-    a.download = "Report.pdf"
-    a.click();
-    setTimeout(() => {
-      window.URL.revokeObjectURL(fileDownloadUrl);
-    }, 0)
-
-  });
-
+    });
+  }else{
+    if(exportData.rtt){
+      downloadStrFile(generateCSV(exportData.rtt, data, "URL", "RTT [ms]"), "ReportRTT.csv");
+    }
+    if(exportData.throughput){
+      downloadStrFile(generateCSV(exportData.throughput, data, "URL", "Throughput [kbps]"), "ReportThroughput.csv");
+    }
+    if(exportData.packetLoss){
+      downloadStrFile(generateCSV(exportData.packetLoss, data, "URL", "packetloss [%]"), "ReportPacketLoss.csv");
+    }
+  }
 };
 
 
@@ -83,6 +94,7 @@ const ReportSettingsURLs = () => {
   const classes = useStyles();
   const [cdn, setCDN] = useState("");
   const [allCdnsItems, setAllCdnsItems] = useState([]);
+  const [cdnsLoaded, setCdnsLoaded] = useState(false);
 
 
   const [getAllFunc, setGetAllFunc] = useState(() => () => getAllUrls(""));
@@ -94,6 +106,7 @@ const ReportSettingsURLs = () => {
         return <MenuItem key={c} value={c}>{c}</MenuItem>
       });
       setAllCdnsItems(items);
+      setCdnsLoaded(true)
       setCDN(cdns[0]);// TODO handle no cdns
     }).catch(error => console.log(error));
 
@@ -121,8 +134,10 @@ const handleChange = (event) => {
           onChange={handleChange}
         >
           {allCdnsItems}
+          
         </Select>
       </FormControl>
+      {!cdnsLoaded && <CircularProgress size={44} />}
     </Card></Grid>
   <Grid item xs={12}>
     <ReportSettings generatePDF={generatePDFFunc} getAllEntities={getAllFunc} label="URLs"/>
