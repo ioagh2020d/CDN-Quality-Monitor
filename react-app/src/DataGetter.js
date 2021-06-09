@@ -179,8 +179,18 @@ const parametersHistoryFilter = (parametersHistory, lookForChangeOf) => {
       }
       if(changedFlag) result.push(parametersHistory[i]);
     }
-  
+
     return result
   }
+const legendOffsetCalculator = (i) => {
+    const maxRows = 9
+    const downDirection = Math.floor(i/maxRows)%2 == 0;
+    const multiplier = 25;
+    if(downDirection){
+        return multiplier*(i%maxRows);
+    }else{
+        return multiplier*maxRows - multiplier*(i%maxRows);
+    }
+}
 
-export {getRTT, getRTTInd, getRTTComp, getThroughput, getThroughputComp, getThroughputInd, getDataPrepared, parametersHistoryFilter};
+export {getRTT, getRTTInd, getRTTComp, getThroughput, getThroughputComp, getThroughputInd, getDataPrepared, parametersHistoryFilter, legendOffsetCalculator};
