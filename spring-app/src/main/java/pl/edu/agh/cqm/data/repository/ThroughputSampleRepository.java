@@ -18,6 +18,9 @@ public interface ThroughputSampleRepository extends JpaRepository<ThroughputSamp
     @OrderBy("timestamp ASC")
     List<ThroughputSample> findAllByTimestampBetweenAndUrl(Instant startDate, Instant endDate, Url url);
 
+    @OrderBy("timestamp ASC")
+    List<ThroughputSample> findAllByTimestampBetweenAndMonitor(Instant startDate, Instant endDate, Monitor monitor);
+
     @Query("""
             from ThroughputSample
             where url.cdn = ?1

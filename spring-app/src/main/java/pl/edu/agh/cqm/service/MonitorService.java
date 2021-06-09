@@ -15,7 +15,7 @@ public interface MonitorService {
 
     Monitor getMonitor(String monitor);
 
-    List<MonitorDTO> getActiveMonitors();
+    List<Monitor> getActiveMonitors();
     void submitRTTSamples(SubmitSamplesDTO<RTTSampleDTO> samplesDTO, String address);
 
     void submitThroughputSamples(SubmitSamplesDTO<ThroughputSampleDTO> samplesDTO, String address);

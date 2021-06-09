@@ -49,11 +49,8 @@ public class MonitorServiceImpl implements MonitorService {
     }
 
     @Override
-    public List<MonitorDTO> getActiveMonitors() {
-        return monitorRepository.findAll()
-                .stream()
-                .map(Monitor::toDTO)
-                .collect(Collectors.toList());
+    public List<Monitor> getActiveMonitors() {
+        return monitorRepository.findAll();
     }
 
     @Transactional

@@ -18,6 +18,9 @@ public interface RTTSampleRepository extends JpaRepository<RTTSample, Long> {
     @OrderBy("timestamp ASC")
     List<RTTSample> findAllByTimestampBetweenAndUrl(Instant startDate, Instant endDate, Url url);
 
+    @OrderBy("timestamp ASC")
+    List<RTTSample> findAllByTimestampBetweenAndMonitor(Instant startDate, Instant endDate, Monitor monitor);
+
     boolean existsByTimestampBetween(Instant startDate, Instant endDate);
 
     boolean existsByTimestampBetweenAndMonitor(Instant startDate, Instant endDate, Monitor monitor);
