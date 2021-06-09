@@ -167,5 +167,20 @@ async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, e
 }
 
 
+const parametersHistoryFilter = (parametersHistory, lookForChangeOf) => {
+    const result = []
+    // if(parametersHistory.length > 0) result.push(parametersHistory[0])
+    for(let i = 1; i < parametersHistory.length; i++){
+      let changedFlag = false;
+      for(const param of lookForChangeOf){
+        if(parametersHistory[i][param] !== parametersHistory[i-1][param]){
+          changedFlag = true;
+        }
+      }
+      if(changedFlag) result.push(parametersHistory[i]);
+    }
+  
+    return result
+  }
 
-export {getRTT, getRTTInd, getRTTComp, getThroughput, getThroughputComp, getThroughputInd, getDataPrepared};
+export {getRTT, getRTTInd, getRTTComp, getThroughput, getThroughputComp, getThroughputInd, getDataPrepared, parametersHistoryFilter};
