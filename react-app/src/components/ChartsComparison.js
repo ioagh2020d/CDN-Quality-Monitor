@@ -35,14 +35,14 @@ async function getAllCdns() {
     })
 }
 
-const ChartsComparison = (cdns) => {
+const ChartsComparison = () => {
   const classes = useStyles();
   const [cdn, setCDN] = useState("");
   const [allCdnsItems, setAllCdnsItems] = useState([]);
   const [cdnsLoaded, setCdnsLoaded] = useState(false);
 
   useEffect(() =>{
-    if(cdn != "") setCdnsLoaded(true);
+    if(cdn !== "") setCdnsLoaded(true);
   }, [cdn]);
 
   useEffect(() => {

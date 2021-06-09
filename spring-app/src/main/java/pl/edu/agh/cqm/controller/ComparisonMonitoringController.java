@@ -38,47 +38,47 @@ public class ComparisonMonitoringController {
 
     @GetMapping("/rtt")
     public SingleCdnSingleParameterResponseDTO<RTTSampleDTO> getRTT(
-            @Valid SingleCdnSampleSearchDTO searchDTO
+        @Valid SingleCdnSampleSearchDTO searchDTO
     ) {
-        Map<String, List<RTTSampleDTO>> rttSamples = monitoringService.getRTTSamples(searchDTO.getCdn(),
-                searchDTO.getStartDate(), searchDTO.getEndDate(), searchDTO.getGranularity());
+        Map<String, List<RTTSampleDTO>> rttSamples = monitoringService.getRTTSamplesSingleCdn(searchDTO.getCdn(),
+            searchDTO.getStartDate(), searchDTO.getEndDate(), searchDTO.getGranularity());
         if (rttSamples.values().stream().allMatch(List::isEmpty)) {
             throw new BadRequestException();
         }
 
         return new SingleCdnSingleParameterResponseDTO<>(
-                searchDTO.getCdn(),
-                searchDTO.getStartDate(),
-                searchDTO.getEndDate(),
-                rttSamples,
-                deviationsService.getRTTDeviations(rttSamples),
-                parameterService.getParameterHistory(searchDTO.getStartDate(), searchDTO.getEndDate())
+            searchDTO.getCdn(),
+            searchDTO.getStartDate(),
+            searchDTO.getEndDate(),
+            rttSamples,
+            deviationsService.getRTTDeviations(rttSamples),
+            parameterService.getParameterHistory(searchDTO.getStartDate(), searchDTO.getEndDate())
         );
     }
 
     @GetMapping("/throughput")
     public SingleCdnSingleParameterResponseDTO<ThroughputSampleDTO> getThroughput(
-            @Valid SingleCdnSampleSearchDTO searchDTO
+        @Valid SingleCdnSampleSearchDTO searchDTO
     ) {
-        Map<String, List<ThroughputSampleDTO>> throughputSamples = monitoringService.getThroughputSamples(
-                searchDTO.getCdn(), searchDTO.getStartDate(), searchDTO.getEndDate(), searchDTO.getGranularity());
+        Map<String, List<ThroughputSampleDTO>> throughputSamples = monitoringService.getThroughputSamplesSingleCdn(
+            searchDTO.getCdn(), searchDTO.getStartDate(), searchDTO.getEndDate(), searchDTO.getGranularity());
         if (throughputSamples.values().stream().allMatch(List::isEmpty)) {
             throw new BadRequestException();
         }
 
         return new SingleCdnSingleParameterResponseDTO<>(
-                searchDTO.getCdn(),
-                searchDTO.getStartDate(),
-                searchDTO.getEndDate(),
-                throughputSamples,
-                deviationsService.getThroughputDeviations(throughputSamples),
-                parameterService.getParameterHistory(searchDTO.getStartDate(), searchDTO.getEndDate())
+            searchDTO.getCdn(),
+            searchDTO.getStartDate(),
+            searchDTO.getEndDate(),
+            throughputSamples,
+            deviationsService.getThroughputDeviations(throughputSamples),
+            parameterService.getParameterHistory(searchDTO.getStartDate(), searchDTO.getEndDate())
         );
     }
 
     @GetMapping("/all")
     public SingleCdnAllParametersResponseDTO getAll(
-            @Valid SingleCdnSampleSearchDTO searchDTO
+        @Valid SingleCdnSampleSearchDTO searchDTO
     ) {
         String cdn = searchDTO.getCdn();
         Instant startDate = searchDTO.getStartDate();
@@ -86,23 +86,23 @@ public class ComparisonMonitoringController {
         Long granularity = searchDTO.getGranularity();
 
         Map<String, List<RTTSampleDTO>> rttSamples =
-                monitoringService.getRTTSamples(cdn, startDate, endDate, granularity);
+            monitoringService.getRTTSamplesSingleCdn(cdn, startDate, endDate, granularity);
         Map<String, List<ThroughputSampleDTO>> throughputSamples =
-                monitoringService.getThroughputSamples(cdn, startDate, endDate, granularity);
+            monitoringService.getThroughputSamplesSingleCdn(cdn, startDate, endDate, granularity);
 
         if (rttSamples.values().stream().allMatch(List::isEmpty)
-                && throughputSamples.values().stream().allMatch(List::isEmpty)) {
+            && throughputSamples.values().stream().allMatch(List::isEmpty)) {
             throw new BadRequestException();
         }
 
         return new SingleCdnAllParametersResponseDTO(
-                cdn,
-                startDate,
-                endDate,
-                rttSamples,
-                throughputSamples,
-                deviationsService.getAllDeviations(rttSamples, throughputSamples),
-                parameterService.getParameterHistory(startDate, endDate)
+            cdn,
+            startDate,
+            endDate,
+            rttSamples,
+            throughputSamples,
+            deviationsService.getAllDeviations(rttSamples, throughputSamples),
+            parameterService.getParameterHistory(startDate, endDate)
         );
     }
 

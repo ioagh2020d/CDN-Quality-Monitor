@@ -30,15 +30,16 @@ async function getAllAvailableMonitors() {
     .then(response => response.json())
     .then(data => data['monitors'].map(monitor => monitor.name))
     .then(a => {
-      a.push("all")
-      console.log(a);
+      if (a.size > 1) {
+        a.unshift("all")
+      }
       return a;
     })
 }
 
-const Charts = (monitors) => {
+const Charts = () => {
   const classes = useStyles();
-  const [monitor, setMonitor] = useState("");
+  const [monitor, setMonitor] = useState("all");
   const [allMonitorsItems, setAllMonitorsItems] = useState([]);
 
   useEffect(() => {
