@@ -145,9 +145,9 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb, reloadToggler /* se
         console.warn(e);
       } else if (e instanceof TypeError) {
         console.warn(e);
-      } else if (e.message == 500) {
+      } else if (e.message === 500) {
         console.warn("internal server error");
-      } else if (e.message == 400) {
+      } else if (e.message === 400) {
         console.log("no data")
       } else {
         throw e;
@@ -306,7 +306,7 @@ const SingleChartGeneral = ({dataInit, chartDesc, getDataCb, reloadToggler /* se
                     border: '1px solid #ccc',
                 }}
             >
-                <div>x: {slice.id}</div>
+                <div>{slice.points[0] !== undefined ? slice.points[0].data.x.toLocaleString() : slice.id}</div>
                 {slice.points.map(point => (
                     <div
                         key={point.id}

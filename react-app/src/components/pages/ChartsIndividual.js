@@ -1,7 +1,7 @@
 import {Card} from "@material-ui/core";
-import SingleChartRTTComp from "./SingleChartRTTComp";
-import SingleChartTputComp from "./SingleChartTputComp";
-import SingleChartPacketLossComp from "./SingleChartPacketLossComp";
+import SingleChartRTTInd from "../charts/SingleChartRTTInd";
+import SingleChartTputInd from "../charts/SingleChartTputInd";
+import SingleChartPacketLossInd from "../charts/SingleChartPacketLossInd";
 import {Typography} from '@material-ui/core';
 import Select from '@material-ui/core/Select';
 import FormControl from '@material-ui/core/FormControl';
@@ -11,6 +11,7 @@ import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import {Grid} from '@material-ui/core';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import {getAllAvailableMonitors} from "../../Monitors";
 
 const useStyles = makeStyles((theme) => ({
   formControl: {
@@ -35,14 +36,16 @@ async function getAllCdns() {
     })
 }
 
-const ChartsComparison = () => {
+const ChartsIndividual = () => {
   const classes = useStyles();
   const [cdn, setCDN] = useState("");
   const [allCdnsItems, setAllCdnsItems] = useState([]);
   const [cdnsLoaded, setCdnsLoaded] = useState(false);
+  const [monitor, setMonitor] = useState("all");
+  const [allMonitorsItems, setAllMonitorsItems] = useState([]);
 
-  useEffect(() =>{
-    if(cdn !== "") setCdnsLoaded(true);
+  useEffect(() => {
+    if (cdn !== "") setCdnsLoaded(true);
   }, [cdn]);
 
   useEffect(() => {
@@ -53,15 +56,36 @@ const ChartsComparison = () => {
         setAllCdnsItems(items);
         setCDN(cdns[0]);// TODO handle no cdns
       }).catch(error => console.log(error));
+      getAllAvailableMonitors().then(monitors => {
+        let items = monitors.map(m => {
+          return <MenuItem key={m} value={m}>{m}</MenuItem>
+        });
+        setAllMonitorsItems(items);
+        setMonitor(monitors[0]);
+      }).catch(error => console.log(error))
     }, []
   )
   const handleChangeCDN = (event) => {
     setCDN(event.target.value);
   };
+  const handleChangeMonitor = (event) => {
+    setMonitor(event.target.value);
+  };
   return (
     <Grid container spacing={2}>
       <Grid item xs={12}>
         <Card className={classes.cardsG} style={{textAlign: 'left', padding: '1em'}}>
+          <FormControl className={classes.formControl}>
+            <InputLabel id="demo-simple-select-label">Monitor</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={monitor}
+              onChange={handleChangeMonitor}
+            >
+              {allMonitorsItems}
+            </Select>
+          </FormControl>
           <FormControl className={classes.formControl}>
             <InputLabel id="demo-simple-select-label">CDN</InputLabel>
             <Select
@@ -79,7 +103,7 @@ const ChartsComparison = () => {
         <Card className={classes.cardsG}>
 
           <Typography variant="h6">RTT</Typography>
-          <SingleChartRTTComp cdnName={cdn}/>
+          <SingleChartRTTInd cdnName={cdn} monitorIP={monitor}/>
         </Card></Grid>}
 
 
@@ -87,17 +111,17 @@ const ChartsComparison = () => {
         <Card className={classes.cardsG}>
 
           <Typography variant="h6">Throughput</Typography>
-          <SingleChartTputComp cdnName={cdn}/>
+          <SingleChartTputInd cdnName={cdn} monitorIP={monitor}/>
         </Card></Grid>}
 
       {cdnsLoaded && <Grid item xs={12}>
         <Card className={classes.cardsG}>
 
           <Typography variant="h6">PacketLoss</Typography>
-          <SingleChartPacketLossComp cdnName={cdn}/>
+          <SingleChartPacketLossInd cdnName={cdn} monitorIP={monitor}/>
         </Card></Grid>}
-      </Grid>
-        )
+    </Grid>
+  )
 }
 
-export default ChartsComparison
+export default ChartsIndividual

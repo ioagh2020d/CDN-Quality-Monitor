@@ -1,7 +1,7 @@
 import {Card} from "@material-ui/core";
-import SingleChartRTT from "./SingleChartRTT";
-import SingleChartTput from "./SingleChartTput";
-import SingleChartPacketLoss from "./SingleChartPacketLoss";
+import SingleChartRTT from "../charts/SingleChartRTT";
+import SingleChartTput from "../charts/SingleChartTput";
+import SingleChartPacketLoss from "../charts/SingleChartPacketLoss";
 import {Typography} from '@material-ui/core';
 import Select from '@material-ui/core/Select';
 import FormControl from '@material-ui/core/FormControl';
@@ -10,6 +10,7 @@ import {makeStyles} from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import {Grid} from '@material-ui/core';
+import {getAllAvailableMonitors} from "../../Monitors";
 
 const useStyles = makeStyles((theme) => ({
   formControl: {
@@ -24,18 +25,6 @@ const useStyles = makeStyles((theme) => ({
     paddingTop: '1em'
   }
 }));
-
-async function getAllAvailableMonitors() {
-  return fetch(process.env.REACT_APP_API_URL + "/api/monitors")
-    .then(response => response.json())
-    .then(data => data['monitors'].map(monitor => monitor.name))
-    .then(a => {
-      if (a.size > 1) {
-        a.unshift("all")
-      }
-      return a;
-    })
-}
 
 const Charts = () => {
   const classes = useStyles();

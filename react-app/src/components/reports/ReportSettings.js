@@ -115,7 +115,7 @@ const ReportSettings = ({ getAllEntities, generatePDF, label }) => {
   const classes = useStyles()
   const [allEntities, setAllEntities] = useState([]);
   const [entitiesLoading, setEntitesLoading] = useState(true);
-  const { handleSubmit, control, reset } = useForm({
+  const { handleSubmit, control } = useForm({
     defaultValues: {
       'startDate': new Date(Date.now() - (1000 * 3600 * 5)),
       'endDate': new Date(Date.now()),

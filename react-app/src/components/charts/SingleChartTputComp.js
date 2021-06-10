@@ -1,19 +1,18 @@
-import {getRTTComp, getDataPrepared} from "../DataGetter";
-import {parametersHistoryFilter, legendOffsetCalculator} from "../DataGetter";
+import {getThroughputComp, getDataPrepared} from "../../DataGetter";
+import {parametersHistoryFilter, legendOffsetCalculator} from "../../DataGetter";
 import React, {useEffect, useState} from 'react';
 import SingleChartGeneral from "./SingleChartGeneral";
 
 
-const SingleChartRTTComp = ({cdnName}) => {
-  console.log(cdnName);
+const SingleChartTputComp = ({cdnName}) => {
   const [reloadToggler, setReloadToggler] = useState(false);
 
-  let getDataCb = async (...args) => {
+  async function getDataCb(...args) {
 
-    const data = await getDataPrepared(getRTTComp, 'average', 'rtt', ...args, null, cdnName);
-    const markers = parametersHistoryFilter(data.response.parameterHistory, ['activeSamplingRate', 'activeTestsIntensity']).map((r, i) => {
+    const data = await getDataPrepared(getThroughputComp, 'throughput', 'throughput', ...args, null, cdnName);
+    const markers = parametersHistoryFilter(data.response.parameterHistory, ['passiveSamplingRate']).map((r, i) => {
       const ts = new Date(r.timestamp);
-      const legend = `asr ${r.activeSamplingRate} ati ${r.activeTestsIntensity}`;
+      const legend = `psr ${r.passiveSamplingRate}`;
       return {
         axis: 'x',
         value: ts,
@@ -27,16 +26,15 @@ const SingleChartRTTComp = ({cdnName}) => {
     data.markers = data.markers.concat(markers);
     return data;
   }
-  // let getDataCb = null;
+
   useEffect(() => {
     setReloadToggler(!reloadToggler);
   }, [cdnName]);
-
-
   return (
     <SingleChartGeneral dataInit={[]} getDataCb={getDataCb} reloadToggler={reloadToggler}
-                        chartDesc={{leftAxisDesc: "ms"}}/>
+                        chartDesc={{leftAxisDesc: "kb/s"}}/>
   );
+
 }
 
-export default SingleChartRTTComp;
+export default SingleChartTputComp;

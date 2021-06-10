@@ -1,17 +1,18 @@
-import {getDataPrepared, getRTT} from "../DataGetter";
-import {parametersHistoryFilter, legendOffsetCalculator} from "../DataGetter";
+import {getThroughput, getDataPrepared} from "../../DataGetter";
+import {parametersHistoryFilter, legendOffsetCalculator} from "../../DataGetter";
 import React, {useEffect, useState} from 'react';
 import SingleChartGeneral from "./SingleChartGeneral";
 
-const SingleChartPacketLoss = ({monitorIP}) => {
+
+const SingleChartTput = ({monitorIP}) => {
   const [reloadToggler, setReloadToggler] = useState(false);
 
   async function getDataCb(...args) {
 
-    let data = await getDataPrepared(getRTT, 'packetLoss', 'packetLoss', ...args, monitorIP);
-    const markers = parametersHistoryFilter(data.response.parameterHistory, ['activeSamplingRate', 'activeTestsIntensity']).map((r,i) => {
+    const data = await getDataPrepared(getThroughput, 'throughput', 'throughput', ...args, monitorIP);
+    const markers = parametersHistoryFilter(data.response.parameterHistory, ['passiveSamplingRate']).map((r, i) => {
       const ts = new Date(r.timestamp);
-      const legend = `asr ${r.activeSamplingRate} ati ${r.activeTestsIntensity}`;
+      const legend = `psr ${r.passiveSamplingRate}`;
       return {
         axis: 'x',
         value: ts,
@@ -20,7 +21,6 @@ const SingleChartPacketLoss = ({monitorIP}) => {
         legend: legend,
         legendOffsetY: legendOffsetCalculator(i),
         legendOffsetX: 1
-
       };
     })
     data.markers = data.markers.concat(markers);
@@ -32,8 +32,9 @@ const SingleChartPacketLoss = ({monitorIP}) => {
   }, [monitorIP]);
   return (
     <SingleChartGeneral dataInit={[]} getDataCb={getDataCb} reloadToggler={reloadToggler}
-                        chartDesc={{leftAxisDesc: "%"}}/>
+                        chartDesc={{leftAxisDesc: "kb/s"}}/>
   );
+
 }
 
-export default SingleChartPacketLoss;
+export default SingleChartTput;
