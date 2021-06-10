@@ -1,8 +1,8 @@
-import {ReportSettings, generateCSV, downloadStrFile} from './ReportSettings'
+import {ReportSettings, generateCSV, downloadStrFile} from '../reports/ReportSettings'
 import React, { useEffect, useState } from "react";
-import generatePDFComponent from "./PDFReport";
+import generatePDFComponent from "../reports/PDFReport";
 import { pdf } from '@react-pdf/renderer';
-import { getRTTInd, getThroughputInd, getDataPrepared } from "../DataGetter";
+import { getRTTInd, getThroughputInd, getDataPrepared } from "../../DataGetter";
 import { Card } from "@material-ui/core";
 import Select from '@material-ui/core/Select';
 import FormControl from '@material-ui/core/FormControl';
@@ -90,7 +90,7 @@ const getAllUrls = async (cdn) =>{
 
 
 
-const ReportSettingsURLs = () => {
+const ReportGeneratorURLs = () => {
   const classes = useStyles();
   const [cdn, setCDN] = useState("");
   const [allCdnsItems, setAllCdnsItems] = useState([]);
@@ -148,4 +148,4 @@ const handleChange = (event) => {
 }
 
 
-export default ReportSettingsURLs;
+export default ReportGeneratorURLs;

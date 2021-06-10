@@ -1,9 +1,9 @@
-import {ReportSettings, generateCSV, downloadStrFile} from './ReportSettings'
+import {ReportSettings, generateCSV, downloadStrFile} from '../reports/ReportSettings'
 import React from "react";
-import generatePDFComponent from "./PDFReport";
+import generatePDFComponent from "../reports/PDFReport";
 import { pdf } from '@react-pdf/renderer';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { getRTT, getThroughput, getDataPrepared } from "../DataGetter";
+import { getRTT, getThroughput, getDataPrepared } from "../../DataGetter";
 
 
 
@@ -58,11 +58,11 @@ async function getAllCdns() {
     })
 }
 
-const ReportSettingsAll = () => {
+const ReportGeneratorCDNs = () => {
 
       
   return <ReportSettings generatePDF={generatePDF} getAllEntities={getAllCdns} label="CDNs"/>
 }
 
 
-export default ReportSettingsAll;
+export default ReportGeneratorCDNs;

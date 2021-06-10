@@ -1,4 +1,4 @@
-import {getDataPrepared, getRTT, getRTTInd} from "../DataGetter";
+import {getDataPrepared, getRTT, getRTTInd} from "../../DataGetter";
 import React, {useEffect, useState} from 'react';
 import SingleChartGeneral from "./SingleChartGeneral";
 
