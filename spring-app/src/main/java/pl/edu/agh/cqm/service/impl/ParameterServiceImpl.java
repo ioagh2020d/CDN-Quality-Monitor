@@ -166,7 +166,7 @@ public class ParameterServiceImpl implements ParameterService {
     public Cdn getOrCreateCdn(String name) {
         return cdnRepository.findByNameEquals(name)
             .orElseGet(() -> {
-                var newCdn = new Cdn(name, false);
+                var newCdn = new Cdn(name, true);
                 cdnRepository.save(newCdn);
                 return newCdn;
             });

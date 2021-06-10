@@ -3,7 +3,7 @@ const getAllAvailableMonitors = async () => {
     .then(response => response.json())
     .then(data => data['monitors'].map(monitor => monitor.name))
     .then(a => {
-      if (a.size > 1) {
+      if (a.length > 1) {
         a.unshift("all")
       }
       return a;

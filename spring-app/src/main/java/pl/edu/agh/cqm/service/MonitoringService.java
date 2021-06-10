@@ -15,7 +15,7 @@ public interface MonitoringService {
                                                   String monitor);
 
     Map<String, List<RTTSampleDTO>> getRTTSamplesSingleCdn(String cdn, Instant startDate,
-                                                           Instant endDate, Long granularity);
+                                                           Instant endDate, Long granularity, String monitor);
 
     Map<String, List<RTTSampleDTO>> getRTTSamplesMonitorComp(String cdn, Instant startDate,
                                                              Instant endDate, Long granularity);
@@ -24,10 +24,10 @@ public interface MonitoringService {
                                                                 Long granularity, String monitor);
 
     Map<String, List<ThroughputSampleDTO>> getThroughputSamplesSingleCdn(String cdn, Instant startDate,
-                                                                         Instant endDate, Long granularity);
+                                                                         Instant endDate, Long granularity, String monitor);
 
     Map<String, List<ThroughputSampleDTO>> getThroughputSamplesMonitorComp(String cdn, Instant startDate,
-                                                                         Instant endDate, Long granularity);
+                                                                           Instant endDate, Long granularity);
 
     boolean checkRttSamplesExist(Instant startDate, Instant endDate, String monitor);
 

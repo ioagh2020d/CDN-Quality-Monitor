@@ -12,21 +12,28 @@ import pl.edu.agh.cqm.service.MonitorService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/remotes")
 @AllArgsConstructor
 public class RemoteMonitorController {
 
+    public static final String FORWARDED_FOR_HEADER = "X-Forwarded_For";
+
     private final MonitorService monitorService;
 
     @PostMapping("/rtt")
     public void submitRTTSamples(@Valid @RequestBody SubmitSamplesDTO<RTTSampleDTO> samplesDTO, HttpServletRequest request) {
-        monitorService.submitRTTSamples(samplesDTO, request.getRemoteAddr());
+        var address = Optional.ofNullable(request.getHeader(FORWARDED_FOR_HEADER))
+            .orElse(request.getRemoteAddr());
+        monitorService.submitRTTSamples(samplesDTO, address);
     }
 
     @PostMapping("/throughput")
     public void submitThroughputSamples(@Valid @RequestBody SubmitSamplesDTO<ThroughputSampleDTO> samplesDTO, HttpServletRequest request) {
-        monitorService.submitThroughputSamples(samplesDTO, request.getRemoteAddr());
+        var address = Optional.ofNullable(request.getHeader(FORWARDED_FOR_HEADER))
+            .orElse(request.getRemoteAddr());
+        monitorService.submitThroughputSamples(samplesDTO, address);
     }
 }

@@ -21,4 +21,6 @@ public class SingleCdnSampleSearchDTO {
     private Instant endDate;
 
     private Long granularity = MonitoringService.DEFAULT_GRANULARITY;
+
+    private String monitor;
 }
