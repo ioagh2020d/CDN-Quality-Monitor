@@ -17,6 +17,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import FormLabel from '@material-ui/core/FormLabel';
 import DateFnsUtils from '@date-io/date-fns';
 import { getRTT, getThroughput, getDataPrepared } from "../DataGetter";
+import {parametersHistoryFilter, legendOffsetCalculator} from "../DataGetter";
 import { MuiPickersUtilsProvider, DateTimePicker } from '@material-ui/pickers';
 import Slider from '@material-ui/core/Slider';
 
