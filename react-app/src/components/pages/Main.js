@@ -1,5 +1,5 @@
 import MenuBar from "../MenuBar";
-import {Box, Card, Container, makeStyles} from "@material-ui/core";
+import {Box, Container} from "@material-ui/core";
 import Settings from "../Settings";
 import {Route, Switch} from "react-router-dom"
 import Charts from "./Charts";

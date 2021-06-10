@@ -11,6 +11,7 @@ import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import {Grid} from '@material-ui/core';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import {getAllAvailableMonitors} from "../../Monitors";
 
 const useStyles = makeStyles((theme) => ({
   formControl: {
@@ -32,18 +33,6 @@ async function getAllCdns() {
     .then(data => data['cdns'].map(cdn => cdn.name))
     .then(d => {
       return d;
-    })
-}
-
-async function getAllAvailableMonitors() {
-  return fetch(process.env.REACT_APP_API_URL + "/api/monitors")
-    .then(response => response.json())
-    .then(data => data['monitors'].map(monitor => monitor.name))
-    .then(a => {
-      if (a.size > 1) {
-        a.unshift("all")
-      }
-      return a;
     })
 }
 
