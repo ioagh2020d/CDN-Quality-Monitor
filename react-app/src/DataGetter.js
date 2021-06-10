@@ -167,5 +167,30 @@ async function getDataPrepared(getDataJson, samplesParam, deviationsParam, sd, e
 }
 
 
+const parametersHistoryFilter = (parametersHistory, lookForChangeOf) => {
+    const result = []
+    // if(parametersHistory.length > 0) result.push(parametersHistory[0])
+    for(let i = 1; i < parametersHistory.length; i++){
+      let changedFlag = false;
+      for(const param of lookForChangeOf){
+        if(parametersHistory[i][param] !== parametersHistory[i-1][param]){
+          changedFlag = true;
+        }
+      }
+      if(changedFlag) result.push(parametersHistory[i]);
+    }
 
-export {getRTT, getRTTInd, getRTTComp, getThroughput, getThroughputComp, getThroughputInd, getDataPrepared};
+    return result
+  }
+const legendOffsetCalculator = (i) => {
+    const maxRows = 9
+    const downDirection = Math.floor(i/maxRows)%2 == 0;
+    const multiplier = 25;
+    if(downDirection){
+        return multiplier*(i%maxRows);
+    }else{
+        return multiplier*maxRows - multiplier*(i%maxRows);
+    }
+}
+
+export {getRTT, getRTTInd, getRTTComp, getThroughput, getThroughputComp, getThroughputInd, getDataPrepared, parametersHistoryFilter, legendOffsetCalculator};

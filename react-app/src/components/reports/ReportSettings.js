@@ -13,6 +13,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import FormLabel from '@material-ui/core/FormLabel';
 import DateFnsUtils from '@date-io/date-fns';
+import {parametersHistoryFilter, legendOffsetCalculator} from "../DataGetter";
 import { MuiPickersUtilsProvider, DateTimePicker } from '@material-ui/pickers';
 import Slider from '@material-ui/core/Slider';
 import {parse} from "json2csv";
@@ -25,7 +26,7 @@ function mergeDeviations(data){
     const data1 = data[i].data.filter(d => d.y != null);
     const data2 = data[i+1].data.filter(d => d.y != null);
     resultArr.push({id: data[i+1].id, data: data1.concat(data2)})
-    
+
   }
   return resultArr;
 }
@@ -39,7 +40,7 @@ const generateCSV = (measuredData, formData, entityTypeLabel, valueLabel) => {
   })
   const records = [];
   records.push(columns);
-  
+
   for(const cdn of mergedData){
     for(const sample of cdn.data){
       records.push([cdn.id, sample.x.toISOString(), sample.y.toString()]);
