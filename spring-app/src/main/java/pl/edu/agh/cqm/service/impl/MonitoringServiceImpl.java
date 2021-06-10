@@ -47,19 +47,23 @@ public class MonitoringServiceImpl implements MonitoringService {
             .map(p -> Pair.of(
                 p.getFirst().getName(),
                 groupRTT(p.getSecond(), granularity)))
+            .filter(p -> !p.getSecond().isEmpty())
             .collect(Pair.toMap());
     }
 
     @Override
     public Map<String, List<RTTSampleDTO>> getRTTSamplesSingleCdn(String cdn, Instant startDate,
-                                                                  Instant endDate, Long granularity) {
+                                                                  Instant endDate, Long granularity, String monitor) {
         return parameterService.getActiveUrls(cdn).stream()
             .map(url -> Pair.of(
                 url.getAddress(),
-                rttSampleRepository.findAllByTimestampBetweenAndUrl(startDate, endDate, url)))
+                rttSampleRepository.findAllByTimestampBetweenAndUrl(startDate, endDate, url).stream()
+                    .filter(sample -> isAllMonitors(monitor) || sample.getMonitor().getName().equals(monitor))
+                    .collect(Collectors.toList())))
             .map(p -> Pair.of(
                 p.getFirst(),
                 groupRTT(p.getSecond(), granularity)))
+            .filter(p -> !p.getSecond().isEmpty())
             .collect(Pair.toMap());
     }
 
@@ -67,16 +71,17 @@ public class MonitoringServiceImpl implements MonitoringService {
     public Map<String, List<RTTSampleDTO>> getRTTSamplesMonitorComp(String cdn, Instant startDate,
                                                                     Instant endDate, Long granularity) {
         return monitorService.getActiveMonitors().stream()
-                .map(monitor -> Pair.of(
-                        monitor.getName(),
-                        rttSampleRepository.findAllByTimestampBetweenAndMonitor(
-                                startDate, endDate, monitor).stream()
-                                .filter(sample -> sample.getUrl().getCdn().getName().equals(cdn))
-                                .collect(Collectors.toList())))
-                .map(p -> Pair.of(
-                        p.getFirst(),
-                        groupRTT(p.getSecond(), granularity)))
-                .collect(Pair.toMap());
+            .map(monitor -> Pair.of(
+                monitor.getName(),
+                rttSampleRepository.findAllByTimestampBetweenAndMonitor(
+                    startDate, endDate, monitor).stream()
+                    .filter(sample -> sample.getUrl().getCdn().getName().equals(cdn))
+                    .collect(Collectors.toList())))
+            .map(p -> Pair.of(
+                p.getFirst(),
+                groupRTT(p.getSecond(), granularity)))
+            .filter(p -> !p.getSecond().isEmpty())
+            .collect(Pair.toMap());
     }
 
     @Override
@@ -91,19 +96,24 @@ public class MonitoringServiceImpl implements MonitoringService {
             .map(p -> Pair.of(
                 p.getFirst().getName(),
                 groupThroughput(p.getSecond(), granularity)))
+            .filter(p -> !p.getSecond().isEmpty())
             .collect(Pair.toMap());
     }
 
     @Override
     public Map<String, List<ThroughputSampleDTO>> getThroughputSamplesSingleCdn(String cdn, Instant startDate,
-                                                                                Instant endDate, Long granularity) {
+                                                                                Instant endDate, Long granularity,
+                                                                                String monitor) {
         return parameterService.getActiveUrls(cdn).stream()
             .map(url -> Pair.of(
                 url.getAddress(),
-                throughputSampleRepository.findAllByTimestampBetweenAndUrl(startDate, endDate, url)))
+                throughputSampleRepository.findAllByTimestampBetweenAndUrl(startDate, endDate, url).stream()
+                    .filter(sample -> isAllMonitors(monitor) || sample.getMonitor().getName().equals(monitor))
+                    .collect(Collectors.toList())))
             .map(p -> Pair.of(
                 p.getFirst(),
                 groupThroughput(p.getSecond(), granularity)))
+            .filter(p -> !p.getSecond().isEmpty())
             .collect(Pair.toMap());
     }
 
@@ -111,16 +121,17 @@ public class MonitoringServiceImpl implements MonitoringService {
     public Map<String, List<ThroughputSampleDTO>> getThroughputSamplesMonitorComp(String cdn, Instant startDate,
                                                                                   Instant endDate, Long granularity) {
         return monitorService.getActiveMonitors().stream()
-                .map(monitor -> Pair.of(
-                        monitor.getName(),
-                        throughputSampleRepository.findAllByTimestampBetweenAndMonitor(
-                                startDate, endDate, monitor).stream()
-                                .filter(sample -> sample.getUrl().getCdn().getName().equals(cdn))
-                                .collect(Collectors.toList())))
-                .map(p -> Pair.of(
-                        p.getFirst(),
-                        groupThroughput(p.getSecond(), granularity)))
-                .collect(Pair.toMap());
+            .map(monitor -> Pair.of(
+                monitor.getName(),
+                throughputSampleRepository.findAllByTimestampBetweenAndMonitor(
+                    startDate, endDate, monitor).stream()
+                    .filter(sample -> sample.getUrl().getCdn().getName().equals(cdn))
+                    .collect(Collectors.toList())))
+            .map(p -> Pair.of(
+                p.getFirst(),
+                groupThroughput(p.getSecond(), granularity)))
+            .filter(p -> !p.getSecond().isEmpty())
+            .collect(Pair.toMap());
     }
 
     @Override
