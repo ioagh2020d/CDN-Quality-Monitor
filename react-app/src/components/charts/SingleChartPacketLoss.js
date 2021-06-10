@@ -1,4 +1,4 @@
-import {getDataPrepared, getRTT} from "../DataGetter";
+import {getDataPrepared, getRTT} from "../../DataGetter";
 import {parametersHistoryFilter, legendOffsetCalculator} from "../../DataGetter";
 import React, {useEffect, useState} from 'react';
 import SingleChartGeneral from "./SingleChartGeneral";
