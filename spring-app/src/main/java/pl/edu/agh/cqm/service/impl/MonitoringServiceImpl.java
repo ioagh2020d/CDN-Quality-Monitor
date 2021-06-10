@@ -64,6 +64,22 @@ public class MonitoringServiceImpl implements MonitoringService {
     }
 
     @Override
+    public Map<String, List<RTTSampleDTO>> getRTTSamplesMonitorComp(String cdn, Instant startDate,
+                                                                    Instant endDate, Long granularity) {
+        return monitorService.getActiveMonitors().stream()
+                .map(monitor -> Pair.of(
+                        monitor.getName(),
+                        rttSampleRepository.findAllByTimestampBetweenAndMonitor(
+                                startDate, endDate, monitor).stream()
+                                .filter(sample -> sample.getUrl().getCdn().getName().equals(cdn))
+                                .collect(Collectors.toList())))
+                .map(p -> Pair.of(
+                        p.getFirst(),
+                        groupRTT(p.getSecond(), granularity)))
+                .collect(Pair.toMap());
+    }
+
+    @Override
     public Map<String, List<ThroughputSampleDTO>> getThroughputSamples(Instant startDate, Instant endDate,
                                                                        Long granularity, String monitor) {
         return parameterService.getActiveCdns().stream()
@@ -89,6 +105,22 @@ public class MonitoringServiceImpl implements MonitoringService {
                 p.getFirst(),
                 groupThroughput(p.getSecond(), granularity)))
             .collect(Pair.toMap());
+    }
+
+    @Override
+    public Map<String, List<ThroughputSampleDTO>> getThroughputSamplesMonitorComp(String cdn, Instant startDate,
+                                                                                  Instant endDate, Long granularity) {
+        return monitorService.getActiveMonitors().stream()
+                .map(monitor -> Pair.of(
+                        monitor.getName(),
+                        throughputSampleRepository.findAllByTimestampBetweenAndMonitor(
+                                startDate, endDate, monitor).stream()
+                                .filter(sample -> sample.getUrl().getCdn().getName().equals(cdn))
+                                .collect(Collectors.toList())))
+                .map(p -> Pair.of(
+                        p.getFirst(),
+                        groupThroughput(p.getSecond(), granularity)))
+                .collect(Pair.toMap());
     }
 
     @Override
