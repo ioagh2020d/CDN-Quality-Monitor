@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import pl.edu.agh.cqm.data.model.Cdn;
+import pl.edu.agh.cqm.data.model.Monitor;
 import pl.edu.agh.cqm.data.model.ThroughputSample;
 import pl.edu.agh.cqm.data.model.Url;
 
@@ -17,6 +18,9 @@ public interface ThroughputSampleRepository extends JpaRepository<ThroughputSamp
     @OrderBy("timestamp ASC")
     List<ThroughputSample> findAllByTimestampBetweenAndUrl(Instant startDate, Instant endDate, Url url);
 
+    @OrderBy("timestamp ASC")
+    List<ThroughputSample> findAllByTimestampBetweenAndMonitor(Instant startDate, Instant endDate, Monitor monitor);
+
     @Query("""
             from ThroughputSample
             where url.cdn = ?1
@@ -27,4 +31,6 @@ public interface ThroughputSampleRepository extends JpaRepository<ThroughputSamp
     List<ThroughputSample> findByCdnAndTimestampBetween(Cdn cdn, Instant startDate, Instant endDate);
 
     boolean existsByTimestampBetween(Instant startDate, Instant endDate);
+
+    boolean existsByTimestampBetweenAndMonitor(Instant startDate, Instant endDate, Monitor monitor);
 }

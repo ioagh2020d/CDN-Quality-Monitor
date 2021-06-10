@@ -1,11 +1,12 @@
-import MenuBar from "./MenuBar";
-import {Box, Card, Container, makeStyles} from "@material-ui/core";
-import Settings from "./Settings";
+import MenuBar from "../MenuBar";
+import {Box, Container} from "@material-ui/core";
+import Settings from "../Settings";
 import {Route, Switch} from "react-router-dom"
 import Charts from "./Charts";
 import ChartsIndividual from "./ChartsIndividual";
-import ReportSettingsAll from "./ReportSettingsAll";
-import ReportSettingsURLs from "./ReportSettingsURLs";
+import ReportGeneratorCDNs from "./ReportGeneratorCDNs";
+import ReportGeneratorURLs from "./ReportGeneratorURLs";
+import ChartsComparison from "./ChartsComparison";
 
 const Main = () => {
   return (
@@ -18,13 +19,16 @@ const Main = () => {
               <Settings/>
             </Route>
             <Route path={"/reportSettingsCDNs"}>
-              <ReportSettingsAll/>
-            </Route>  
+              <ReportGeneratorCDNs/>
+            </Route>
             <Route path={"/reportSettingsURLs"}>
-              <ReportSettingsURLs/>
-            </Route>                       
+              <ReportGeneratorURLs/>
+            </Route>
             <Route path={"/individualCDN"}>
               <ChartsIndividual/>
+            </Route>
+            <Route path={"/comparisonMonitors"}>
+              <ChartsComparison/>
             </Route>
             <Route path={""}>
               <Charts/>

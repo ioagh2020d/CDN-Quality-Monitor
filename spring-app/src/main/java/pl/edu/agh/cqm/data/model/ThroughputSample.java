@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import pl.edu.agh.cqm.data.dto.ThroughputSampleDTO;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -33,4 +34,11 @@ public class ThroughputSample implements Sample {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Monitor monitor;
+
+    public ThroughputSampleDTO toDTO() {
+        return ThroughputSampleDTO.builder()
+                .timestamp(timestamp)
+                .throughput(throughput)
+                .build();
+    }
 }

@@ -30,11 +30,13 @@ public class MonitoringController {
     public SingleParameterResponseDTO<RTTSampleDTO> getRTT(
         @Valid SampleSearchDTO searchDTO
     ) {
-        if (!monitoringService.checkRttSamplesExist(searchDTO.getStartDate(), searchDTO.getEndDate())) {
+        if (!monitoringService.checkRttSamplesExist(searchDTO.getStartDate(), searchDTO.getEndDate(),
+                searchDTO.getMonitor())) {
             throw new BadRequestException();
         }
-        Map<String, List<RTTSampleDTO>> rttSamples =
-            monitoringService.getRTTSamples(searchDTO.getStartDate(), searchDTO.getEndDate(), searchDTO.getGranularity());
+        Map<String, List<RTTSampleDTO>> rttSamples = monitoringService.getRTTSamples(searchDTO.getStartDate(),
+                searchDTO.getEndDate(), searchDTO.getGranularity(), searchDTO.getMonitor());
+
         return new SingleParameterResponseDTO<>(
                 searchDTO.getStartDate(),
                 searchDTO.getEndDate(),
@@ -48,11 +50,14 @@ public class MonitoringController {
     public SingleParameterResponseDTO<ThroughputSampleDTO> getThroughput(
         @Valid SampleSearchDTO searchDTO
     ) {
-        if (!monitoringService.checkThroughputSamplesExist(searchDTO.getStartDate(), searchDTO.getEndDate())) {
+        if (!monitoringService.checkThroughputSamplesExist(searchDTO.getStartDate(), searchDTO.getEndDate(),
+                searchDTO.getMonitor())) {
             throw new BadRequestException();
         }
-        Map<String, List<ThroughputSampleDTO>> throughputSamples =
-            monitoringService.getThroughputSamples(searchDTO.getStartDate(), searchDTO.getEndDate(), searchDTO.getGranularity());
+        Map<String, List<ThroughputSampleDTO>> throughputSamples = monitoringService.getThroughputSamples(
+                searchDTO.getStartDate(), searchDTO.getEndDate(), searchDTO.getGranularity(),
+                searchDTO.getMonitor());
+
         return new SingleParameterResponseDTO<>(
                 searchDTO.getStartDate(),
                 searchDTO.getEndDate(),
@@ -68,15 +73,17 @@ public class MonitoringController {
     ) {
         Instant startDate = searchDTO.getStartDate();
         Instant endDate = searchDTO.getEndDate();
+        String monitor = searchDTO.getMonitor();
 
-        if (!monitoringService.checkRttSamplesExist(startDate, endDate)
-            && !monitoringService.checkThroughputSamplesExist(startDate, endDate)) {
+        if (!monitoringService.checkRttSamplesExist(startDate, endDate, monitor)
+            && !monitoringService.checkThroughputSamplesExist(startDate, endDate, monitor)) {
             throw new BadRequestException();
         }
-        Map<String, List<RTTSampleDTO>> rttSamples =
-            monitoringService.getRTTSamples(startDate, endDate, searchDTO.getGranularity());
-        Map<String, List<ThroughputSampleDTO>> throughputSamples =
-            monitoringService.getThroughputSamples(startDate, endDate, searchDTO.getGranularity());
+        Map<String, List<RTTSampleDTO>> rttSamples = monitoringService.getRTTSamples(startDate, endDate,
+                searchDTO.getGranularity(), monitor);
+        Map<String, List<ThroughputSampleDTO>> throughputSamples = monitoringService.getThroughputSamples(
+                startDate, endDate, searchDTO.getGranularity(), monitor);
+
         return new AllParametersResponseDTO(
                 startDate,
                 endDate,

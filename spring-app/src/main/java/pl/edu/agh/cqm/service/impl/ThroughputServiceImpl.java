@@ -11,6 +11,7 @@ import pl.edu.agh.cqm.data.dto.CdnWithUrlsDTO;
 import pl.edu.agh.cqm.data.model.ThroughputSample;
 import pl.edu.agh.cqm.data.model.Url;
 import pl.edu.agh.cqm.data.repository.ThroughputSampleRepository;
+import pl.edu.agh.cqm.service.CentralApiService;
 import pl.edu.agh.cqm.service.MonitorService;
 import pl.edu.agh.cqm.service.ParameterService;
 import pl.edu.agh.cqm.service.ThroughputService;
@@ -33,6 +34,7 @@ public class ThroughputServiceImpl implements ThroughputService {
     private final int timeout;
     private final ParameterService parameterService;
     private final MonitorService monitorService;
+    private final CentralApiService centralApiService;
     private int measurementTime;
     private final int sessionBreakTime;
     private final String interfaceName;
@@ -45,10 +47,12 @@ public class ThroughputServiceImpl implements ThroughputService {
     public ThroughputServiceImpl(CqmConfiguration configuration,
                                  ParameterService parameterService,
                                  ThroughputSampleRepository dataRepository,
-                                 MonitorService monitorService) throws PcapNativeException {
+                                 MonitorService monitorService,
+                                 CentralApiService centralApiService) throws PcapNativeException {
         this.dataRepository = dataRepository;
         this.parameterService = parameterService;
         this.monitorService = monitorService;
+        this.centralApiService = centralApiService;
         snapLen = configuration.getPcapMaxPacketLength();
         timeout = configuration.getPcapTimeout();
         sessionBreakTime = configuration.getPcapSessionBreak();
@@ -122,6 +126,7 @@ public class ThroughputServiceImpl implements ThroughputService {
 
                     logger.debug("add sample cdn:url:ip:tput {}:{}:{}:{}", c.cdn, c.name, c.ip, c.throughput);
                     dataRepository.save(sample);
+                    centralApiService.sendSample(sample);
                 } catch (NullPointerException e) {
                     logger.warn("empty throughput session");
                 } catch (IndexOutOfBoundsException e) {

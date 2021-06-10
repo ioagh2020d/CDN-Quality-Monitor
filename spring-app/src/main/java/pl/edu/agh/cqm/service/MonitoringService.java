@@ -11,18 +11,25 @@ public interface MonitoringService {
 
     long DEFAULT_GRANULARITY = 1000 * 60 * 10;
 
-    Map<String, List<RTTSampleDTO>> getRTTSamples(Instant startDate, Instant endDate, Long granularity);
+    Map<String, List<RTTSampleDTO>> getRTTSamples(Instant startDate, Instant endDate, Long granularity,
+                                                  String monitor);
 
-    Map<String, List<RTTSampleDTO>> getRTTSamples(String cdn, Instant startDate,
-                                                  Instant endDate, Long granularity);
+    Map<String, List<RTTSampleDTO>> getRTTSamplesSingleCdn(String cdn, Instant startDate,
+                                                           Instant endDate, Long granularity, String monitor);
+
+    Map<String, List<RTTSampleDTO>> getRTTSamplesMonitorComp(String cdn, Instant startDate,
+                                                             Instant endDate, Long granularity);
 
     Map<String, List<ThroughputSampleDTO>> getThroughputSamples(Instant startDate, Instant endDate,
-                                                                Long granularity);
+                                                                Long granularity, String monitor);
 
-    Map<String, List<ThroughputSampleDTO>> getThroughputSamples(String cdn, Instant startDate,
-                                                                Instant endDate, Long granularity);
+    Map<String, List<ThroughputSampleDTO>> getThroughputSamplesSingleCdn(String cdn, Instant startDate,
+                                                                         Instant endDate, Long granularity, String monitor);
 
-    boolean checkRttSamplesExist(Instant startDate, Instant endDate);
+    Map<String, List<ThroughputSampleDTO>> getThroughputSamplesMonitorComp(String cdn, Instant startDate,
+                                                                           Instant endDate, Long granularity);
 
-    boolean checkThroughputSamplesExist(Instant startDate, Instant endDate);
+    boolean checkRttSamplesExist(Instant startDate, Instant endDate, String monitor);
+
+    boolean checkThroughputSamplesExist(Instant startDate, Instant endDate, String monitor);
 }

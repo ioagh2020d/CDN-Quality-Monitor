@@ -2,6 +2,9 @@ package pl.edu.agh.cqm.service.impl;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import pl.edu.agh.cqm.configuration.CqmConfiguration;
+import pl.edu.agh.cqm.data.dto.MonitorDTO;
+import pl.edu.agh.cqm.data.model.Monitor;
 import pl.edu.agh.cqm.data.dto.RTTSampleDTO;
 import pl.edu.agh.cqm.data.dto.SubmitSamplesDTO;
 import pl.edu.agh.cqm.data.dto.ThroughputSampleDTO;
@@ -9,10 +12,13 @@ import pl.edu.agh.cqm.data.model.*;
 import pl.edu.agh.cqm.data.repository.MonitorRepository;
 import pl.edu.agh.cqm.data.repository.RTTSampleRepository;
 import pl.edu.agh.cqm.data.repository.ThroughputSampleRepository;
+import pl.edu.agh.cqm.exception.NotFoundException;
 import pl.edu.agh.cqm.service.MonitorService;
 import pl.edu.agh.cqm.service.ParameterService;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 @Service
@@ -20,17 +26,31 @@ import javax.transaction.Transactional;
 public class MonitorServiceImpl implements MonitorService {
 
     private final MonitorRepository monitorRepository;
-
     private final ParameterService parameterService;
-
     private final RTTSampleRepository rttSampleRepository;
-
     private final ThroughputSampleRepository throughputSampleRepository;
+    private final CqmConfiguration cqmConfiguration;
+
+    @Override
+    public boolean isLocal() {
+        return cqmConfiguration.isLocal();
+    }
 
     @Override
     public Monitor getLocalMonitor() {
         return monitorRepository.getMonitorByName(MonitorRepository.LOCAL_MONITOR_NAME)
             .orElseThrow(() -> new IllegalStateException("Local monitor not present"));
+    }
+
+    @Override
+    public Monitor getMonitor(String monitor) {
+        return monitorRepository.getMonitorByName(monitor)
+                .orElseThrow(NotFoundException::new);
+    }
+
+    @Override
+    public List<Monitor> getActiveMonitors() {
+        return monitorRepository.findAll();
     }
 
     @Transactional
@@ -80,10 +100,12 @@ public class MonitorServiceImpl implements MonitorService {
 
     @PostConstruct
     private void init() {
-        if (monitorRepository.getMonitorByName(MonitorRepository.LOCAL_MONITOR_NAME).isEmpty()) {
-            monitorRepository.save(Monitor.builder()
-                .name(MonitorRepository.LOCAL_MONITOR_NAME)
-                .build());
+        if (cqmConfiguration.isLocal()) {
+            if (monitorRepository.getMonitorByName(MonitorRepository.LOCAL_MONITOR_NAME).isEmpty()) {
+                monitorRepository.save(Monitor.builder()
+                    .name(MonitorRepository.LOCAL_MONITOR_NAME)
+                    .build());
+            }
         }
     }
 }

@@ -5,17 +5,18 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
-@Builder
 @Data
 @NoArgsConstructor
+@Builder
 @AllArgsConstructor
-public class SubmitSamplesDTO<T extends SampleDTO> {
+public class MonitorsDTO {
 
     @NotNull
-    @NotEmpty
-    private List<SubmittedSampleWrapperDTO<T>> samples;
+    private Integer id;
+
+    @NotNull
+    private String address;
 }
