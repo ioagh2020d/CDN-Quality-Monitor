@@ -1,12 +1,8 @@
 import {
   AppBar,
-  Box, Button,
-  ButtonBase,
-  CssBaseline,
-  Icon,
+  Box, CssBaseline,
   IconButton,
   makeStyles,
-  Tab,
   Toolbar,
   Typography
 } from "@material-ui/core";
@@ -40,22 +36,33 @@ const MenuBar = () => {
           </Box>
           <Box className={classes.title}>
             <IconButton color={"inherit"}>
-              <Typography variant={"h6"} component={Link} color={"inherit"} to={"/individualCDN"} className={classes.titleText}>
+              <Typography variant={"h6"} component={Link} color={"inherit"} to={"/individualCDN"}
+                          className={classes.titleText}>
                 Individual
               </Typography>
             </IconButton>
           </Box>
           <Box className={classes.title}>
             <IconButton color={"inherit"}>
-              <Typography variant={"h6"} component={Link} color={"inherit"} to={"/comparisonMonitors"} className={classes.titleText}>
+              <Typography variant={"h6"} component={Link} color={"inherit"} to={"/comparisonMonitors"}
+                          className={classes.titleText}>
                 Comparison
               </Typography>
             </IconButton>
           </Box>
           <Box className={classes.title}>
             <IconButton color={"inherit"}>
-              <Typography variant={"h6"} component={Link} color={"inherit"} to={"/reportSettings"} className={classes.titleText}>
-                Report
+              <Typography variant={"h6"} component={Link} color={"inherit"} to={"/reportSettingsCDNs"}
+                          className={classes.titleText}>
+                Report CDNs
+              </Typography>
+            </IconButton>
+          </Box>
+          <Box className={classes.title}>
+            <IconButton color={"inherit"}>
+              <Typography variant={"h6"} component={Link} color={"inherit"} to={"/reportSettingsURLs"}
+                          className={classes.titleText}>
+                Report URLs
               </Typography>
             </IconButton>
           </Box>

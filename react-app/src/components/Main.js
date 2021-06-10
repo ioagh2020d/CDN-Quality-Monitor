@@ -4,8 +4,9 @@ import Settings from "./Settings";
 import {Route, Switch} from "react-router-dom"
 import Charts from "./Charts";
 import ChartsIndividual from "./ChartsIndividual";
+import ReportSettingsAll from "./ReportSettingsAll";
+import ReportSettingsURLs from "./ReportSettingsURLs";
 import ChartsComparison from "./ChartsComparison";
-import ReportSettings from "./ReportSettings";
 
 const Main = () => {
   return (
@@ -17,8 +18,11 @@ const Main = () => {
             <Route path={"/settings"}>
               <Settings/>
             </Route>
-            <Route path={"/reportSettings"}>
-              <ReportSettings/>
+            <Route path={"/reportSettingsCDNs"}>
+              <ReportSettingsAll/>
+            </Route>
+            <Route path={"/reportSettingsURLs"}>
+              <ReportSettingsURLs/>
             </Route>
             <Route path={"/individualCDN"}>
               <ChartsIndividual/>
