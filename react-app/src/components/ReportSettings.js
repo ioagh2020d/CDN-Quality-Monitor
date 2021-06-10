@@ -1,24 +1,66 @@
 import {
   Box,
   Button,
-  Card, Divider,
-  InputAdornment,
+  Card,
   makeStyles,
-  TextField,
-  Typography
 } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import generatePDFComponent from "./PDFReport";
-import { pdf } from '@react-pdf/renderer';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import FormLabel from '@material-ui/core/FormLabel';
 import DateFnsUtils from '@date-io/date-fns';
-import { getRTT, getThroughput, getDataPrepared } from "../DataGetter";
 import { MuiPickersUtilsProvider, DateTimePicker } from '@material-ui/pickers';
 import Slider from '@material-ui/core/Slider';
+import {parse} from "json2csv";
+
+
+function mergeDeviations(data){
+  const resultArr = []
+
+  for(let i = 0; i < data.length; i+=2){
+    const data1 = data[i].data.filter(d => d.y != null);
+    const data2 = data[i+1].data.filter(d => d.y != null);
+    resultArr.push({id: data[i+1].id, data: data1.concat(data2)})
+
+  }
+  return resultArr;
+}
+
+
+const generateCSV = (measuredData, formData, entityTypeLabel, valueLabel) => {
+  const columns = [entityTypeLabel, "TIMESTAMP", valueLabel];
+  let mergedData = mergeDeviations(measuredData.data)
+  mergedData = mergedData.filter(d => {
+    return formData[d.id.replaceAll('.','^')] === true
+  })
+  const records = [];
+  records.push(columns);
+
+  for(const cdn of mergedData){
+    for(const sample of cdn.data){
+      records.push([cdn.id, sample.x.toISOString(), sample.y.toString()]);
+    }
+  }
+  const csv = parse(records, {header: false});
+  return csv;
+};
+const downloadStrFile = (str, filename) => {
+  const csv =  new Blob([str], {
+    type: 'text/plain'
+  });
+  const fileDownloadUrl = URL.createObjectURL(csv);
+  let a = document.createElement('a');
+  a.href = fileDownloadUrl;
+  a.download = filename
+  a.click();
+  setTimeout(() => {
+    window.URL.revokeObjectURL(fileDownloadUrl);
+  }, 0)
+}
 
 const granularityValues = [5, 10, 20, 30, 60, 120, 240, 720, 1440]
 const granularityMarks = [
@@ -68,19 +110,11 @@ const useStyles = makeStyles(theme => ({
 
 }))
 
-async function getAllCdns() {
-  return fetch(process.env.REACT_APP_API_URL + "/api/parameters")
-    .then(response => response.json())
-    .then(data => data['cdns'])
-    .then(d => {
-      return d;
-    })
-}
 
-const ReportSettings = () => {
+const ReportSettings = ({ getAllEntities, generatePDF, label }) => {
   const classes = useStyles()
-  const [allCdnsItems, setAllCdnsItems] = useState([]);
-  const [cdnLoading, setCdnLoading] = useState(true);
+  const [allEntities, setAllEntities] = useState([]);
+  const [entitiesLoading, setEntitesLoading] = useState(true);
   const { handleSubmit, control, reset } = useForm({
     defaultValues: {
       'startDate': new Date(Date.now() - (1000 * 3600 * 5)),
@@ -93,54 +127,27 @@ const ReportSettings = () => {
 
 
   useEffect(() => {
-    getAllCdns().then(cdns => {
-      let items = cdns.map(cdn => {
+    getAllEntities().then(entities => {
+      let items = entities.map(entity => {
         return <Controller
-          name={cdn.name.replaceAll('.', '_')}
-          key={cdn.name}
+          name={entity.name.replaceAll('.', '^')}
+          key={entity.name}
           control={control}
           defaultValue={false}
-          render={({ field }) => <FormControlLabel control={<Checkbox {...field} />} label={cdn.name} />}
+          render={({ field }) => <FormControlLabel control={<Checkbox {...field} />} label={entity.name} />}
         />
       });
-      setAllCdnsItems(items);
-      setCdnLoading(false);
+      setAllEntities(items);
+      setEntitesLoading(false);
 
     }).catch(error => console.warn(error))
-  }, [])
+  }, [getAllEntities, generatePDF])
 
 
 
   const onSubmit = async (data) => {
-    let commonToQueries = [
-      data.startDate, data.endDate, data.granularity
-    ]
-    const exportData = {}
-
-    if (data.rtt) {
-      exportData.rtt = await getDataPrepared(getRTT, 'average', 'rtt', ...commonToQueries).catch(error => console.warn(error));
-    }
-    if (data.throughput) {
-      exportData.throughput = await getDataPrepared(getThroughput, 'throughput', 'throughput', ...commonToQueries).catch(error => console.warn(error));
-    }
-    if (data.packetLoss) {
-      exportData.packetLoss = await getDataPrepared(getRTT, 'packetLoss', 'packetLoss', ...commonToQueries).catch(error => console.warn(error));
-    }
-    const reportComponent = generatePDFComponent(exportData, data);
-
-    const blob = pdf(reportComponent).toBlob().then(b => {
-      const fileDownloadUrl = URL.createObjectURL(b);
-      let a = document.createElement('a');
-      a.href = fileDownloadUrl;
-      a.download = "Report.pdf"
-      a.click();
-      setTimeout(() => {
-        window.URL.revokeObjectURL(fileDownloadUrl);
-      }, 0)
-
-    });
-
-  };
+    generatePDF(data);
+  }
 
 
   return (
@@ -166,10 +173,10 @@ const ReportSettings = () => {
             </MuiPickersUtilsProvider>
           </Box>
           <Box m={2} display='flex' flexDirection='column'>
-            <FormLabel component="legend" style={{ marginBottom: '1rem' }}>CDNs:</FormLabel>
-            {!cdnLoading &&
-              allCdnsItems}
-            {cdnLoading && <Box p={2}><CircularProgress size={64} /></Box>}
+            <FormLabel component="legend" style={{ marginBottom: '1rem' }}>{label}:</FormLabel>
+            {!entitiesLoading &&
+              allEntities}
+            {entitiesLoading && <Box p={2}><CircularProgress size={64} /></Box>}
           </Box>
           <Box m={2}>
             <FormLabel component="legend">Parameters</FormLabel>
@@ -191,6 +198,22 @@ const ReportSettings = () => {
               defaultValue={false}
               render={({ field }) => <FormControlLabel control={<Checkbox {...field} />} label="packetLoss" />}
             />
+            <Box mt={4} mb={4} width="20%" display='flex' flexDirection='column'>
+            <FormLabel component="legend" style={{ marginBottom: '1rem' }}>Report type:</FormLabel>
+            <Controller
+              name="reportType"
+              control={control}
+              defaultValue={"PDF"}
+              render={({ field }) => <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={field.value}
+                onChange={field.onChange}>
+                <MenuItem value={"PDF"}>PDF</MenuItem>
+                <MenuItem value={"CSV"}>CSV</MenuItem>
+              </Select>}
+            />
+            </Box>
           </Box>
           <Box m={2} width='50%'>
             <Controller
@@ -199,19 +222,19 @@ const ReportSettings = () => {
               control={control}
               rules={{ required: true }}
               render={({ field }) => <Slider
-                  min={1}
-                  max={9}
-                  defaultValue={2}
-                  step={null}
-                  scale={(x) => granularityValues[x]}
-                  valueLabelFormat={(x) => ""}
-                  aria-labelledby="granularity"
-                  valueLabelDisplay="auto"
-                  marks={granularityMarks}
-                  onChangeCommitted={(event, gr) => field.onChange(granularityValues[gr - 1])}/>}
+                min={1}
+                max={9}
+                defaultValue={2}
+                step={null}
+                scale={(x) => granularityValues[x]}
+                valueLabelFormat={(x) => ""}
+                aria-labelledby="granularity"
+                valueLabelDisplay="auto"
+                marks={granularityMarks}
+                onChangeCommitted={(event, gr) => field.onChange(granularityValues[gr - 1])} />}
             />
 
-          </Box>          
+          </Box>
           <Box display={"flex"} alignSelf='flex-end'>
             <Button
               variant="contained"
@@ -229,4 +252,4 @@ const ReportSettings = () => {
   )
 }
 
-export default ReportSettings
+export {ReportSettings, mergeDeviations, generateCSV, downloadStrFile}

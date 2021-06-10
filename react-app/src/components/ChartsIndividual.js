@@ -40,22 +40,23 @@ async function getAllAvailableMonitors() {
     .then(response => response.json())
     .then(data => data['monitors'].map(monitor => monitor.name))
     .then(a => {
-      a.push("all")
-      console.log(a);
+      if (a.size > 1) {
+        a.unshift("all")
+      }
       return a;
     })
 }
 
-const ChartsIndividual = (monitors, cdns) => {
+const ChartsIndividual = () => {
   const classes = useStyles();
   const [cdn, setCDN] = useState("");
   const [allCdnsItems, setAllCdnsItems] = useState([]);
   const [cdnsLoaded, setCdnsLoaded] = useState(false);
-  const [monitor, setMonitor] = useState("");
+  const [monitor, setMonitor] = useState("all");
   const [allMonitorsItems, setAllMonitorsItems] = useState([]);
 
-  useEffect(() =>{
-    if(cdn != "") setCdnsLoaded(true);
+  useEffect(() => {
+    if (cdn !== "") setCdnsLoaded(true);
   }, [cdn]);
 
   useEffect(() => {
@@ -130,8 +131,8 @@ const ChartsIndividual = (monitors, cdns) => {
           <Typography variant="h6">PacketLoss</Typography>
           <SingleChartPacketLossInd cdnName={cdn} monitorIP={monitor}/>
         </Card></Grid>}
-      </Grid>
-        )
+    </Grid>
+  )
 }
 
 export default ChartsIndividual

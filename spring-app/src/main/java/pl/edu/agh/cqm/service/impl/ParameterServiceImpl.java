@@ -148,7 +148,7 @@ public class ParameterServiceImpl implements ParameterService {
     }
 
     @Override
-    public void addNewUrl(String cdnName, String urlName){
+    public void addNewUrl(String cdnName, String urlName) {
         Optional<Cdn> cdn = cdnRepository.findByNameEquals(cdnName);
         Url url = new Url(cdn.get(), urlName);
         urlRepository.save(url);
@@ -203,8 +203,10 @@ public class ParameterServiceImpl implements ParameterService {
     @PostConstruct
     private void initConfigCdnsRepository() {
         if (cdnRepository.count() == 0) {
-            for (String cdn : cdns) {
-                cdnRepository.save(new Cdn(cdn));
+            for (String cdnName : cdns) {
+                var cdn = new Cdn(cdnName);
+                cdnRepository.save(cdn);
+                urlRepository.save(new Url(cdn, cdnName));
             }
         }
     }

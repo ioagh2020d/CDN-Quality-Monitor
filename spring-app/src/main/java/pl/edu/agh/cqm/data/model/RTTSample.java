@@ -24,7 +24,7 @@ public class RTTSample implements Sample {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(nullable = false, updatable = false, unique = true)
+    @Column(nullable = false, updatable = false)
     private Instant timestamp;
 
     @Column(nullable = false, updatable = false)

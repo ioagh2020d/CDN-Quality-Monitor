@@ -32,19 +32,21 @@ public class CentralApiServiceImpl implements CentralApiService {
     }
 
     private void sendSample(Sample sample, String parameter) {
-        try {
-            unirestInstance.post(cqmConfiguration.getCentralServer() + "/api/remotes/" + parameter)
+        if (!cqmConfiguration.getCentralServer().isBlank()) {
+            try {
+                unirestInstance.post(cqmConfiguration.getCentralServer() + "/api/remotes/" + parameter)
                     .header("Content-Type", "application/json")
                     .body(new SubmitSamplesDTO<>(List.of(
-                            new SubmittedSampleWrapperDTO<>(
-                                    sample.toDTO(),
-                                    sample.getUrl().getCdn().getName(),
-                                    sample.getUrl().getAddress()
-                            )
+                        new SubmittedSampleWrapperDTO<>(
+                            sample.toDTO(),
+                            sample.getUrl().getCdn().getName(),
+                            sample.getUrl().getAddress()
+                        )
                     )))
                     .asJson();
-        } catch (Exception exception) {
-            logger.warn(exception.getMessage());
+            } catch (Exception exception) {
+                logger.warn(exception.getMessage());
+            }
         }
     }
 }
